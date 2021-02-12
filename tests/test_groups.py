@@ -11,13 +11,13 @@ from nettlesome.statements import Statement
 
 
 class TestMakeGroup:
-    def test_group_from_list(self, watt_factor):
-        factor_list = [watt_factor["f1"], watt_factor["f2"]]
+    def test_group_from_list(self):
+        factor_list = [watt_factor["f1"]["f2"]]
         group = ComparableGroup(factor_list)
         assert isinstance(group, ComparableGroup)
         assert group[1] == watt_factor["f2"]
 
-    def test_group_from_item(self, watt_factor):
+    def test_group_from_item(self):
         factor = watt_factor["f1"]
         group = ComparableGroup(factor)
         assert isinstance(group, ComparableGroup)
@@ -28,26 +28,24 @@ class TestMakeGroup:
         assert isinstance(group, ComparableGroup)
         assert len(group) == 0
 
-    def test_factorgroup_from_factorgroup(self, watt_factor):
-        factor_list = [watt_factor["f1"], watt_factor["f2"]]
+    def test_factorgroup_from_factorgroup(self):
+        factor_list = [watt_factor["f1"]["f2"]]
         group = ComparableGroup(factor_list)
         identical_group = ComparableGroup(group)
         assert isinstance(identical_group, ComparableGroup)
         assert identical_group[0] == watt_factor["f1"]
 
-    def test_one_factor_implies_and_has_same_context_as_other(self, watt_factor):
+    def test_one_factor_implies_and_has_same_context_as_other(self):
         assert watt_factor["f8_meters"].implies_same_context(watt_factor["f8"])
 
-    def test_drop_implied_factors(self, watt_factor):
-        group = ComparableGroup([watt_factor["f8_meters"], watt_factor["f8"]])
+    def test_drop_implied_factors(self):
+        group = ComparableGroup([watt_factor["f8_meters"]["f8"]])
         shorter = group.drop_implied_factors()
         assert len(shorter) == 1
         assert watt_factor["f8_meters"] in group
 
-    def test_drop_implied_factors_unmatched_context(self, watt_factor):
-        group = ComparableGroup(
-            [watt_factor["f9_swap_entities"], watt_factor["f9_miles"]]
-        )
+    def test_drop_implied_factors_unmatched_context(self):
+        group = ComparableGroup([watt_factor["f9_swap_entities"]["f9_miles"]])
         shorter = group.drop_implied_factors()
         assert len(shorter) == 2
 
@@ -69,50 +67,40 @@ class TestMakeGroup:
 
 
 class TestSameFactors:
-    def test_group_has_same_factors_as_identical_group(self, watt_factor):
-        first_group = ComparableGroup([watt_factor["f1"], watt_factor["f3"]])
-        second_group = ComparableGroup([watt_factor["f1"], watt_factor["f3"]])
+    def test_group_has_same_factors_as_identical_group(self):
+        first_group = ComparableGroup([watt_factor["f1"]["f3"]])
+        second_group = ComparableGroup([watt_factor["f1"]["f3"]])
         assert first_group.has_all_factors_of(second_group)
 
-    def test_group_has_same_factors_as_included_group(self, watt_factor):
-        first_group = ComparableGroup(
-            [watt_factor["f1"], watt_factor["f2"], watt_factor["f3"]]
-        )
-        second_group = ComparableGroup([watt_factor["f1"], watt_factor["f3"]])
+    def test_group_has_same_factors_as_included_group(self):
+        first_group = ComparableGroup([watt_factor["f1"]["f2"]["f3"]])
+        second_group = ComparableGroup([watt_factor["f1"]["f3"]])
         assert first_group.has_all_factors_of(second_group)
 
-    def test_group_does_not_have_same_factors_as_bigger_group(self, watt_factor):
-        first_group = ComparableGroup(
-            [watt_factor["f1"], watt_factor["f2"], watt_factor["f3"]]
-        )
-        second_group = ComparableGroup([watt_factor["f1"], watt_factor["f3"]])
+    def test_group_does_not_have_same_factors_as_bigger_group(self):
+        first_group = ComparableGroup([watt_factor["f1"]["f2"]["f3"]])
+        second_group = ComparableGroup([watt_factor["f1"]["f3"]])
         assert not second_group.has_all_factors_of(first_group)
 
-    def test_group_shares_all_factors_with_bigger_group(self, watt_factor):
-        first_group = ComparableGroup(
-            [watt_factor["f1"], watt_factor["f2"], watt_factor["f3"]]
-        )
-        second_group = ComparableGroup([watt_factor["f1"], watt_factor["f3"]])
+    def test_group_shares_all_factors_with_bigger_group(self):
+        first_group = ComparableGroup([watt_factor["f1"]["f2"]["f3"]])
+        second_group = ComparableGroup([watt_factor["f1"]["f3"]])
         assert second_group.shares_all_factors_with(first_group)
 
-    def test_group_does_not_share_all_factors_with_smaller_group(self, watt_factor):
-        first_group = ComparableGroup(
-            [watt_factor["f1"], watt_factor["f2"], watt_factor["f3"]]
-        )
-        second_group = ComparableGroup([watt_factor["f1"], watt_factor["f3"]])
+    def test_group_does_not_share_all_factors_with_smaller_group(self):
+        first_group = ComparableGroup([watt_factor["f1"]["f2"]["f3"]])
+        second_group = ComparableGroup([watt_factor["f1"]["f3"]])
         assert not first_group.shares_all_factors_with(second_group)
 
-    def test_group_means_identical_group(self, watt_factor):
-        first_group = ComparableGroup([watt_factor["f1"], watt_factor["f3"]])
-        second_group = ComparableGroup([watt_factor["f1"], watt_factor["f3"]])
+    def test_group_means_identical_group(self):
+        first_group = ComparableGroup([watt_factor["f1"]["f3"]])
+        second_group = ComparableGroup([watt_factor["f1"]["f3"]])
         assert first_group.means(second_group)
         assert means(first_group, second_group)
 
-    def test_group_does_not_mean_different_group(self, watt_factor):
-        first_group = ComparableGroup(
-            [watt_factor["f1"], watt_factor["f2"], watt_factor["f3"]]
-        )
-        second_group = ComparableGroup([watt_factor["f1"], watt_factor["f3"]])
+    def test_group_does_not_mean_different_group(self):
+        first_group = ComparableGroup([watt_factor["f1"]["f2"]["f3"]])
+        second_group = ComparableGroup([watt_factor["f1"]["f3"]])
         assert not first_group.means(second_group)
         assert not second_group.means(first_group)
 
@@ -128,22 +116,20 @@ class TestSameFactors:
 
 
 class TestImplication:
-    def test_factorgroup_implies_none(self, watt_factor):
-        group = ComparableGroup([watt_factor["f1"], watt_factor["f2"]])
+    def test_factorgroup_implies_none(self):
+        group = ComparableGroup([watt_factor["f1"]["f2"]])
         assert group.implies(None)
 
-    def test_factorgroup_implication_of_empty_group(self, watt_factor):
-        factor_list = [watt_factor["f1"], watt_factor["f2"]]
+    def test_factorgroup_implication_of_empty_group(self):
+        factor_list = [watt_factor["f1"]["f2"]]
         group = ComparableGroup(factor_list)
         empty_group = ComparableGroup()
         assert group.implies(empty_group)
 
-    def test_explanation_implication_of_factorgroup(self, watt_factor):
+    def test_explanation_implication_of_factorgroup(self):
         """The returned Explanation shows that f8_meters matches up with f8."""
-        left = ComparableGroup(
-            [watt_factor["f9_absent_miles"], watt_factor["f8_meters"]]
-        )
-        right = ComparableGroup([watt_factor["f8"], watt_factor["f9_absent"]])
+        left = ComparableGroup([watt_factor["f9_absent_miles"]["f8_meters"]])
+        right = ComparableGroup([watt_factor["f8"]["f9_absent"]])
         explanation = left.explain_implication(right)
         assert "implies" in str(explanation).lower()
 
@@ -177,14 +163,14 @@ class TestContradiction:
 
 
 class TestAdd:
-    def test_add_does_not_consolidate_factors(self, watt_factor):
+    def test_add_does_not_consolidate_factors(self):
         left = ComparableGroup(watt_factor["f1"])
         right = ComparableGroup(watt_factor["f1"])
         added = left + right
         assert len(added) == 2
         assert isinstance(added, ComparableGroup)
 
-    def test_add_factor_to_factorgroup(self, watt_factor):
+    def test_add_factor_to_factorgroup(self):
         left = ComparableGroup(watt_factor["f1"])
         right = watt_factor["f1"]
         added = left + right
@@ -193,21 +179,21 @@ class TestAdd:
 
 
 class TestUnion:
-    def test_factors_combined_because_of_implication(self, watt_factor):
+    def test_factors_combined_because_of_implication(self):
         left = ComparableGroup(watt_factor["f8"])
         right = ComparableGroup(watt_factor["f8_meters"])
         added = left | right
         assert len(added) == 1
         assert "meter" in str(added[0])
 
-    def test_union_with_factor_outside_group(self, watt_factor):
+    def test_union_with_factor_outside_group(self):
         left = ComparableGroup(watt_factor["f8_meters"])
         right = watt_factor["f8"]
         added = left | right
         assert len(added) == 1
         assert "10 meter" in str(added[0])
 
-    def test_no_contradiction_because_entities_vary(self, watt_factor):
+    def test_no_contradiction_because_entities_vary(self):
         """
         If these Factors were about the same Term, they would contradict
         and no union would be possible.
@@ -247,19 +233,19 @@ class TestConsistent:
     def test_group_contradicts_single_factor(self):
         group = ComparableGroup([self.slower_specific_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair(Term("the car"), Term("the pickup"))
+        register.insert_pair[Term("the car"), Term("the pickup"))
         assert group.contradicts(self.faster_statement, context=register)
 
     def test_one_statement_does_not_contradict_group(self):
         group = ComparableGroup([self.slower_general_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair(Term("the pickup"), Term("the pickup"))
+        register.insert_pair[Term("the pickup"), Term("the pickup"))
         assert not self.faster_statement.contradicts(group, context=register)
 
     def test_group_inconsistent_with_single_factor(self):
         group = ComparableGroup([self.slower_specific_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair(Term("the car"), Term("the pickup"))
+        register.insert_pair[Term("the car"), Term("the pickup"))
         assert not group.consistent_with(self.faster_statement, context=register)
         assert not consistent_with(group, self.faster_statement, context=register)
 
@@ -272,19 +258,19 @@ class TestConsistent:
     def test_group_inconsistent_with_one_statement(self):
         group = ComparableGroup([self.slower_specific_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair(Term("the car"), Term("the pickup"))
+        register.insert_pair[Term("the car"), Term("the pickup"))
         assert not group.consistent_with(self.faster_statement, context=register)
 
     def test_one_statement_inconsistent_with_group(self):
         group = ComparableGroup([self.slower_specific_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair(Term("the pickup"), Term("the car"))
+        register.insert_pair[Term("the pickup"), Term("the car"))
         assert not self.faster_statement.consistent_with(group, context=register)
 
     def test_one_statement_consistent_with_group(self):
         group = ComparableGroup([self.slower_general_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair(Term("the pickup"), Term("the pickup"))
+        register.insert_pair[Term("the pickup"), Term("the pickup"))
         assert self.faster_statement.consistent_with(group, context=register)
 
     def test_no_contradiction_of_none(self):

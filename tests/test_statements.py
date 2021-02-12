@@ -9,7 +9,7 @@ from nettlesome.statements import Statement
 
 
 class TestStatements:
-    def test_build_fact(self):
+    def test_Statement(self):
         """
         Check that terms is created as a (hashable) tuple, not list
         """
@@ -470,9 +470,7 @@ class TestImplication:
         assert not fact_exact >= fact_greater
         assert not fact_greater >= fact_exact
 
-    def test_absent_factor_implies_absent_factor_with_lesser_quantity(
-        self, watt_factor
-    ):
+    def test_absent_factor_implies_absent_factor_with_lesser_quantity(self):
         absent_broader = Statement(
             Comparison(
                 "the distance north from $south to $north was",
@@ -525,13 +523,13 @@ class TestImplication:
 
         complex_whether = self.relevant_whether.new_context(context_names)
         explanation = self.relevant_fact.explain_implication(complex_whether)
-        assert (str(Term("Alice")), Term("Craig")) in explanation.items()
+        assert (str[Term("Alice")], Term("Craig")) in explanation.items()
         assert (
             str(explanation)
             == "ContextRegister(<Alice> is like <Craig>, <Bob> is like <Dan>)"
         )
-        assert (str(Term("Craig")), Term("Alice")) not in explanation.items()
-        assert (str(Term("Alice")), Term("Craig")) in explanation.items()
+        assert (str[Term("Craig")], Term("Alice")) not in explanation.items()
+        assert (str[Term("Alice")], Term("Craig")) in explanation.items()
 
     def test_context_registers_for_complex_comparison(self):
         context_names = ContextRegister()
@@ -754,14 +752,14 @@ class TestContradiction:
             predicate=Predicate(
                 template="${rural_s_telephone_directory} was copyrightable", truth=True
             ),
-            terms=(Term(name="Rural's telephone directory")),
+            terms=[Term(name="Rural's telephone directory")],
             absent=True,
         )
         false_fact = Statement(
             predicate=Predicate(
                 template="${the_java_api} was copyrightable", truth=False
             ),
-            terms=(Term(name="the Java API", generic=True, plural=False)),
+            terms=[Term(name="the Java API", generic=True, plural=False)],
             absent=False,
         )
         assert not false_fact.contradicts(absent_fact)
@@ -845,9 +843,7 @@ class TestContradiction:
         update = left.update_context_register(right, register, comparison=means)
         assert not any(register is not None for register in update)
 
-    def test_check_entity_consistency_type_error(
-        self, make_entity, make_factor, make_predicate
-    ):
+    def test_check_entity_consistency_type_error(self, make_factor, make_predicate):
         """
         There would be no TypeError if it used "means"
         instead of .gt. The comparison would just return False.
@@ -881,7 +877,7 @@ class TestConsistent:
 
     def test_contradictory_facts_about_same_entity(self):
         register = ContextRegister()
-        register.insert_pair(Term("Alice"), Term("Bob"))
+        register.insert_pair[Term("Alice"), Term("Bob")]
         assert not self.small.consistent_with(self.big, register)
         explanations = list(
             self.small.explanations_consistent_with(self.big, context=register)

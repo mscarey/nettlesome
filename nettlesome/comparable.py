@@ -753,7 +753,7 @@ class Comparable(ABC):
             attributes of ``self`` except ``generic=False``.
             Therefore the method isn't equivalent to creating a new
             instance of the class with only the ``generic`` attribute
-            specified. To do that, you would use ``Fact(generic=True)``.
+            specified. To do that, you would use ``Statement(generic=True)``.
 
         :returns: a new object changing ``generic`` to ``True``.
         """
@@ -1021,7 +1021,10 @@ class ContextRegister:
         return new
 
     def check_match(self, key: Comparable, value: Comparable) -> bool:
-        return self.get(key.short_string) == value
+        if self.get(key.short_string) is None:
+            return False
+        # TODO: better test for match, replacing dataclass __eq__
+        return self[key.short_string].short_string == value.short_string
 
     def factor_pairs(self) -> Iterator[Tuple[Comparable, Comparable]]:
         for key, value in self.items():

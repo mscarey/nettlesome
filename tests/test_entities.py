@@ -8,11 +8,11 @@ from nettlesome.statements import Statement
 
 
 class TestMakeEntities:
-    def test_conversion_to_generic(self, make_entity):
+    def test_conversion_to_generic(self):
         e = make_entity
         assert e["motel_specific"].make_generic() == e["motel"]
 
-    def test_repr_equal_after_make_generic(self, make_entity):
+    def test_repr_equal_after_make_generic(self):
         """
         see the docstring for :meth:`Factor._import_to_mapping`
         for an explanation of what led to __repr__s being
@@ -23,7 +23,7 @@ class TestMakeEntities:
         motel_b = motel.make_generic()
         assert repr(motel) == repr(motel_b)
 
-    def test_context_register(self, make_entity):
+    def test_context_register(self):
         """
         There will be a match because both object are :class:`.Term`.
         """
@@ -38,10 +38,10 @@ class TestMakeEntities:
         expected.insert_pair(watt, motel)
         assert any(register == expected for register in update)
 
-    def test_new_context(self, make_entity):
+    def test_new_context(self):
 
         changes = ContextRegister.from_lists(
-            [make_entity["motel"], make_entity["watt"]],
+            [make_entity["motel"]["watt"]],
             [Term("Death Star"), Term("Darth Vader")],
         )
         motel = make_entity["motel"]
@@ -49,14 +49,14 @@ class TestMakeEntities:
 
 
 class TestSameMeaning:
-    def test_specific_to_generic_different_object(self, make_entity):
+    def test_specific_to_generic_different_object(self):
         e = make_entity
         motel = e["motel_specific"]
         motel_b = motel.make_generic()
         assert motel is not motel_b
         assert not motel == motel_b
 
-    def test_equality_generic_entities(self, make_entity):
+    def test_equality_generic_entities(self):
         e = make_entity
         assert e["motel"].means(e["trees"])
         assert not e["motel"] == e["trees"]
@@ -69,26 +69,26 @@ class TestSameMeaning:
 
 
 class TestImplication:
-    def test_implication_of_generic_entity(self, make_entity):
+    def test_implication_of_generic_entity(self):
         assert make_entity["motel_specific"] > make_entity["trees"]
 
-    def test_generic_entity_does_not_imply_specific_and_different(self, make_entity):
+    def test_generic_entity_does_not_imply_specific_and_different(self):
         assert not make_entity["motel_specific"] < make_entity["trees"]
 
-    def test_implication_same_except_generic(self, make_entity):
+    def test_implication_same_except_generic(self):
         assert make_entity["motel_specific"] > make_entity["motel"]
 
-    def test_generic_entity_does_not_imply_specific_and_same(self, make_entity):
+    def test_generic_entity_does_not_imply_specific_and_same(self):
         assert not make_entity["motel_specific"] < make_entity["motel"]
 
-    def test_same_entity_not_ge(self, make_entity):
+    def test_same_entity_not_ge(self):
         assert not make_entity["motel"] > make_entity["motel"]
 
-    def test_implication_subclass(self, make_entity):
+    def test_implication_subclass(self):
         assert make_entity["tree_search_specific"] >= make_entity["motel"]
         assert make_entity["tree_search"] > make_entity["motel"]
 
-    def test_plural_true(self, make_opinion_with_holding):
+    def test_plural_true(self):
         """
         holding_feist.json has an entity with the name "Rural's telephone listings"
         and "plural": true
@@ -122,10 +122,10 @@ class TestImplication:
 
 
 class TestContradiction:
-    def test_error_contradiction_with_non_factor(self, make_entity, make_predicate):
+    def test_error_contradiction_with_non_factor(self, make_predicate):
         with pytest.raises(TypeError):
             assert make_entity["trees"].contradicts(make_predicate["p3"])
 
-    def test_no_contradiction_of_other_factor(self, make_entity, watt_factor):
+    def test_no_contradiction_of_other_factor(self):
         assert not make_entity["trees"].contradicts(make_entity["watt"])
         assert not make_entity["trees"].contradicts(watt_factor["f1"])

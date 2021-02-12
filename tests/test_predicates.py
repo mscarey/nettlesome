@@ -175,10 +175,10 @@ class TestSameMeaning:
     def test_predicate_equality(self, make_predicate):
         assert make_predicate["p1"].means(make_predicate["p1_again"])
 
-    def test_predicate_inequality(self, make_predicate, watt_factor):
+    def test_predicate_inequality(self, make_predicate):
         assert not make_predicate["p2"].means(make_predicate["p2_reflexive"])
 
-    def test_error_predicate_means_fact(self, make_predicate, watt_factor):
+    def test_error_predicate_means_fact(self, make_predicate):
         with pytest.raises(TypeError):
             make_predicate["p2"].means(watt_factor["f2"])
 
@@ -207,7 +207,7 @@ class TestSameMeaning:
         )
         assert not make_predicate["murder_false"].means(make_predicate["murder"])
 
-    def test_predicate_does_not_mean_fact(self, make_predicate, watt_factor):
+    def test_predicate_does_not_mean_fact(self, make_predicate):
         with pytest.raises(TypeError):
             make_predicate["p8"].means(watt_factor["f8"])
 
@@ -281,7 +281,7 @@ class TestImplication:
         assert not make_predicate["p2_no_truth"] > make_predicate["p2"]
         assert make_predicate["p2"] > make_predicate["p2_no_truth"]
 
-    def test_error_predicate_imply_factor(self, make_predicate, watt_factor):
+    def test_error_predicate_imply_factor(self, make_predicate):
         with pytest.raises(TypeError):
             make_predicate["p7_true"] > (watt_factor["f7"])
 
@@ -327,7 +327,7 @@ class TestContradiction:
             make_predicate["quantity>=4"]
         )
 
-    def test_error_predicate_contradict_factor(self, make_predicate, watt_factor):
+    def test_error_predicate_contradict_factor(self, make_predicate):
         with pytest.raises(TypeError):
             make_predicate["p7_true"].contradicts(watt_factor["f7"])
 
