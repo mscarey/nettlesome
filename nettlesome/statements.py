@@ -52,7 +52,7 @@ class Statement(Term):
     def __init__(
         self,
         predicate: Union[Predicate, str],
-        terms: FactorSequence = FactorSequence(),
+        terms: Union[FactorSequence, Term, Sequence[Term]] = FactorSequence(),
         absent: bool = False,
         generic: bool = False,
     ):

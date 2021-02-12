@@ -64,12 +64,11 @@ class TestContextRegisters:
         Yields no context_register because the Term in f1 doesn't imply
         the Fact in f_relevant_murder.
         """
+        statement = Statement("$person was a defendant", terms=Term("Alice"))
+        complex_statement = make_complex_fact["relevant_murder"]
+        gen = statement._context_registers(complex_statement, operator.ge)
         with pytest.raises(StopIteration):
-            next(
-                watt_factor["f1"]._context_registers(
-                    make_complex_fact["relevant_murder"], operator.ge
-                )
-            )
+            next(gen)
 
     def test_context_register_valid(self, make_statement):
         expected = ContextRegister()
@@ -79,7 +78,8 @@ class TestContextRegisters:
                 make_statement["no_crime_entity_order"], operator.le
             )
         )
-        assert generated == expected
+        assert len(generated) == len(expected)
+        assert generated["<Alice>"].name == expected["<Alice>"].name
 
     def test_import_to_context_register(self, make_statement):
 

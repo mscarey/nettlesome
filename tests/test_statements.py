@@ -877,7 +877,7 @@ class TestConsistent:
 
     def test_contradictory_facts_about_same_entity(self):
         register = ContextRegister()
-        register.insert_pair[Term("Alice"), Term("Bob")]
+        register.insert_pair(Term("Alice"), Term("Bob"))
         assert not self.small.consistent_with(self.big, register)
         explanations = list(
             self.small.explanations_consistent_with(self.big, context=register)

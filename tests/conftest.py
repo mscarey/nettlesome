@@ -39,12 +39,6 @@ def make_predicate() -> Dict[str, Predicate]:
         "irrelevant_1": Predicate("$person was a bear"),
         "irrelevant_2": Predicate("$place was a circus"),
         "irrelevant_3": Predicate("$person performed at $place"),
-    }
-
-
-@pytest.fixture(scope="class")
-def make_comparison() -> Dict[str, Predicate]:
-    return {
         "small_weight": Comparison(
             "the amount of gold $person possessed was",
             sign=">=",
@@ -62,7 +56,7 @@ def make_comparison() -> Dict[str, Predicate]:
 
 
 @pytest.fixture(scope="class")
-def make_statement(make_predicate, make_entity) -> Dict[str, Statement]:
+def make_statement(make_predicate) -> Dict[str, Statement]:
     p = make_predicate
 
     return {
@@ -90,8 +84,10 @@ def make_statement(make_predicate, make_entity) -> Dict[str, Statement]:
         "shooting_self": Statement(p["shooting_self"], terms=[Term("Alice")]),
         "shooting_craig": Statement(p["shooting"], [Term("Craig"), Term("Dan")]),
         "shooting_entity_order": Statement(p["shooting"], [Term("Bob"), Term("Alice")]),
-        "no_shooting": Statement(p["no_shooting"]),
-        "shooting_whether": Statement(p["shooting_whether"]),
+        "no_shooting": Statement(p["no_shooting"], terms=[Term("Alice"), Term("Bob")]),
+        "shooting_whether": Statement(
+            p["shooting_whether"], terms=[Term("Alice"), Term("Bob")]
+        ),
         "no_shooting_entity_order": Statement(
             p["no_shooting"], [Term("Bob"), Term("Alice")]
         ),
@@ -119,7 +115,7 @@ def make_statement(make_predicate, make_entity) -> Dict[str, Statement]:
 
 
 @pytest.fixture(scope="class")
-def make_complex_fact(make_predicate, make_factor) -> Dict[str, Statement]:
+def make_complex_fact(make_predicate, make_statement) -> Dict[str, Statement]:
     p = make_predicate
     f = make_statement
 

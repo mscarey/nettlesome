@@ -519,7 +519,7 @@ class Comparison(Predicate):
             a Python number object or a :class:`pint.Quantity`
             object created with :class:`pint.UnitRegistry`.
         """
-        if isinstance(value, (int, float, ureg.Quantity, date)):
+        if isinstance(value, (int, float, Quantity, date)):
             return value
         quantity = value.strip()
 

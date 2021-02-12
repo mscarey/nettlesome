@@ -233,19 +233,19 @@ class TestConsistent:
     def test_group_contradicts_single_factor(self):
         group = ComparableGroup([self.slower_specific_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair[Term("the car"), Term("the pickup"))
+        register.insert_pair(Term("the car"), Term("the pickup"))
         assert group.contradicts(self.faster_statement, context=register)
 
     def test_one_statement_does_not_contradict_group(self):
         group = ComparableGroup([self.slower_general_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair[Term("the pickup"), Term("the pickup"))
+        register.insert_pair(Term("the pickup"), Term("the pickup"))
         assert not self.faster_statement.contradicts(group, context=register)
 
     def test_group_inconsistent_with_single_factor(self):
         group = ComparableGroup([self.slower_specific_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair[Term("the car"), Term("the pickup"))
+        register.insert_pair(Term("the car"), Term("the pickup"))
         assert not group.consistent_with(self.faster_statement, context=register)
         assert not consistent_with(group, self.faster_statement, context=register)
 
@@ -258,19 +258,19 @@ class TestConsistent:
     def test_group_inconsistent_with_one_statement(self):
         group = ComparableGroup([self.slower_specific_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair[Term("the car"), Term("the pickup"))
+        register.insert_pair(Term("the car"), Term("the pickup"))
         assert not group.consistent_with(self.faster_statement, context=register)
 
     def test_one_statement_inconsistent_with_group(self):
         group = ComparableGroup([self.slower_specific_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair[Term("the pickup"), Term("the car"))
+        register.insert_pair(Term("the pickup"), Term("the car"))
         assert not self.faster_statement.consistent_with(group, context=register)
 
     def test_one_statement_consistent_with_group(self):
         group = ComparableGroup([self.slower_general_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair[Term("the pickup"), Term("the pickup"))
+        register.insert_pair(Term("the pickup"), Term("the pickup"))
         assert self.faster_statement.consistent_with(group, context=register)
 
     def test_no_contradiction_of_none(self):
