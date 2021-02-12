@@ -1,0 +1,6 @@
+pint>=0.15
+python-slugify
+sphinx>=2.1.2
+sphinx-autodoc-typehints
+sphinx-rtd-theme
+-e .

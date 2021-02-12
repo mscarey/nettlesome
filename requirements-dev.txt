@@ -1,0 +1,16 @@
+black
+coveralls
+doc8
+flake8-comprehensions
+ipykernel
+mypy
+pydocstyle
+pytest-cov
+pytest-profiling
+pytest>=6.0.0
+rope
+setuptools
+sphinx-autodoc-typehints
+sphinx>=2.1.2
+twine
+wheel
