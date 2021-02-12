@@ -24,12 +24,10 @@ class TestContext:
         assert Term("the bull").short_string in next(answers).keys()
 
     def test_explain_consistency(self):
-        fact_al = read_fact(self.al)
-        fact_alice = read_fact(self.alice)
         register = ContextRegister()
         register.insert_pair(Term("Al"), Term("Alice"))
-        answers = fact_al.explain_consistent_with(fact_alice, register)
+        answers = self.fact_al.explain_consistent_with(self.fact_alice, register)
         explanation = Explanation(
-            factor_matches=[(fact_al, fact_alice)], context=answers
+            factor_matches=[(self.fact_al, self.fact_alice)], context=answers
         )
         assert "<the bull> is like <the cow>" in explanation.reason

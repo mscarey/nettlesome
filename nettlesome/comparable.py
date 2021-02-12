@@ -610,12 +610,12 @@ class Comparable(ABC):
         """
 
         if self.generic:
-            return {str(self): self}
+            return {self.short_string: self}
         generics: Dict[str, Comparable] = {}
         for factor in self.terms:
             if factor is not None:
                 for generic in factor.generic_factors():
-                    generics[str(generic)] = generic
+                    generics[generic.short_string] = generic
         return generics
 
     def get_factor(self, query: str) -> Optional[Comparable]:
@@ -846,12 +846,12 @@ class Comparable(ABC):
         unused_self = [
             factor
             for factor in self.generic_factors()
-            if str(factor) not in context.matches.keys()
+            if factor.short_string not in context.matches.keys()
         ]
         unused_other = [
             factor
             for factor in other.generic_factors()
-            if str(factor) not in context.reverse_matches.keys()
+            if factor.short_string not in context.reverse_matches.keys()
         ]
         if not (unused_self and unused_other):
             yield context

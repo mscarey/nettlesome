@@ -36,7 +36,7 @@ class Explanation:
         """Make statement matching analagous context factors of self and other."""
 
         similies = [
-            f'{key} {"are" if (key.plural) else "is"} like {value}'
+            f'{key.short_string} {"are" if (key.plural) else "is"} like {value.short_string}'
             for key, value in self.context.factor_pairs()
         ]
         if len(similies) > 1:
