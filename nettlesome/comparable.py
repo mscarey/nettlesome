@@ -352,7 +352,7 @@ class Comparable(ABC):
             yield context
         elif self.generic or other.generic:
             if context.get(self.short_string) is None or (
-                context.get(self.short_string).means(other)
+                context.get(self.short_string).short_string == (other.short_string)
             ):
                 yield self.generic_register(other)
         else:
@@ -1109,7 +1109,8 @@ class ContextRegister:
                     return None
                 key_as_factor = incoming_mapping.get_reverse_factor(in_value)
                 self_mapping.insert_pair(key_as_factor, in_value)
-                if list(self_mapping.values()).count(in_value) > 1:
+                values_as_keys = [v.short_string for v in self_mapping.values()]
+                if values_as_keys.count(in_value.short_string) > 1:
                     logger.debug("%s assigned to two different keys", in_value)
                     return None
         return self_mapping
