@@ -103,7 +103,7 @@ def new_context_helper(func: Callable):
         )
 
         for old, new in expanded_changes.items():
-            if str(factor) == old or factor.__dict__.get("name") == old:
+            if factor.short_string == old or factor.__dict__.get("name") == old:
                 return new
 
         return func(factor, expanded_changes)
@@ -203,7 +203,7 @@ class Comparable(ABC):
             a :class:`dict` (instead of a :class:`set`,
             to preserve order) of :class:`Factor`\s.
         """
-        answers: Dict[str, Comparable] = {str(self): self}
+        answers: Dict[str, Comparable] = {self.short_string: self}
         for context in self.terms:
             if isinstance(context, Iterable):
                 for item in context:
@@ -1099,9 +1099,9 @@ class ContextRegister:
         for in_key, in_value in incoming_mapping.matches.items():
 
             if in_value:
-                if self_mapping.get(in_key) and not self_mapping[in_key].means(
-                    in_value
-                ):
+                if self_mapping.get(in_key) and not self_mapping[
+                    in_key
+                ].short_string == (in_value.short_string):
                     logger.debug(
                         f"{in_key} already in mapping with value "
                         + f"{self_mapping.matches[in_key]}, not {in_value}"

@@ -115,7 +115,7 @@ class TestStatements:
         shot = Statement(predicate_shot, terms=[Term("Alice"), Term("Bob")])
         told = Statement(predicate_told, terms=[Term("Henry"), Term("Jenna"), shot])
         factors = told.recursive_factors
-        assert factors["<Alice>"] == Term("Alice")
+        assert factors["<Alice>"].name == "Alice"
 
     def test_new_concrete_context(self):
         """
@@ -943,4 +943,4 @@ class TestAddition:
     def test_union_uses_terms_from_left(self):
         new = self.general_fact | self.specific_fact
         assert new.means(self.specific_fact)
-        assert new.terms[0] == Term("the car")
+        assert new.terms[0].name == "the car"
