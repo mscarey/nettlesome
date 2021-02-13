@@ -3,6 +3,7 @@ import operator
 
 import pytest
 
+from nettlesome.predicates import Predicate
 from nettlesome.terms import Term
 from nettlesome.statements import Statement
 
@@ -90,10 +91,10 @@ class TestImplication:
 
 
 class TestContradiction:
-    def test_error_contradiction_with_non_factor(self, make_predicate):
+    def test_error_contradiction_with_non_factor(self):
         with pytest.raises(TypeError):
-            assert make_entity["trees"].contradicts(make_predicate["p3"])
+            assert Term("Al").contradicts(Predicate("any text"))
 
-    def test_no_contradiction_of_other_factor(self):
-        assert not make_entity["trees"].contradicts(make_entity["watt"])
-        assert not make_entity["trees"].contradicts(watt_factor["f1"])
+    def test_no_contradiction_of_other_entity(self):
+        assert not Term("Al").contradicts(Term("Ed"))
+        assert not Term("Al").contradicts(Statement("any text"))

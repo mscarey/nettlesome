@@ -71,6 +71,8 @@ def make_statement(make_predicate) -> Dict[str, Statement]:
             p["irrelevant_3"], [Term("Craig"), Term("Alice")]
         ),
         "crime": Statement(p["crime"], Term("Alice")),
+        "crime_generic": Statement(p["crime"], Term("Alice"), generic=True),
+        "crime_specific_person": Statement(p["crime"], Term("Alice", generic=False)),
         "no_crime": Statement(p["no_crime"], Term("Alice")),
         "no_crime_entity_order": Statement(p["no_crime"], [Term("Bob")]),
         "murder": Statement(p["murder"], terms=[Term("Alice"), Term("Bob")]),

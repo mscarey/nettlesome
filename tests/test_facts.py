@@ -10,101 +10,55 @@ from nettlesome.statements import Statement
 
 
 class TestFacts:
-    def test_default_terms_for_fact(self, make_predicate, watt_mentioned):
-        e = make_entity
-        f1 = Statement(make_predicate["p1"], case_factors=watt_mentioned)
-        assert f1.terms == (e["motel"],)
+    def test_default_terms_for_fact(self, make_predicate):
+        f1 = Statement(make_predicate["shooting"], terms=[Term("Al"), Term("Ed")])
+        assert f1.terms[0].short_string == Term("Al").short_string
 
-    def test_Statement(self, make_predicate, watt_mentioned):
-        """
-        Check that terms is created as a (hashable) tuple, not list
-        """
-        shooting = Statement(
-            make_predicate["shooting"],
-            (2, 3),
-            case_factors=watt_mentioned,
-            standard_of_proof="preponderance of evidence",
+    def test_brackets_around_generic_terms(self, make_predicate):
+        statement = Statement(
+            make_predicate["shooting"], terms=[Term("Al"), Term("Ed")]
         )
-        assert isinstance(shooting.terms, tuple)
-
-    def test_terms_from_case_factor_indices(self, make_predicate, watt_mentioned):
-        """
-        If you pass in integers instead of Factor objects to fill the blanks
-        in the Predicate (which was the only way to do things in the first
-        version of the Fact class's __init__ method), then the integers
-        you pass in should be used as indices to select Factor objects
-        from case_factors.
-        """
-
-        e = make_entity
-
-        f2 = Statement(
-            make_predicate["p2"], indices=(1, 0), case_factors=watt_mentioned
+        assert "<Al> shot <Ed>" in str(statement)
+        absent = Statement(
+            make_predicate["shooting"], terms=[Term("Al"), Term("Ed")], absent=True
         )
-        assert f2.terms == (e["watt"], e["motel"])
-
-    def test_correct_factors_from_indices_in_Statement(
-        self, make_predicate, watt_mentioned
-    ):
-        e = make_entity
-        f2 = Statement(
-            make_predicate["p2"],
-            indices=(1, 2),
-            case_factors=watt_mentioned,
-        )
-        assert f2.terms == (e["watt"], e["trees"])
-
-    def test_wrong_type_in_terms_in_init(self, make_predicate, watt_mentioned):
-        e = make_entity
-        with pytest.raises(TypeError):
-            f2 = Statement(
-                make_predicate["p1"],
-                indices=("nonsense"),
-                case_factors=watt_mentioned,
-            )
-
-    def test_invalid_index_for_case_factors_in_init(self, make_predicate):
-        with pytest.raises(IndexError):
-            _ = Statement(
-                make_predicate["p1"],
-                indices=2,
-                case_factors=make_entity["watt"],
-            )
-
-    def test_convert_int_terms_to_tuple(self, make_predicate, watt_mentioned):
-        f = Statement(make_predicate["irrelevant_1"], 3, case_factors=watt_mentioned)
-        assert f.terms == (watt_mentioned[3],)
-
-    def test_string_representation_of_factor(self):
-        assert "<Hideaway Lodge> was a motel" in str(watt_factor["f1"])
-        assert "absence of the fact" in str(watt_factor["f3_absent"]).lower()
+        assert "absence of the statement" in str(absent).lower()
 
     def test_string_no_truth_value(self):
-        factor = watt_factor["f2_no_truth"]
+        factor = Predicate("things happened", truth=None)
         assert "whether" in str(factor)
 
-    def test_repeating_entity_string(self, make_factor):
-        """I'm not convinced that a model of a Fact ever needs to include
-        multiple references to the same Term just because the name of the
-        Term appears more than once in the Predicate."""
-        f = make_factor
+    def test_repeating_entity_string(self):
+        three_entities = Predicate("$planner told $intermediary to hire $shooter")
+        statement_3 = Statement(
+            three_entities, terms=[Term("Al"), Term("Bob"), Term("Cid")]
+        )
+        two_entities = Predicate("$shooter told $intermediary to hire $shooter")
+        statement_2 = Statement(two_entities, terms=[Term("Al"), Term("Bob")])
         assert (
-            "Fact that <Alice> told <Bob> to hire <Craig>".lower()
-            in str(f["three_entities"]).lower()
+            "statement that <Al> told <Bob> to hire <Cid>".lower()
+            in str(statement_3).lower()
         )
         assert (
-            "Fact that <Alice> told <Bob> to hire <Alice>".lower()
-            in str(f["repeating_entity"]).lower()
+            "statement that <Al> told <Bob> to hire <Al>".lower()
+            in str(statement_2).lower()
         )
 
     def test_string_representation_with_concrete_entities(self):
         """
-        "Hideaway Lodge" is still a string representation of an Term
+        "Al" is still a string representation of an Term
         object, but it's not in angle brackets because it can't be
         replaced by another Term object without changing the meaning
-        of the Fact.
+        of the Statement.
         """
-        assert "Hideaway Lodge was a motel" in str(watt_factor["f1_specific"])
+        three_entities = Predicate("$planner told $intermediary to hire $shooter")
+        statement_3 = Statement(
+            three_entities, terms=[Term("Al", generic=False), Term("Bob"), Term("Cid")]
+        )
+        assert (
+            "statement that Al told <Bob> to hire <Cid>".lower()
+            in str(statement_3).lower()
+        )
 
     def test_string_for_fact_with_identical_terms(self):
         devon = Term("Devon", generic=True)
@@ -117,163 +71,101 @@ class TestFacts:
             opened_account
         )
 
-    def test_str_with_concrete_context(self):
-        holding = list(make_opinion_with_holding["cardenas_majority"].holdings)[1]
-        longer_str = holding.inputs[0].str_with_concrete_context
-        assert "the Exhibit in the FORM testimony" in longer_str
-        assert "the Exhibit in the FORM testimony" not in str(holding.inputs[0])
-
-    def test_complex_fact_no_line_break_in_predicate(self):
-        """
-        Tests that the string representation of this Holding's only input
-        Fact does not contain indented new lines, except in the "SPECIFIC
-        CONTEXT" part, if present.
-
-        The representation of the Exhibit mentioned in the Fact should
-        not introduce any indented lines inside the Fact's string.
-        """
-        holding = list(make_opinion_with_holding["cardenas_majority"].holdings)[1]
-        fact_text = str(holding.inputs[0])
-        if "SPECIFIC CONTEXT" in fact_text:
-            fact_text = fact_text.split("SPECIFIC CONTEXT")[0].strip()
-        assert "\n  " not in fact_text
-
     def test_new_context_replace_fact(self):
         changes = ContextRegister.from_lists(
-            [make_entity["watt"]["f2"]],
-            [Term("Darth Vader")["f10"]],
+            [Term("Death Star 3"), Term("Kylo Ren")],
+            [Term("Death Star 1"), Term("Darth Vader")],
         )
-        assert "was within the curtilage of <Hideaway Lodge>" in (
-            watt_factor["f2"].new_context(changes).short_string
+        statement = Statement(
+            "$person blew up a planet with $weapon",
+            terms=[Term("Kylo Ren"), Term("Death Star 3")],
         )
+        new = statement.new_context(changes)
 
-    def test_get_factor_from_recursive_search(self):
-        holding_list = list(make_opinion_with_holding["cardenas_majority"].holdings)
-        factor_list = list(holding_list[0].recursive_factors.values())
-        assert any(
-            factor == Term("parole officer") and factor.name == "parole officer"
-            for factor in factor_list
-        )
+        assert "<Darth Vader> blew up" in new.short_string
 
-    def test_new_context_from_factor(self):
-        different = watt_factor["f1"].new_context(Term("Great Northern", generic=False))
-        assert "Great Northern was a motel" in str(different)
+    def test_get_factor_from_recursive_search(self, make_complex_fact):
+        complex = make_complex_fact["relevant_murder"]
+        factor_list = list(complex.recursive_factors.values())
+        assert any(factor.name == "Alice" for factor in factor_list)
 
-    def test_new_concrete_context(self):
-        register = ContextRegister.from_lists(
-            keys=[make_entity["watt"]["motel"]],
-            values=[Term("Darth Vader"), Term("Death Star")],
-        )
-        different = watt_factor["f2"].new_context(register)
-        assert "<Darth Vader> operated" in str(different)
+    def test_new_context_from_factor(self, make_statement):
+        crime = make_statement["crime"]
+        different = crime.new_context(Term("Greg", generic=False))
+        assert "Greg committed a crime" in str(different)
 
-    def test_type_of_terms(self):
-        assert isinstance(watt_factor["f1"].terms, FactorSequence)
+    def test_type_of_terms(self, make_statement):
+        assert isinstance(make_statement["crime"].terms, FactorSequence)
 
-    def test_concrete_to_abstract(self, make_predicate):
-        motel = make_entity["motel_specific"]
-        d = make_entity["watt"]
-        fact = Statement(predicate=make_predicate["p2"], terms=(d, motel))
-        assert "<Wattenburg> operated and lived at Hideaway Lodge" in str(fact)
-        assert "<Wattenburg> operated and lived at Hideaway Lodge>" in str(
-            fact.make_generic()
+    def test_concrete_to_abstract(self, make_statement):
+        assert (
+            "<the Statement that <Alice> committed a crime>".lower()
+            in str(make_statement["crime"].make_generic()).lower()
         )
 
-    def test_entity_slots_as_length_of_factor(self):
-        assert len(watt_factor["f1"].predicate) == 1
-        assert len(watt_factor["f1"]) == 1
+    def test_entity_slots_as_length_of_factor(self, make_statement):
+        assert len(make_statement["crime"].predicate) == 1
+        assert len(make_statement["crime"]) == 1
 
-    def test_predicate_with_entities(self):
-        assert "<Hideaway Lodge> was a motel" in watt_factor[
-            "f1"
-        ].predicate.content_with_terms((make_entity["motel"]))
+    def test_predicate_with_entities(self, make_statement):
+        content = make_statement["crime"].predicate.content_with_terms([Term("Jim")])
+        assert "<Jim> committed" in content
 
-    def test_factor_terms_do_not_match_predicate(self, make_predicate, watt_mentioned):
-        """
-        make_predicate["p1"] has only one slot for context factors, but
-        this tells it to look for three.
-        """
+    def test_reciprocal_with_wrong_number_of_entities(self, make_statement):
         with pytest.raises(ValueError):
-            _ = Statement(make_predicate["p1"], (0, 1, 2), case_factors=watt_mentioned)
-
-    def test_reciprocal_with_wrong_number_of_entities(self):
-        with pytest.raises(ValueError):
-            watt_factor["f1"].predicate.content_with_terms(
-                (make_entity["motel"]["watt"])
+            make_statement["crime"].predicate.content_with_terms(
+                (Term("Al"), Term("Ben"))
             )
-
-    def test_entity_and_human_in_predicate(self):
-        assert "<Wattenburg> operated and lived at <Hideaway Lodge>" in watt_factor[
-            "f2"
-        ].predicate.content_with_terms((make_entity["watt"]["motel"]))
-
-    def test_standard_of_proof_must_be_listed(self, make_predicate, watt_mentioned):
-        with pytest.raises(ValueError):
-            _ = Statement(
-                make_predicate["p2"],
-                case_factors=watt_mentioned,
-                standard_of_proof="probably so",
-            )
-
-    def test_standard_of_proof_in_str(self):
-        factor = watt_factor["f2_preponderance_of_evidence"]
-        assert factor.standard_of_proof in factor.short_string
-
-    def test_case_factors_deleted_from_fact(self):
-        """This attribute should have been deleted during Fact.__post_init__"""
-        predicate = Predicate("some things happened")
-        factor = Statement(predicate)
-        assert not hasattr(factor, "case_factors")
-
-    def test_repeated_placeholder_in_fact(self):
-        holding = make_opinion_with_holding["lotus_majority"].holdings[9]
-        fact = holding.inputs[1]
-        assert fact.short_string == (
-            "the fact it was false that the precise formulation "
-            "of <Lotus 1-2-3>'s code was necessary for <Lotus 1-2-3> to work"
-        )
-        assert len(fact.terms) == 1
 
 
 class TestSameMeaning:
-    def test_equality_factor_from_same_predicate(self):
-        assert watt_factor["f1"].means(watt_factor["f1b"])
+    def test_equality_factor_from_same_predicate(self, make_statement):
+        assert make_statement["crime"].means(make_statement["crime"])
 
-    def test_equality_factor_from_equal_predicate(self):
-        assert watt_factor["f1"].means(watt_factor["f1c"])
+    def test_equality_because_factors_are_generic_entities(self, make_statement):
+        assert make_statement["murder"].means(make_statement["murder_entity_order"])
 
-    def test_equality_because_factors_are_generic_entities(self):
-        assert watt_factor["f1"].means(watt_factor["f1_different_entity"])
-
-    def test_unequal_because_a_factor_is_not_generic(self):
-        assert not watt_factor["f9_swap_entities_4"].means(watt_factor["f9"])
+    def test_unequal_because_a_factor_is_not_generic(self, make_statement):
+        assert not make_statement["crime"].means(
+            make_statement["crime_specific_person"]
+        )
 
     def test_generic_factors_equal(self):
-        assert watt_factor["f2_generic"].means(watt_factor["f2_false_generic"])
-        assert watt_factor["f2_generic"].means(watt_factor["f3_generic"])
-
-    def test_equal_referencing_diffent_generic_factors(self, make_factor):
-        assert make_factor["murder"].means(make_factor["murder_craig"])
+        generic = Statement("something happened", generic=True)
+        generic_false = Statement(
+            Predicate("something happened", truth=False), generic=True
+        )
+        assert generic.means(generic_false)
+        assert generic_false.means(generic)
 
     def test_generic_and_specific_factors_unequal(self):
-        assert not watt_factor["f2"].means(watt_factor["f2_generic"])
+        generic = Statement("something happened", generic=True)
+        specific = Statement("something happened", generic=False)
+        assert not generic.means(specific)
 
-    def test_factor_reciprocal_unequal(self):
-        assert not watt_factor["f2"].means(watt_factor["f2_reflexive"])
+    def test_factor_reciprocal_unequal(self, make_predicate):
 
-    def test_factor_different_predicate_truth_unequal(self):
-        assert not watt_factor["f7"].means(watt_factor["f7_opposite"])
+        left = Statement(make_predicate["shooting"], terms=[Term("Al"), Term("Bo")])
+        right = Statement(make_predicate["shooting"], terms=[Term("Al"), Term("Al")])
+        assert not left.means(right)
 
-    def test_unequal_because_one_factor_is_absent(self):
-        assert not watt_factor["f8"].means(watt_factor["f8_absent"])
+    def test_factor_different_predicate_truth_unequal(self, make_statement):
+        assert not make_statement["shooting"].means(make_statement["murder"])
 
-    def test_copies_of_identical_factor(self, make_factor):
+    def test_unequal_because_one_factor_is_absent(self, make_predicate):
+        left = Statement(make_predicate["shooting"], terms=[Term("Al"), Term("Bo")])
+        right = Statement(
+            make_predicate["shooting"], terms=[Term("Al"), Term("Al")], absent=True
+        )
+        assert not left.means(right)
+
+    def test_copies_of_identical_factor(self, make_statement):
         """
         Even if the two factors have different entity markers in self.terms,
         I expect them to evaluate equal because the choice of entity markers is
         arbitrary.
         """
-        f = make_factor
+        f = make_statement
         assert f["irrelevant_3"].means(f["irrelevant_3"])
         assert f["irrelevant_3"].means(f["irrelevant_3_new_context"])
 
@@ -281,13 +173,6 @@ class TestSameMeaning:
         assert make_complex_fact["relevant_murder"].means(
             make_complex_fact["relevant_murder_craig"]
         )
-
-    def test_reciprocal_context_register(self):
-        """
-        This test describes two objects with the same meaning that have been
-        made in two different ways, each with a different id and repr.
-        """
-        assert watt_factor["f7"].means(watt_factor["f7_swap_entities"])
 
     def test_interchangeable_concrete_terms(self):
         """Detect that placeholders differing only by a final digit are interchangeable."""
@@ -305,24 +190,13 @@ class TestSameMeaning:
 
         assert ann_and_bob_were_family.means(bob_and_ann_were_family)
 
-    def test_unequal_due_to_repeating_entity(self, make_factor):
+    def test_unequal_due_to_repeating_entity(self, make_statement):
         """I'm not convinced that a model of a Fact ever needs to include
         multiple references to the same Term just because the name of the
         Term appears more than once in the Predicate."""
-        f = make_factor
+        f = make_statement
         assert not f["three_entities"].means(f["repeating_entity"])
         assert f["three_entities"].explain_same_meaning(f["repeating_entity"]) is None
-
-    def test_unequal_to_enactment(self, e_copyright):
-        assert not watt_factor["f1"].means(e_copyright)
-        with pytest.raises(TypeError):
-            e_copyright.means(watt_factor["f1"])
-
-    def test_standard_of_proof_inequality(self):
-
-        f = watt_factor
-        assert not f["f2_clear_and_convincing"].means(f["f2_preponderance_of_evidence"])
-        assert not f["f2_clear_and_convincing"].means(f["f2"])
 
     def test_means_despite_plural(self):
         directory = Term("Rural's telephone directory", plural=False)
@@ -333,42 +207,35 @@ class TestSameMeaning:
         listings_original = Statement(Predicate("$thing were original"), terms=listings)
         assert directory_original.means(listings_original)
 
-    def test_same_meaning_no_terms(self, make_factor):
-        assert make_factor["no_context"].means(make_factor["no_context"])
+    def test_same_meaning_no_terms(self, make_statement):
+        assert make_statement["no_context"].means(make_statement["no_context"])
 
 
 class TestImplication:
-    def test_fact_implies_none(self):
-        assert watt_factor["f1"].implies(None)
+    def test_fact_implies_none(self, make_statement):
+        assert make_statement["crime"].implies(None)
 
-    def test_no_implication_of_rule(self, make_rule):
-        assert not watt_factor["f1"].implies(make_rule["h1"])
+    def test_specific_factor_implies_generic(self, make_statement):
+        assert make_statement["crime"] > make_statement["crime_generic"]
+        assert not make_statement["crime_generic"] > make_statement["crime"]
 
-    def test_fact_does_not_imply_holding(self, make_holding):
-        assert not watt_factor["f1"].implies(make_holding["h1"])
+    def test_specific_factor_implies_generic_explain(self, make_statement):
+        answer = make_statement["crime"].explain_implication(
+            make_statement["crime_generic"]
+        )
+        assert answer[str(make_statement["crime"])] == make_statement["crime_generic"]
 
-    def test_specific_factor_implies_generic(self):
-        assert watt_factor["f2"] > watt_factor["f2_generic"]
-        assert not watt_factor["f2_generic"] > watt_factor["f2"]
+    def test_specific_implies_generic_form_of_another_fact(self, make_statement):
+        assert make_statement["murder"] > make_statement["crime_generic"]
 
-    def test_specific_factor_implies_generic_explain(self):
-        answer = watt_factor["f2"].explain_implication(watt_factor["f2_generic"])
-        assert (
-            str(watt_factor["f2"]),
-            watt_factor["f2_generic"],
-        ) in answer.items()
+    def test_specific_fact_does_not_imply_generic_entity(self, make_statement):
+        assert not make_statement["crime"] > Term("Bob")
 
-    def test_specific_implies_generic_form_of_another_fact(self):
-        assert watt_factor["f2"] > watt_factor["f3_generic"]
-
-    def test_specific_fact_does_not_imply_generic_entity(self):
-        assert not watt_factor["f2"] > make_entity["motel"]
-
-    def test_factor_does_not_imply_predicate(self, make_predicate):
+    def test_factor_does_not_imply_predicate(self, make_statement, make_predicate):
         with pytest.raises(TypeError):
-            assert not watt_factor["f8_meters"] > make_predicate["p8"]
+            assert not make_statement["crime"] > make_predicate["crime"]
 
-    def test_factor_implies_because_of_quantity(self):
+    def test_factor_implies_because_of_quantity(self, make_statement):
         assert watt_factor["f8_meters"] > watt_factor["f8"]
         assert watt_factor["f8_higher_int"] > watt_factor["f8_float"]
         assert watt_factor["f8_int"] < watt_factor["f8_higher_int"]
@@ -380,10 +247,6 @@ class TestImplication:
     def test_comparison_implies_no_truth_value(self):
         assert watt_factor["f8"] > watt_factor["f8_no_truth"]
         assert not watt_factor["f8_no_truth"] > watt_factor["f8"]
-
-    def test_implication_standard_of_proof(self, make_factor):
-        assert not make_factor["shooting_craig_poe"] > make_factor["shooting_craig_brd"]
-        assert make_factor["shooting_craig_brd"] > make_factor["shooting_craig_poe"]
 
     def test_factor_implies_because_of_exact_quantity(self):
         assert watt_factor["f8_exact"] > watt_factor["f7"]
@@ -401,16 +264,6 @@ class TestImplication:
         assert f["f7"] >= f["f7"]
         assert f["f7"] <= f["f7"]
         assert not f["f7"] > f["f7"]
-
-    def test_standard_of_proof_comparison(self):
-        f = watt_factor
-        assert f["f2_clear_and_convincing"].implies(f["f2_preponderance_of_evidence"])
-        assert f["f2_beyond_reasonable_doubt"] >= f["f2_clear_and_convincing"]
-
-    def test_no_implication_between_factors_with_and_without_standards(self):
-        f = watt_factor
-        assert not f["f2_clear_and_convincing"] > f["f2"]
-        assert not f["f2"] > f["f2_preponderance_of_evidence"]
 
     def test_implication_complex(self, make_complex_fact):
         assert (
@@ -608,7 +461,7 @@ class TestContradiction:
         register.insert_pair(alice, alice)
         assert not alice_rich.contradicts(bob_poor, context=register)
 
-    def test_copy_with_foreign_context(self, watt_mentioned):
+    def test_copy_with_foreign_context(self):
         w = watt_mentioned
         assert (
             watt_factor["f1"]
@@ -616,9 +469,9 @@ class TestContradiction:
             .means(watt_factor["f1_different_entity"])
         )
 
-    def test_check_entity_consistency_true(self, make_factor):
-        left = make_factor["irrelevant_3"]
-        right = make_factor["irrelevant_3_new_context"]
+    def test_check_entity_consistency_true(self, make_statement):
+        left = make_statement["irrelevant_3"]
+        right = make_statement["irrelevant_3_new_context"]
         e = make_entity
         easy_register = ContextRegister.from_lists([e["dan"]], [e["craig"]])
         easy_update = left.update_context_register(
@@ -636,31 +489,33 @@ class TestContradiction:
         assert any(register is not None for register in easy_update)
         assert any(register is not None for register in harder_update)
 
-    def test_check_entity_consistency_false(self, make_factor):
+    def test_check_entity_consistency_false(self, make_statement):
         context = ContextRegister()
         context.insert_pair(make_entity["circus"]["alice"])
-        update = make_factor["irrelevant_3"].update_context_register(
-            make_factor["irrelevant_3_new_context"], comparison=means, context=context
+        update = make_statement["irrelevant_3"].update_context_register(
+            make_statement["irrelevant_3_new_context"],
+            comparison=means,
+            context=context,
         )
         assert not any(register is not None for register in update)
 
-    def test_entity_consistency_identity_not_equality(self, make_factor):
+    def test_entity_consistency_identity_not_equality(self, make_statement):
 
         register = ContextRegister()
         register.insert_pair(make_entity["dan"]["dan"])
-        update = make_factor["irrelevant_3"].update_context_register(
-            make_factor["irrelevant_3_new_context"],
+        update = make_statement["irrelevant_3"].update_context_register(
+            make_statement["irrelevant_3_new_context"],
             context=register,
             comparison=means,
         )
         assert not any(register is not None for register in update)
 
-    def test_check_entity_consistency_type_error(self, make_factor, make_predicate):
+    def test_check_entity_consistency_type_error(self, make_statement, make_predicate):
         """
         There would be no TypeError if it used "means"
         instead of .gt. The comparison would just return False.
         """
-        update = make_factor["irrelevant_3"].update_context_register(
+        update = make_statement["irrelevant_3"].update_context_register(
             make_predicate["p2"],
             {str(make_entity["dan"]): make_entity["dan"]},
             operator.gt,
@@ -705,12 +560,12 @@ class TestAddition:
             ),
         ],
     )
-    def test_addition(self, make_factor, left, right, expected):
-        answer = make_factor[left] + make_factor[right]
-        assert answer.means(make_factor[expected])
+    def test_addition(self, make_statement, left, right, expected):
+        answer = make_statement[left] + make_statement[right]
+        assert answer.means(make_statement[expected])
 
-    def test_add_unrelated_factors(self, make_factor):
-        assert make_factor["murder"] + make_factor["crime"] is None
+    def test_add_unrelated_factors(self, make_statement):
+        assert make_statement["murder"] + make_statement["crime"] is None
 
     def test_cant_add_enactment_to_fact(self, e_search_clause):
         with pytest.raises(TypeError):

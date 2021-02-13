@@ -843,7 +843,7 @@ class TestContradiction:
         update = left.update_context_register(right, register, comparison=means)
         assert not any(register is not None for register in update)
 
-    def test_check_entity_consistency_type_error(self, make_factor, make_predicate):
+    def test_check_entity_consistency_type_error(self, make_statement, make_predicate):
         """
         There would be no TypeError if it used "means"
         instead of .gt. The comparison would just return False.
