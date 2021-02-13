@@ -9,57 +9,40 @@ from nettlesome.statements import Statement
 
 class TestMakeEntities:
     def test_conversion_to_generic(self):
-        e = make_entity
-        assert e["motel_specific"].make_generic() == e["motel"]
-
-    def test_repr_equal_after_make_generic(self):
-        """
-        see the docstring for :meth:`Factor._import_to_mapping`
-        for an explanation of what led to __repr__s being
-        compared for equality instead of the underlying objects.
-        """
-        e = make_entity
-        motel = e["motel"]
-        motel_b = motel.make_generic()
-        assert repr(motel) == repr(motel_b)
+        jon = Term("Jon Doe", generic=False)
+        generic = jon.make_generic()
+        assert generic.generic is True
 
     def test_context_register(self):
         """
         There will be a match because both object are :class:`.Term`.
         """
-        motel = make_entity["motel"]
-        watt = make_entity["watt"]
-        update = motel._context_register(watt, operator.ge)
+        left = Term("peanut butter")
+        right = Term("jelly")
+        update = left._context_registers(right, operator.ge)
         assert any(register is not None for register in update)
 
-        update = motel._context_register(watt, operator.le)
+        update = left._context_registers(right, operator.le)
         expected = ContextRegister()
-        expected.insert_pair(motel, watt)
-        expected.insert_pair(watt, motel)
+        expected.insert_pair(left, right)
         assert any(register == expected for register in update)
 
     def test_new_context(self):
 
         changes = ContextRegister.from_lists(
-            [make_entity["motel"]["watt"]],
-            [Term("Death Star"), Term("Darth Vader")],
+            [Term("Death Star 3"), Term("Kylo Ren")],
+            [Term("Death Star 1"), Term("Darth Vader")],
         )
-        motel = make_entity["motel"]
-        assert motel.new_context(changes) == changes.get_factor(make_entity["motel"])
+        place = Term("Death Star 3")
+        assert place.new_context(changes) == changes.get_factor(place)
 
 
 class TestSameMeaning:
-    def test_specific_to_generic_different_object(self):
-        e = make_entity
-        motel = e["motel_specific"]
-        motel_b = motel.make_generic()
-        assert motel is not motel_b
-        assert not motel == motel_b
-
     def test_equality_generic_entities(self):
-        e = make_entity
-        assert e["motel"].means(e["trees"])
-        assert not e["motel"] == e["trees"]
+        left = Term("Bert")
+        right = Term("Ernie")
+        assert left.means(right)
+        assert not left == right
 
     def test_entity_does_not_mean_statement(self):
         entity = Term("Bob")
@@ -70,31 +53,16 @@ class TestSameMeaning:
 
 class TestImplication:
     def test_implication_of_generic_entity(self):
-        assert make_entity["motel_specific"] > make_entity["trees"]
+        assert Term("Specific Bob", generic=False) > Term("Clara")
 
     def test_generic_entity_does_not_imply_specific_and_different(self):
-        assert not make_entity["motel_specific"] < make_entity["trees"]
-
-    def test_implication_same_except_generic(self):
-        assert make_entity["motel_specific"] > make_entity["motel"]
+        assert not Term("Clara") > Term("Specific Bob", generic=False)
 
     def test_generic_entity_does_not_imply_specific_and_same(self):
-        assert not make_entity["motel_specific"] < make_entity["motel"]
+        assert not Term("Clara") > Term("Clara", generic=False)
 
     def test_same_entity_not_ge(self):
-        assert not make_entity["motel"] > make_entity["motel"]
-
-    def test_implication_subclass(self):
-        assert make_entity["tree_search_specific"] >= make_entity["motel"]
-        assert make_entity["tree_search"] > make_entity["motel"]
-
-    def test_plural_true(self):
-        """
-        holding_feist.json has an entity with the name "Rural's telephone listings"
-        and "plural": true
-        """
-        feist = make_opinion_with_holding["feist_majority"]
-        assert any(entity.plural is True for entity in feist.generic_factors())
+        assert not Term("Clara") > Term("Clara")
 
     def test_implies_concrete_with_same_name(self):
         concrete = Term("Bob", generic=False)
