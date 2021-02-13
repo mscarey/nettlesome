@@ -1,5 +1,6 @@
 from datetime import date
-from typing import Type
+
+from pint import Quantity
 import pytest
 import sympy
 from sympy import Interval, oo
@@ -7,6 +8,7 @@ from sympy import Interval, oo
 
 from nettlesome.terms import Term
 from nettlesome.predicates import Predicate, Comparison, Q_
+from nettlesome.statements import Statement
 
 
 class TestComparisons:
@@ -88,16 +90,17 @@ class TestPredicates:
             (1, 0, 2),
         ]
 
-    def test_convert_false_statement_about_quantity_to_obverse(self, make_predicate):
-        assert make_predicate["p7_obverse"].truth is True
-        assert make_predicate["p7_obverse"].expression == Q_(35, "foot")
-        assert make_predicate["p7"].truth is True
-        assert make_predicate["p7"].sign == "<="
-        assert 'comparison="<="' in repr(make_predicate["p7"])
-        assert make_predicate["p7_obverse"].sign == "<="
-
-    def test_quantity_type(self, make_predicate):
-        assert isinstance(make_predicate["p7"].expression, Q_)
+    def test_convert_false_statement_about_quantity_to_obverse(self):
+        distance = Comparison(
+            "the distance between $place1 and $place2 was",
+            truth=False,
+            sign=">",
+            expression=Q_("35 feet"),
+        )
+        assert distance.truth is True
+        assert distance.sign == "<="
+        assert isinstance(distance.expression, Quantity)
+        assert str(distance.expression) == "35 foot"
 
     def test_string_for_date_as_expression(self):
         copyright_date_range = Comparison(
@@ -107,32 +110,106 @@ class TestPredicates:
         )
         assert str(copyright_date_range).endswith("1978-01-01")
 
-    def test_quantity_string(self, make_predicate):
-        assert str(make_predicate["p7"].expression) == "35 foot"
 
-    def test_predicate_content_comparison(self, make_predicate):
-        assert make_predicate["p8_exact"].content == make_predicate["p7"].content
+class TestCompare:
+    same = Predicate("$thing was an apple")
+    acres = Comparison(
+        "the distance between $place1 and $place2 was",
+        sign=">=",
+        expression=Q_("10 acres"),
+    )
+    exact = Comparison(
+        "the distance between $place1 and $place2 was",
+        sign="==",
+        expression=Q_("25 feet"),
+    )
+    float_distance = Comparison(
+        "the distance between $place1 and $place2 was",
+        truth=True,
+        sign="<",
+        expression=20.0,
+    )
+    int_distance = Comparison(
+        "the distance between $place1 and $place2 was",
+        truth=True,
+        sign="<",
+        expression=20,
+    )
+    int_higher = Comparison(
+        "the distance between $place1 and $place2 was",
+        sign="<=",
+        expression=30,
+    )
+    less = Comparison(
+        "the distance between $place1 and $place2 was",
+        truth=True,
+        sign="<",
+        expression=Q_("35 feet"),
+    )
+    less = Comparison(
+        "the distance between $place1 and $place2 was",
+        truth=True,
+        sign="<",
+        expression=Q_("35 feet"),
+    )
+    less_than_20 = Comparison(
+        "the distance between $place1 and $place2 was",
+        truth=True,
+        sign="<",
+        expression=Q_("20 feet"),
+    )
+    not_equal = Comparison(
+        "the distance between $place1 and $place2 was",
+        truth=True,
+        sign="!=",
+        expression=Q_("35 feet"),
+    )
+    meters = Comparison(
+        "the distance between $place1 and $place2 was",
+        sign=">=",
+        expression=Q_("10 meters"),
+    )
+    more = Comparison(
+        "the distance between $place1 and $place2 was",
+        truth=True,
+        sign=">=",
+        expression=Q_("35 feet"),
+    )
+    not_more = Comparison(
+        "the distance between $place1 and $place2 was",
+        truth=False,
+        sign=">",
+        expression=Q_("35 feet"),
+    )
+    lived_at = Predicate("$person lived at $place")
+    whether_lived_at = Predicate("$person lived at $place", truth=None)
 
-    def test_expression_comparison(self, make_predicate):
-        assert make_predicate["p7"].expression_comparison() == "no more than 35 foot"
-        assert make_predicate["p9"].expression_comparison() == "no more than 5 foot"
+    @pytest.mark.skip("placeholders break comparison")
+    def test_predicate_content_comparison(self):
+        lived_at = Predicate("$person lived at $place")
+        also_lived_at = Predicate("$resident lived at $house")
+        assert lived_at.content == also_lived_at.content
 
-    def test_predicate_has_no_expression_comparison(self, make_predicate):
+    def test_expression_comparison(self):
+        assert self.meters.expression_comparison() == "at least 10 meter"
+        assert self.less_than_20.expression_comparison() == "less than 20 foot"
+
+    def test_predicate_has_no_expression_comparison(self):
         with pytest.raises(AttributeError):
-            make_predicate["p1"].expression_comparison() == ""
+            self.same.expression_comparison() == ""
 
-    def test_context_slots(self, make_predicate):
-        assert len(make_predicate["p7"]) == 2
+    def test_context_slots(self):
+        assert len(self.meters) == 2
 
     def test_str_for_predicate_with_number_quantity(self, make_predicate):
-        assert "distance between $place1 and $place2 was at least 20" in str(
-            make_predicate["p8_int"]
+        assert "distance between $place1 and $place2 was less than 20" in str(
+            self.int_distance
         )
-        assert "distance between $place1 and $place2 was at least 20.0" in str(
-            make_predicate["p8_float"]
+        assert "distance between $place1 and $place2 was less than 20.0" in str(
+            self.float_distance
         )
-        assert "distance between $place1 and $place2 was at least 20 foot" in str(
-            make_predicate["p8"]
+        assert "distance between $place1 and $place2 was less than 20 foot" in str(
+            self.less_than_20
         )
 
     def test_template_singular_by_default(self):
@@ -160,45 +237,45 @@ class TestPredicates:
         with_context = predicate.content_with_terms(context)
         assert with_context.startswith(expected)
 
-    def test_str_not_equal(self, make_predicate):
+    def test_str_not_equal(self):
         assert (
             "the distance between $place1 and $place2 was not equal to 35 foot"
-            in str(make_predicate["p7_not_equal"])
+            in str(self.not_equal)
         )
 
-    def test_negated_method(self, make_predicate):
-        assert make_predicate["p7"].negated().means(make_predicate["p7_opposite"])
-        assert make_predicate["p3"].negated().means(make_predicate["p3_false"])
+    def test_negated_method(self):
+        assert self.less.negated().means(self.more)
+        as_false = self.same.negated()
+        assert str(as_false) == "it was false that $thing was an apple"
 
+    def test_predicate_equality(self):
+        assert self.same.means(self.same)
 
-class TestSameMeaning:
-    def test_predicate_equality(self, make_predicate):
-        assert make_predicate["p1"].means(make_predicate["p1_again"])
+    def test_predicate_not_same_with_interchangeable_terms(self):
+        interchangeable = Comparison(
+            "the distance between $place1 and $place2 was",
+            sign="<",
+            expression=Q_("20 feet"),
+        )
+        not_interchangeable = Comparison(
+            "the distance between $west and $east was",
+            sign="<",
+            expression=Q_("20 feet"),
+        )
+        assert not interchangeable.means(not_interchangeable)
 
-    def test_predicate_inequality(self, make_predicate):
-        assert not make_predicate["p2"].means(make_predicate["p2_reflexive"])
-
-    def test_error_predicate_means_fact(self, make_predicate):
+    def test_error_predicate_means_fact(self):
         with pytest.raises(TypeError):
-            make_predicate["p2"].means(watt_factor["f2"])
+            self.same.means(Statement("any text"))
 
-    def test_obverse_predicates_equal(self, make_predicate):
-        assert make_predicate["p7"].means(make_predicate["p7_obverse"])
-
-    def test_equal_float_and_int(self, make_predicate):
+    def test_same_meaning_float_and_int(self):
         """
         These now evaluate equal even though their equal quantities are different types
         """
-        assert make_predicate["p8_int"].means(make_predicate["p8_float"])
-
-    def test_same_meaning_float_and_int(self, make_predicate):
-        """
-        The Predicate means method considers equal quantities of different types to have the same meaning.
-        """
-        assert make_predicate["p8_int"].means(make_predicate["p8_float"])
+        assert self.int_distance.means(self.float_distance)
 
     def test_no_equality_with_inconsistent_dimensionality(self, make_predicate):
-        assert not make_predicate["p9"].means(make_predicate["p9_acres"])
+        assert not self.more.means(self.acres)
 
     def test_different_truth_value_prevents_equality(self, make_predicate):
         assert not make_predicate["murder"].means(make_predicate["murder_whether"])
@@ -206,10 +283,6 @@ class TestSameMeaning:
             make_predicate["murder_whether"]
         )
         assert not make_predicate["murder_false"].means(make_predicate["murder"])
-
-    def test_predicate_does_not_mean_fact(self, make_predicate):
-        with pytest.raises(TypeError):
-            make_predicate["p8"].means(watt_factor["f8"])
 
     def test_term_placeholders_do_not_change_result(self):
         left = Predicate(
@@ -229,15 +302,13 @@ class TestSameMeaning:
         )
         assert not left.means(right)
 
-
-class TestImplication:
     def test_greater_than_because_of_quantity(self, make_predicate):
-        assert make_predicate["p8_meters"] > make_predicate["p8"]
-        assert make_predicate["p8_meters"] != make_predicate["p8"]
+        assert self.less_than_20 > self.less
+        assert self.less_than_20 != self.less
 
     def test_greater_float_and_int(self, make_predicate):
-        assert make_predicate["p8_higher_int"] > make_predicate["p8_float"]
-        assert make_predicate["p8_int"] < make_predicate["p8_higher_int"]
+        assert self.int_distance > self.int_higher
+        assert self.int_higher < self.int_distance
 
     def test_any_truth_value_implies_none(self, make_predicate):
         assert make_predicate["murder"] > make_predicate["murder_whether"]
@@ -268,22 +339,22 @@ class TestImplication:
         assert not equal.implies(less)
 
     def test_equal_implies_greater_or_equal(self, make_predicate):
-        assert make_predicate["p9_exact"] > make_predicate["p9"]
+        assert self.exact > self.less
 
     def test_implication_with_not_equal(self, make_predicate):
-        assert make_predicate["p7_opposite"] > make_predicate["p7_not_equal"]
+        assert self.less > self.not_equal
 
     def test_no_implication_with_inconsistent_dimensionality(self, make_predicate):
-        assert not make_predicate["p9"] >= make_predicate["p9_acres"]
-        assert not make_predicate["p9"] <= make_predicate["p9_acres"]
+        assert not self.less >= self.acres
+        assert not self.less <= self.acres
 
     def test_implication_with_no_truth_value(self, make_predicate):
-        assert not make_predicate["p2_no_truth"] > make_predicate["p2"]
-        assert make_predicate["p2"] > make_predicate["p2_no_truth"]
+        assert not self.whether_lived_at > self.lived_at
+        assert self.lived_at > self.whether_lived_at
 
     def test_error_predicate_imply_factor(self, make_predicate):
         with pytest.raises(TypeError):
-            make_predicate["p7_true"] > (watt_factor["f7"])
+            self.same > Statement("$animal was a cat", terms=Term("Mittens"))
 
     def test_implication_due_to_dates(self):
         copyright_date_range = Comparison(
@@ -298,18 +369,19 @@ class TestImplication:
         )
         assert copyright_date_specific.implies(copyright_date_range)
 
+    def test_same_does_not_contradict(self):
+        again = Predicate("$thing was an apple")
+        assert not self.same.contradicts(again)
 
-class TestContradiction:
-    def test_predicate_no_contradictions(self, make_predicate):
-        assert not make_predicate["p7"].contradicts(make_predicate["p7_true"])
-        assert not make_predicate["p1"].contradicts(make_predicate["p1_again"])
-        assert not make_predicate["p3"].contradicts(make_predicate["p7"])
+    def test_not_more_does_not_contradict_less(self):
+        assert not self.not_more.contradicts(self.less)
+
+    def test_irrelevant_does_not_contradict(self):
+        assert not self.same.contradicts(self.less)
 
     def test_contradiction_by_exact(self, make_predicate):
-        assert make_predicate["p8_exact"].contradicts(make_predicate["p8_less"])
-
-    def test_contradiction_of_exact(self, make_predicate):
-        assert make_predicate["p8_less"].contradicts(make_predicate["p8_exact"])
+        assert self.exact.contradicts(self.less_than_20)
+        assert self.less_than_20.contradicts(self.exact)
 
     def test_contradiction_by_equal_quantity(self, make_predicate):
         assert make_predicate["quantity=3"].contradicts(make_predicate["quantity>5"])
@@ -329,18 +401,20 @@ class TestContradiction:
 
     def test_error_predicate_contradict_factor(self, make_predicate):
         with pytest.raises(TypeError):
-            make_predicate["p7_true"].contradicts(watt_factor["f7"])
+            self.exact.contradicts(
+                Statement(self.exact, terms=[Term("thing"), Term("place")])
+            )
 
     def test_no_contradiction_with_no_truth_value(self, make_predicate):
-        assert not make_predicate["p2_no_truth"].contradicts(make_predicate["p2"])
-        assert not make_predicate["p2"].contradicts(make_predicate["p2_no_truth"])
+        assert not self.whether_lived_at.contradicts(self.lived_at)
+        assert not self.lived_at.contradicts(self.whether_lived_at)
 
     def test_no_contradiction_with_inconsistent_dimensionality(self, make_predicate):
-        assert not make_predicate["p9"].contradicts(make_predicate["p9_acres"])
-        assert not make_predicate["p9_acres"].contradicts(make_predicate["p9"])
+        assert not self.meters.contradicts(self.acres)
+        assert not self.acres.contradicts(self.meters)
 
-    def test_contradiction_with_quantity(self, make_predicate):
-        assert make_predicate["p8_less"].contradicts(make_predicate["p8_meters"])
+    def test_contradiction_with_quantity(self):
+        assert self.less_than_20.contradicts(self.meters)
 
     def test_contradictory_date_ranges(self):
         later = Comparison(
