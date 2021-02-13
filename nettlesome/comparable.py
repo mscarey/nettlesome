@@ -248,7 +248,9 @@ class Comparable(ABC):
 
     def __gt__(self, other: Optional[Comparable]) -> bool:
         """Test whether ``self`` implies ``other`` and ``self`` != ``other``."""
-        return bool(self.implies(other) and self != other)
+        if other is None:
+            return True
+        return bool(self.implies(other) and self.short_string != other.short_string)
 
     def __or__(self, other: Comparable):
         return self.union(other)
