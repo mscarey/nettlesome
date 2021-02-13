@@ -75,7 +75,7 @@ def make_statement(make_predicate) -> Dict[str, Statement]:
         "no_crime_entity_order": Statement(p["no_crime"], [Term("Bob")]),
         "murder": Statement(p["murder"], terms=[Term("Alice"), Term("Bob")]),
         "no_murder": Statement(p["murder_false"], terms=[Term("Alice"), Term("Bob")]),
-        "murder_entity_swap": Statement(p["murder"], [Term("Bob"), Term("Alice")]),
+        "murder_entity_order": Statement(p["murder"], [Term("Bob"), Term("Alice")]),
         "murder_craig": Statement(p["murder"], [Term("Craig"), Term("Dan")]),
         "murder_whether": Statement(
             p["murder_whether"], terms=[Term("Alice"), Term("Bob")]
@@ -126,7 +126,7 @@ def make_complex_fact(make_predicate, make_statement) -> Dict[str, Statement]:
             p["relevant"], (f["shooting"], f["murder"])
         ),
         "relevant_murder_nested_swap": Statement(
-            p["relevant"], (f["shooting_entity_order"], f["murder_entity_swap"])
+            p["relevant"], (f["shooting_entity_order"], f["murder_entity_order"])
         ),
         "relevant_murder_whether": Statement(
             p["relevant"], (f["shooting"], f["murder_whether"])
@@ -135,7 +135,7 @@ def make_complex_fact(make_predicate, make_statement) -> Dict[str, Statement]:
             p["relevant"], (f["shooting_whether"], f["murder_whether"])
         ),
         "relevant_murder_swap": Statement(
-            p["relevant"], (f["shooting"], f["murder_entity_swap"])
+            p["relevant"], (f["shooting"], f["murder_entity_order"])
         ),
         "relevant_murder_craig": Statement(
             p["relevant"], (f["shooting_craig"], f["murder_craig"])

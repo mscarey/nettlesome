@@ -113,14 +113,19 @@ class TestContextRegisters:
                 [make_statement["shooting_entity_order"]],
             )
         )
-        assert mapping.get(str(make_statement["f7"])).name == make_statement["f7"].name
+        assert (
+            mapping.get_factor(make_statement["shooting"]).short_string
+            == make_statement["shooting"].short_string
+        )
 
     def test_registers_for_interchangeable_context(self, make_statement):
         """
         Test that _registers_for_interchangeable_context swaps the first two
         items in the ContextRegister
         """
-        factor = make_statement["shooting"]
+        factor = Statement(
+            "$person1 and $person2 met with each other", terms=[Term("Al"), Term("Ed")]
+        )
         first_pattern, second_pattern = list(factor.term_permutations())
         assert first_pattern[0].name == second_pattern[1].name
         assert first_pattern[1].name == second_pattern[0].name
@@ -147,57 +152,88 @@ class TestLikelyContext:
         assert context.check_match(Term("Alice"), Term("Bob"))
 
     def test_likely_context_two_by_two(self, make_statement):
-        left = ComparableGroup(make_statement["murder"], make_statement["large_weight"])
+        left = ComparableGroup(
+            [make_statement["murder"], make_statement["large_weight"]]
+        )
         right = ComparableGroup(
-            (make_statement["murder_swap_entities"], make_statement["small_weight_bob"])
+            (make_statement["murder_entity_order"], make_statement["small_weight_bob"])
         )
         context = next(left.likely_contexts(right))
         assert context.check_match(Term("Alice"), Term("Bob"))
 
     def test_likely_context_different_terms(self):
-        lotus = make_opinion_with_holding["lotus_majority"]
-        oracle = make_opinion_with_holding["oracle_majority"]
-        left = [lotus.holdings[2].outputs[0], lotus.holdings[2].inputs[0].to_effect]
-        left = ComparableGroup(left)
-        right = ComparableGroup(oracle.holdings[2].outputs[0])
+        copyright_registered = Statement(
+            "$entity registered a copyright covering $work",
+            terms=[
+                Term("Lotus Development Corporation"),
+                Term("the Lotus menu command hierarchy"),
+            ],
+        )
+        copyrightable = Statement(
+            "$work was copyrightable", terms=Term("the Lotus menu command hierarchy")
+        )
+        left = ComparableGroup([copyrightable, copyright_registered])
+        right = ComparableGroup(
+            Statement("$work was copyrightable", terms=Term("the Java API"))
+        )
         context = next(left.likely_contexts(right))
-        lotus_menu = lotus.holdings[2].generic_factors()[0]
-        java_api = oracle.generic_factors()[0]
-        assert context.get_factor(lotus_menu) == java_api
+        assert (
+            context.get_factor(Term("the Lotus menu command hierarchy")).short_string
+            == Term("the Java API").short_string
+        )
 
     def test_likely_context_from_factor_meaning(self):
-        lotus = make_opinion_with_holding["lotus_majority"]
-        oracle = make_opinion_with_holding["oracle_majority"]
-        left = lotus.holdings[2].outputs[0]
-        right = oracle.holdings[2].outputs[0]
+        left = Statement(
+            "$part provided the means by which users controlled and operated $whole",
+            terms=[Term("the Java API"), Term("the Java language")],
+        )
+        right = Statement(
+            "$part provided the means by which users controlled and operated $whole",
+            terms=[Term("the Lotus menu command hierarchy"), Term("Lotus 1-2-3")],
+        )
         likely = left._likely_context_from_meaning(right, context=ContextRegister())
-        lotus_menu = lotus.holdings[2].generic_factors()[0]
-        java_api = oracle.generic_factors()[0]
-        assert likely.get_factor(lotus_menu) == java_api
+
+        assert (
+            likely.get_factor(Term("the Java API")).short_string
+            == Term("the Lotus menu command hierarchy").short_string
+        )
 
     def test_union_one_generic_not_matched(self):
         """
         Here, both ComparableGroups have "fact that <> was a computer program".
         But they each have another generic that can't be matched:
-        fact that <the Java API> was a literal element of <the Java language>
+        that <the Java API> was a literal element of <the Java language>
         and
-        fact that <the Lotus menu command hierarchy> provided the means by
+        that <the Lotus menu command hierarchy> provided the means by
         which users controlled and operated <Lotus 1-2-3>
 
         Tests that Factors from "left" should be keys and Factors from "right" values.
         """
-        lotus = make_opinion_with_holding["lotus_majority"]
-        oracle = make_opinion_with_holding["oracle_majority"]
-        left = ComparableGroup(lotus.holdings[7].inputs[:2])
-        right = ComparableGroup(
-            [oracle.holdings[3].outputs[0], oracle.holdings[3].inputs[0]]
+        language_program = Statement(
+            "$program was a computer program", terms=Term("the Java language")
         )
+        lotus_program = Statement(
+            "$program was a computer program", terms=Term("Lotus 1-2-3")
+        )
+
+        controlled = Statement(
+            "$part provided the means by which users controlled and operated $whole",
+            terms=[Term("the Lotus menu command hierarchy"), Term("Lotus 1-2-3")],
+        )
+        part = Statement(
+            "$part was a literal element of $whole",
+            terms=[Term("the Java API"), Term("the Java language")],
+        )
+
+        left = ComparableGroup([lotus_program, controlled])
+        right = ComparableGroup([language_program, part])
+
         new = left | right
         text = (
             "that <the Lotus menu command hierarchy> was a "
             "literal element of <Lotus 1-2-3>"
         )
-        assert text in new[1].short_string
+        assert text in new[0].short_string
 
 
 class TestChangeRegisters:
