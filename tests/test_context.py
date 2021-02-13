@@ -146,7 +146,9 @@ class TestLikelyContext:
         assert context.check_match(Term("Alice"), Term("Alice"))
 
     def test_likely_context_two_factors(self, make_statement):
-        left = ComparableGroup(make_statement["murder"], make_statement["large_weight"])
+        left = ComparableGroup(
+            [make_statement["murder"], make_statement["large_weight"]]
+        )
         right = make_statement["small_weight_bob"]
         context = next(left.likely_contexts(right))
         assert context.check_match(Term("Alice"), Term("Bob"))

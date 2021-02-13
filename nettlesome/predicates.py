@@ -547,20 +547,20 @@ class Comparison(Predicate):
         if not isinstance(other, Comparison):
             return False
 
-        if isinstance(self.expression, ureg.Quantity):
-            if not isinstance(other.expression, ureg.Quantity):
+        if isinstance(self.expression, Quantity):
+            if not isinstance(other.expression, Quantity):
                 return False
             if self.expression.dimensionality != other.expression.dimensionality:
                 return False
-        elif isinstance(other.expression, ureg.Quantity):
+        elif isinstance(other.expression, Quantity):
             return False
         return isinstance(self.expression, date) == isinstance(other.expression, date)
 
-    def convert_other_quantity(self, other_quantity: ureg.Quantity) -> ureg.Quantity:
+    def convert_other_quantity(self, other_quantity: Quantity) -> Quantity:
         """Convert other's quantity to match dimensional units of self's quantity."""
-        if not isinstance(self.expression, ureg.Quantity):
+        if not isinstance(self.expression, Quantity):
             raise TypeError(f"{self.expression} is not a Pint Quantity.")
-        if not isinstance(other_quantity, ureg.Quantity):
+        if not isinstance(other_quantity, Quantity):
             raise TypeError(f"{other_quantity} is not a Pint Quantity.")
         return other_quantity.to(self.expression.units)
 
@@ -569,7 +569,7 @@ class Comparison(Predicate):
         if not super().implies(other):
             return False
 
-        if isinstance(self.expression, ureg.Quantity):
+        if isinstance(self.expression, Quantity):
             return self.includes_other_quantity(other)
 
         if isinstance(self.expression, date):
@@ -593,7 +593,7 @@ class Comparison(Predicate):
 
     @property
     def magnitude(self) -> Union[int, float]:
-        if isinstance(self.expression, ureg.Quantity):
+        if isinstance(self.expression, Quantity):
             return self.expression.magnitude
         elif isinstance(self.expression, date):
             return int(self.expression.strftime("%Y%m%d"))
@@ -624,7 +624,7 @@ class Comparison(Predicate):
         if not (self.truth is other.truth is True):
             return False
 
-        if isinstance(self.expression, ureg.Quantity):
+        if isinstance(self.expression, Quantity):
             return self.excludes_other_quantity(other)
 
         if isinstance(self.expression, date):
