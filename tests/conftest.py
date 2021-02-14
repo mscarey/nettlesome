@@ -159,10 +159,13 @@ def make_statement(make_predicate, make_comparable) -> Dict[str, Statement]:
         "crime": Statement(p["crime"], Term("Alice")),
         "crime_generic": Statement(p["crime"], Term("Alice"), generic=True),
         "crime_specific_person": Statement(p["crime"], Term("Alice", generic=False)),
+        "absent_no_crime": Statement(p["no_crime"], Term("Alice"), absent=True),
         "no_crime": Statement(p["no_crime"], Term("Alice")),
         "no_crime_entity_order": Statement(p["no_crime"], [Term("Bob")]),
         "murder": Statement(p["murder"], terms=[Term("Alice"), Term("Bob")]),
-        "no_murder": Statement(p["murder_false"], terms=[Term("Alice"), Term("Bob")]),
+        "murder_false": Statement(
+            p["murder_false"], terms=[Term("Alice"), Term("Bob")]
+        ),
         "murder_entity_order": Statement(p["murder"], [Term("Bob"), Term("Alice")]),
         "murder_craig": Statement(p["murder"], [Term("Craig"), Term("Dan")]),
         "murder_whether": Statement(
@@ -201,10 +204,16 @@ def make_statement(make_predicate, make_comparable) -> Dict[str, Statement]:
         "no_context": Statement(p["no_context"]),
         "exact": Statement(c["exact"], terms=[Term("San Francisco"), Term("Oakland")]),
         "less": Statement(c["less"], terms=[Term("San Francisco"), Term("Oakland")]),
+        "less_than_20": Statement(
+            c["less_than_20"], terms=[Term("San Francisco"), Term("Oakland")]
+        ),
         "less_whether": Statement(
             c["less_whether"], terms=[Term("San Francisco"), Term("Oakland")]
         ),
         "more": Statement(c["more"], terms=[Term("San Francisco"), Term("Oakland")]),
+        "more_meters": Statement(
+            c["meters"], terms=[Term("San Francisco"), Term("Oakland")]
+        ),
         "not_more": Statement(
             c["not_more"], terms=[Term("San Francisco"), Term("Oakland")]
         ),
@@ -216,6 +225,12 @@ def make_statement(make_predicate, make_comparable) -> Dict[str, Statement]:
         ),
         "higher_int": Statement(
             c["higher_int"], terms=[Term("San Francisco"), Term("Oakland")]
+        ),
+        "way_more": Statement(
+            c["way_more"], terms=[Term("San Francisco"), Term("Oakland")]
+        ),
+        "absent_less": Statement(
+            c["less"], terms=[Term("San Francisco"), Term("Oakland")], absent=True
         ),
         "absent_more": Statement(
             c["more"], terms=[Term("San Francisco"), Term("Oakland")], absent=True

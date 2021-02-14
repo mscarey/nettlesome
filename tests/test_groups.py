@@ -179,29 +179,39 @@ class TestAdd:
 
 
 class TestUnion:
-    def test_factors_combined_because_of_implication(self):
-        left = ComparableGroup(make_statement["f8"])
-        right = ComparableGroup(make_statement["meters"])
+    def test_factors_combined_because_of_implication(self, make_statement):
+        left = ComparableGroup(make_statement["more"])
+        right = ComparableGroup(make_statement["more_meters"])
         added = left | right
         assert len(added) == 1
-        assert "meter" in str(added[0])
+        assert "35 foot" in str(added[0])
 
-    def test_union_with_factor_outside_group(self):
-        left = ComparableGroup(make_statement["meters"])
-        right = make_statement["f8"]
+    def test_union_with_factor_outside_group(self, make_statement):
+        left = ComparableGroup(make_statement["more_meters"])
+        right = make_statement["more"]
         added = left | right
         assert len(added) == 1
-        assert "10 meter" in str(added[0])
+        assert "35 foot" in str(added[0])
 
-    def test_no_contradiction_because_entities_vary(self):
+    def test_no_contradiction_because_entities_vary(self, make_statement):
         """
         If these Factors were about the same Term, they would contradict
         and no union would be possible.
         """
-        left = ComparableGroup(make_statement["f3_different_entity"])
-        right = ComparableGroup(make_statement["f3_absent"])
+        left = ComparableGroup(make_statement["no_shooting_entity_order"])
+        right = ComparableGroup(make_statement["shooting"])
         combined = left | right
         assert len(combined) == 2
+
+    def test_union_causes_contradiction(self, make_statement):
+        """
+        If these Factors were about the same Term, they would contradict
+        and no union would be possible.
+        """
+        left = ComparableGroup(make_statement["no_shooting"])
+        right = ComparableGroup(make_statement["shooting"])
+        combined = left | right
+        assert combined is None
 
 
 class TestConsistent:

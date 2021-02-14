@@ -298,7 +298,7 @@ class TestImplication:
             make_context_register
         )
         explanation = complex_true.explain_implication(complex_whether)
-        assert str(Term("Alice"), Term("Craig")) in explanation.items()
+        assert str(Term("Alice")), Term("Craig") in explanation.items()
 
     def test_implication_explain_keys_only_from_left(
         self, make_complex_fact, make_context_register
@@ -312,15 +312,15 @@ class TestImplication:
         new = complex_whether.new_context(make_context_register)
         explanations = list(complex_true.explanations_implication(new))
         explanation = explanations.pop()
-        assert (str[Term("Craig")], Term("Alice")) not in explanation.items()
-        assert (str[Term("Alice")], Term("Craig")) in explanation.items()
+        assert "<Craig>" not in explanation.keys()
+        assert explanation["<Alice>"].name == "Craig"
 
     def test_context_registers_for_complex_comparison(self, make_complex_fact):
         gen = make_complex_fact["relevant_murder_nested_swap"]._context_registers(
             make_complex_fact["relevant_murder"], operator.ge
         )
         register = next(gen)
-        assert register.matches.get("<Alice>") == Term("Bob")
+        assert register.matches.get("<Alice>").name == "Bob"
 
     def test_no_implication_complex(self, make_complex_fact):
         left = make_complex_fact["relevant_murder"]
@@ -350,40 +350,42 @@ class TestImplication:
 
 
 class TestContradiction:
-    def test_factor_different_predicate_truth_contradicts(self):
-        assert make_statement["f7"].contradicts(make_statement["f7_opposite"])
-        assert make_statement["f7_opposite"].contradicts(make_statement["f7"])
+    def test_factor_different_predicate_truth_contradicts(self, make_statement):
+        assert make_statement["less"].contradicts(make_statement["more"])
+        assert make_statement["more"].contradicts(make_statement["less"])
 
-    def test_same_predicate_true_vs_false(self):
-        assert make_statement["f10"].contradicts(make_statement["f10_false"])
-        assert make_statement["f10"].truth != make_statement["f10_false"].truth
+    def test_same_predicate_true_vs_false(self, make_statement):
+        assert make_statement["murder"].contradicts(make_statement["murder_false"])
+        assert make_statement["murder"].truth != make_statement["murder_false"].truth
 
-    def test_factor_does_not_contradict_predicate(self, make_predicate):
+    def test_factor_does_not_contradict_predicate(self, make_statement, make_predicate):
         with pytest.raises(TypeError):
-            _ = make_statement["f7"].contradicts(make_predicate["p7_true"])
+            make_statement["murder"].contradicts(make_predicate["murder_false"])
 
-    def test_factor_contradiction_absent_predicate(self):
-        assert make_statement["f3"].contradicts(make_statement["f3_absent"])
-        assert make_statement["f3_absent"].contradicts(make_statement["f3"])
+    def test_factor_contradiction_absent_predicate(self, make_statement):
+        assert make_statement["more"].contradicts(make_statement["absent_more"])
+        assert make_statement["absent_more"].contradicts(make_statement["more"])
 
-    def test_absences_of_contradictory_facts_consistent(self):
-        assert not make_statement["absent"].contradicts(make_statement["less_absent"])
+    def test_absences_of_contradictory_facts_consistent(self, make_statement):
+        assert not make_statement["absent_more"].contradicts(
+            make_statement["absent_less"]
+        )
 
-    def test_factor_no_contradiction_no_truth_value(self):
-        assert not make_statement["f2"].contradicts(make_statement["f2_no_truth"])
-        assert not make_statement["f2_no_truth"].contradicts(make_statement["f2_false"])
+    def test_factor_no_contradiction_no_truth_value(self, make_statement):
+        assert not make_statement["murder"].contradicts(
+            make_statement["murder_whether"]
+        )
+        assert not make_statement["murder_whether"].contradicts(
+            make_statement["murder_false"]
+        )
 
-    def test_absent_factor_contradicts_broader_quantity_statement(self):
-        assert make_statement["absent"].contradicts(make_statement["meters"])
-        assert make_statement["meters"].contradicts(make_statement["absent"])
+    def test_absent_factor_contradicts_broader_quantity_statement(self, make_statement):
+        assert make_statement["way_more"].contradicts(make_statement["absent_more"])
+        assert make_statement["absent_more"].contradicts(make_statement["way_more"])
 
-    def test_less_specific_absent_contradicts_more_specific(self):
-        assert make_statement["f9_absent_miles"].contradicts(make_statement["f9"])
-        assert make_statement["f9"].contradicts(make_statement["f9_absent_miles"])
-
-    def test_no_contradiction_with_more_specific_absent(self):
-        assert not make_statement["f9_absent"].contradicts(make_statement["f9_miles"])
-        assert not make_statement["f9_miles"].contradicts(make_statement["f9_absent"])
+    def test_no_contradiction_with_more_specific_absent(self, make_statement):
+        assert not make_statement["absent_way_more"].contradicts(make_statement["more"])
+        assert not make_statement["more"].contradicts(make_statement["absent_way_more"])
 
     def test_contradiction_complex(self, make_complex_fact):
         assert make_complex_fact["irrelevant_murder"].contradicts(
@@ -395,21 +397,21 @@ class TestContradiction:
             make_complex_fact["relevant_murder_alice_craig"]
         )
 
-    def test_no_contradiction_of_None(self):
-        assert not make_statement["f1"].contradicts(None)
+    def test_no_contradiction_of_None(self, make_statement):
+        assert not make_statement["exact"].contradicts(None)
 
-    def test_contradicts_if_present_both_present(self):
+    def test_contradicts_if_present_both_present(self, make_statement):
         """
         Test a helper function that checks whether there would
         be a contradiction if neither Factor was "absent".
         """
-        assert make_statement["f2"]._contradicts_if_present(
-            make_statement["f2_false"], context=ContextRegister()
+        assert make_statement["crime"]._contradicts_if_present(
+            make_statement["absent_no_crime"], context=ContextRegister()
         )
 
-    def test_contradicts_if_present_one_absent(self):
-        assert make_statement["f2"]._contradicts_if_present(
-            make_statement["f2_false_absent"], context=ContextRegister()
+    def test_contradicts_if_present_one_absent(self, make_statement):
+        assert make_statement["crime"]._contradicts_if_present(
+            make_statement["no_crime"], context=ContextRegister()
         )
 
     def test_false_does_not_contradict_absent(self):
@@ -539,33 +541,27 @@ class TestContradiction:
 
 
 class TestConsistent:
-    def test_contradictory_facts_about_same_entity(self):
-        left = make_statement["less"]
-        right = make_statement["meters"]
+    def test_contradictory_facts_about_same_entity(self, make_statement):
+        left = make_statement["less_than_20"]
+        right = make_statement["more_meters"]
         register = ContextRegister()
         register.insert_pair(left.generic_factors()[0], right.generic_factors()[0])
         assert not left.consistent_with(right, register)
         assert left.explain_consistent_with(right, register) is None
 
-    def test_explanations_consistent_with(self):
-        left = make_statement["less"]
-        right = make_statement["meters"]
+    def test_explanations_consistent_with(self, make_statement):
+        left = make_statement["less_than_20"]
+        right = make_statement["more_meters"]
         register = ContextRegister()
         register.insert_pair(left.generic_factors()[0], right.generic_factors()[0])
         explanations = list(left.explanations_consistent_with(right, context=register))
         assert not explanations
-
-    def test_factor_consistent_with_none(self, make_exhibit):
-        assert make_exhibit["no_shooting_testimony"].consistent_with(
-            make_exhibit["no_shooting_witness_unknown_testimony"]
-        )
 
 
 class TestAddition:
     @pytest.mark.parametrize(
         "left, right, expected",
         [
-            ("shooting_craig_poe", "shooting_craig_brd", "shooting_craig_brd"),
             ("irrelevant_3", "irrelevant_3_new_context", "irrelevant_3"),
             (
                 "irrelevant_3_new_context",
@@ -580,10 +576,6 @@ class TestAddition:
 
     def test_add_unrelated_factors(self, make_statement):
         assert make_statement["murder"] + make_statement["crime"] is None
-
-    def test_cant_add_enactment_to_fact(self, e_search_clause):
-        with pytest.raises(TypeError):
-            print(make_statement["f3"] + e_search_clause)
 
 
 class TestUnion:
