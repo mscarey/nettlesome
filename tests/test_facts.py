@@ -236,36 +236,50 @@ class TestImplication:
             assert not make_statement["crime"] > make_predicate["crime"]
 
     def test_factor_implies_because_of_quantity(self, make_statement):
-        assert watt_factor["f8_meters"] > watt_factor["f8"]
-        assert watt_factor["f8_higher_int"] > watt_factor["f8_float"]
-        assert watt_factor["f8_int"] < watt_factor["f8_higher_int"]
+        meters = Comparison(
+            "the distance between $place1 and $place2 was",
+            sign=">=",
+            expression=Q_("10 meters"),
+        )
+        left = Statement(meters, terms=[Term("Al"), Term("Bob")])
+        more = Comparison(
+            "the distance between $place1 and $place2 was",
+            truth=True,
+            sign=">",
+            expression=Q_("30 feet"),
+        )
+        right = Statement(more, terms=[Term("Al"), Term("Bob")])
+        assert left > right
 
-    def test_factor_implies_no_truth_value(self):
-        assert watt_factor["f2"] > watt_factor["f2_no_truth"]
-        assert not watt_factor["f2_no_truth"] > watt_factor["f2"]
+    def test_int_factor_implies_float_factor(self, make_statement):
+        assert make_statement["float_distance"] > make_statement["higher_int"]
+        assert make_statement["int_distance"] > make_statement["higher_int"]
 
-    def test_comparison_implies_no_truth_value(self):
-        assert watt_factor["f8"] > watt_factor["f8_no_truth"]
-        assert not watt_factor["f8_no_truth"] > watt_factor["f8"]
+    def test_factor_implies_no_truth_value(self, make_statement):
+        assert make_statement["shooting"] > make_statement["shooting_whether"]
+        assert not make_statement["shooting_whether"] > make_statement["shooting"]
 
-    def test_factor_implies_because_of_exact_quantity(self):
-        assert watt_factor["f8_exact"] > watt_factor["f7"]
-        assert watt_factor["f8_exact"] >= watt_factor["f8"]
+    def test_comparison_implies_no_truth_value(self, make_statement):
+        assert make_statement["less"] > make_statement["less_whether"]
+        assert not make_statement["less_whether"] > make_statement["less"]
 
-    def test_no_implication_pint_quantity_and_int(self):
-        assert not watt_factor["f8"] > watt_factor["f8_int"]
-        assert not watt_factor["f8"] < watt_factor["f8_int"]
+    def test_factor_implies_because_of_exact_quantity(self, make_statement):
+        assert make_statement["exact"] > make_statement["less"]
+        assert make_statement["exact"] >= make_statement["not_more"]
 
-    def test_absent_factor_implies_absent_factor_with_lesser_quantity(self):
-        assert watt_factor["f9_absent_miles"] > watt_factor["f9_absent"]
+    def test_no_implication_pint_quantity_and_int(self, make_statement):
+        assert not make_statement["less"] > make_statement["int_distance"]
+        assert not make_statement["less"] < make_statement["int_distance"]
 
-    def test_equal_factors_not_gt(self):
-        f = watt_factor
-        assert f["f7"] >= f["f7"]
-        assert f["f7"] <= f["f7"]
-        assert not f["f7"] > f["f7"]
+    def test_absent_implies_more_specific_absent(self, make_statement):
+        assert make_statement["absent_more"] > make_statement["absent_way_more"]
 
-    def test_implication_complex(self, make_complex_fact):
+    def test_equal_factors_not_gt(self, make_statement):
+        assert make_statement["less"] >= make_statement["less"]
+        assert make_statement["less"] <= make_statement["less"]
+        assert not make_statement["less"] > make_statement["less"]
+
+    def test_implication_complex_whether(self, make_complex_fact):
         assert (
             make_complex_fact["relevant_murder"]
             > make_complex_fact["relevant_murder_whether"]
@@ -337,39 +351,39 @@ class TestImplication:
 
 class TestContradiction:
     def test_factor_different_predicate_truth_contradicts(self):
-        assert watt_factor["f7"].contradicts(watt_factor["f7_opposite"])
-        assert watt_factor["f7_opposite"].contradicts(watt_factor["f7"])
+        assert make_statement["f7"].contradicts(make_statement["f7_opposite"])
+        assert make_statement["f7_opposite"].contradicts(make_statement["f7"])
 
     def test_same_predicate_true_vs_false(self):
-        assert watt_factor["f10"].contradicts(watt_factor["f10_false"])
-        assert watt_factor["f10"].truth != watt_factor["f10_false"].truth
+        assert make_statement["f10"].contradicts(make_statement["f10_false"])
+        assert make_statement["f10"].truth != make_statement["f10_false"].truth
 
     def test_factor_does_not_contradict_predicate(self, make_predicate):
         with pytest.raises(TypeError):
-            _ = watt_factor["f7"].contradicts(make_predicate["p7_true"])
+            _ = make_statement["f7"].contradicts(make_predicate["p7_true"])
 
     def test_factor_contradiction_absent_predicate(self):
-        assert watt_factor["f3"].contradicts(watt_factor["f3_absent"])
-        assert watt_factor["f3_absent"].contradicts(watt_factor["f3"])
+        assert make_statement["f3"].contradicts(make_statement["f3_absent"])
+        assert make_statement["f3_absent"].contradicts(make_statement["f3"])
 
     def test_absences_of_contradictory_facts_consistent(self):
-        assert not watt_factor["f8_absent"].contradicts(watt_factor["f8_less_absent"])
+        assert not make_statement["absent"].contradicts(make_statement["less_absent"])
 
     def test_factor_no_contradiction_no_truth_value(self):
-        assert not watt_factor["f2"].contradicts(watt_factor["f2_no_truth"])
-        assert not watt_factor["f2_no_truth"].contradicts(watt_factor["f2_false"])
+        assert not make_statement["f2"].contradicts(make_statement["f2_no_truth"])
+        assert not make_statement["f2_no_truth"].contradicts(make_statement["f2_false"])
 
     def test_absent_factor_contradicts_broader_quantity_statement(self):
-        assert watt_factor["f8_absent"].contradicts(watt_factor["f8_meters"])
-        assert watt_factor["f8_meters"].contradicts(watt_factor["f8_absent"])
+        assert make_statement["absent"].contradicts(make_statement["meters"])
+        assert make_statement["meters"].contradicts(make_statement["absent"])
 
     def test_less_specific_absent_contradicts_more_specific(self):
-        assert watt_factor["f9_absent_miles"].contradicts(watt_factor["f9"])
-        assert watt_factor["f9"].contradicts(watt_factor["f9_absent_miles"])
+        assert make_statement["f9_absent_miles"].contradicts(make_statement["f9"])
+        assert make_statement["f9"].contradicts(make_statement["f9_absent_miles"])
 
     def test_no_contradiction_with_more_specific_absent(self):
-        assert not watt_factor["f9_absent"].contradicts(watt_factor["f9_miles"])
-        assert not watt_factor["f9_miles"].contradicts(watt_factor["f9_absent"])
+        assert not make_statement["f9_absent"].contradicts(make_statement["f9_miles"])
+        assert not make_statement["f9_miles"].contradicts(make_statement["f9_absent"])
 
     def test_contradiction_complex(self, make_complex_fact):
         assert make_complex_fact["irrelevant_murder"].contradicts(
@@ -382,20 +396,20 @@ class TestContradiction:
         )
 
     def test_no_contradiction_of_None(self):
-        assert not watt_factor["f1"].contradicts(None)
+        assert not make_statement["f1"].contradicts(None)
 
     def test_contradicts_if_present_both_present(self):
         """
         Test a helper function that checks whether there would
         be a contradiction if neither Factor was "absent".
         """
-        assert watt_factor["f2"]._contradicts_if_present(
-            watt_factor["f2_false"], context=ContextRegister()
+        assert make_statement["f2"]._contradicts_if_present(
+            make_statement["f2_false"], context=ContextRegister()
         )
 
     def test_contradicts_if_present_one_absent(self):
-        assert watt_factor["f2"]._contradicts_if_present(
-            watt_factor["f2_false_absent"], context=ContextRegister()
+        assert make_statement["f2"]._contradicts_if_present(
+            make_statement["f2_false_absent"], context=ContextRegister()
         )
 
     def test_false_does_not_contradict_absent(self):
@@ -461,37 +475,37 @@ class TestContradiction:
         register.insert_pair(alice, alice)
         assert not alice_rich.contradicts(bob_poor, context=register)
 
-    def test_copy_with_foreign_context(self):
-        w = watt_mentioned
-        assert (
-            watt_factor["f1"]
-            .new_context(ContextRegister.from_lists([w[0]], [w[2]]))
-            .means(watt_factor["f1_different_entity"])
-        )
-
     def test_check_entity_consistency_true(self, make_statement):
         left = make_statement["irrelevant_3"]
         right = make_statement["irrelevant_3_new_context"]
-        e = make_entity
-        easy_register = ContextRegister.from_lists([e["dan"]], [e["craig"]])
+        easy_register = ContextRegister.from_lists([Term("Dan")], [Term("Edgar")])
         easy_update = left.update_context_register(
             right, easy_register, comparison=means
         )
+        assert any(register is not None for register in easy_update)
         harder_register = ContextRegister.from_lists(
-            keys=[e["alice"], e["bob"], e["craig"], e["dan"], e["circus"]],
-            values=[e["bob"], e["alice"], e["dan"], e["craig"], e["circus"]],
+            keys=[
+                Term("Alice"),
+                Term("Bob"),
+                Term("Craig"),
+            ],
+            values=[
+                Term("Bob"),
+                Term("Alice"),
+                Term("Craig"),
+            ],
         )
         harder_update = left.update_context_register(
             right,
             context=harder_register,
             comparison=means,
         )
-        assert any(register is not None for register in easy_update)
+
         assert any(register is not None for register in harder_update)
 
     def test_check_entity_consistency_false(self, make_statement):
         context = ContextRegister()
-        context.insert_pair(make_entity["circus"]["alice"])
+        context.insert_pair(key=Term("circus"), value=Term("Alice"))
         update = make_statement["irrelevant_3"].update_context_register(
             make_statement["irrelevant_3_new_context"],
             comparison=means,
@@ -502,7 +516,7 @@ class TestContradiction:
     def test_entity_consistency_identity_not_equality(self, make_statement):
 
         register = ContextRegister()
-        register.insert_pair(make_entity["dan"]["dan"])
+        register.insert_pair(key=Term("Dan"), value=Term("Dan"))
         update = make_statement["irrelevant_3"].update_context_register(
             make_statement["irrelevant_3_new_context"],
             context=register,
@@ -516,8 +530,8 @@ class TestContradiction:
         instead of .gt. The comparison would just return False.
         """
         update = make_statement["irrelevant_3"].update_context_register(
-            make_predicate["p2"],
-            {str(make_entity["dan"]): make_entity["dan"]},
+            make_predicate["shooting"],
+            {str(Term("Dan")): Term("Dan")},
             operator.gt,
         )
         with pytest.raises(TypeError):
@@ -526,16 +540,16 @@ class TestContradiction:
 
 class TestConsistent:
     def test_contradictory_facts_about_same_entity(self):
-        left = watt_factor["f8_less"]
-        right = watt_factor["f8_meters"]
+        left = make_statement["less"]
+        right = make_statement["meters"]
         register = ContextRegister()
         register.insert_pair(left.generic_factors()[0], right.generic_factors()[0])
         assert not left.consistent_with(right, register)
         assert left.explain_consistent_with(right, register) is None
 
     def test_explanations_consistent_with(self):
-        left = watt_factor["f8_less"]
-        right = watt_factor["f8_meters"]
+        left = make_statement["less"]
+        right = make_statement["meters"]
         register = ContextRegister()
         register.insert_pair(left.generic_factors()[0], right.generic_factors()[0])
         explanations = list(left.explanations_consistent_with(right, context=register))
@@ -569,7 +583,7 @@ class TestAddition:
 
     def test_cant_add_enactment_to_fact(self, e_search_clause):
         with pytest.raises(TypeError):
-            print(watt_factor["f3"] + e_search_clause)
+            print(make_statement["f3"] + e_search_clause)
 
 
 class TestUnion:

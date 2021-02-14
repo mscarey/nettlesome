@@ -993,7 +993,9 @@ class ContextRegister:
         return "ContextRegister({})".format(self._matches.__repr__())
 
     def __str__(self) -> str:
-        item_names = [f"{str(k)} is like {str(v)}" for k, v in self.matches.items()]
+        item_names = [
+            f"{str(k)} is like {v.short_string}" for k, v in self.matches.items()
+        ]
         items = ", ".join(item_names)
         return f"ContextRegister({items})"
 

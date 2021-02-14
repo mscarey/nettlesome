@@ -16,7 +16,7 @@ Q_ = ureg.Quantity
 def make_predicate() -> Dict[str, Predicate]:
 
     return {
-        "crime": Predicate("$person committed a crime"),
+        "make_predicate": Predicate("$person committed a crime"),
         "murder": Predicate("$shooter murdered $victim"),
         "murder_whether": Predicate("$shooter murdered $victim", truth=None),
         "murder_false": Predicate("$shooter murdered $victim", truth=False),
@@ -29,6 +29,7 @@ def make_predicate() -> Dict[str, Predicate]:
         "shooting_self": Predicate("$shooter shot $shooter"),
         "no_shooting": Predicate("$shooter shot $victim", truth=False),
         "shooting_whether": Predicate("$shooter shot $victim", truth=None),
+        "crime": Predicate("$person1 committed a crime"),
         "no_crime": Predicate("$person1 committed a crime", truth=False),
         "three_entities": Predicate("$planner told $intermediary to hire $shooter"),
         "friends": Predicate("$person1 and $person2 were friends"),
@@ -56,14 +57,99 @@ def make_predicate() -> Dict[str, Predicate]:
 
 
 @pytest.fixture(scope="class")
-def make_statement(make_predicate) -> Dict[str, Statement]:
-    p = make_predicate
+def make_comparable() -> Dict[str, Predicate]:
+    return {
+        "acres": Comparison(
+            "the distance between $place1 and $place2 was",
+            sign=">=",
+            expression=Q_("10 acres"),
+        ),
+        "exact": Comparison(
+            "the distance between $place1 and $place2 was",
+            sign="==",
+            expression=Q_("25 feet"),
+        ),
+        "float_distance": Comparison(
+            "the distance between $place1 and $place2 was",
+            truth=True,
+            sign="<",
+            expression=20.0,
+        ),
+        "higher_int": Comparison(
+            "the distance between $place1 and $place2 was",
+            sign="<=",
+            expression=30,
+        ),
+        "int_distance": Comparison(
+            "the distance between $place1 and $place2 was",
+            truth=True,
+            sign="<",
+            expression=20,
+        ),
+        "int_higher": Comparison(
+            "the distance between $place1 and $place2 was",
+            sign="<=",
+            expression=30,
+        ),
+        "less": Comparison(
+            "the distance between $place1 and $place2 was",
+            truth=True,
+            sign="<",
+            expression=Q_("35 feet"),
+        ),
+        "less_whether": Comparison(
+            "the distance between $place1 and $place2 was",
+            truth=None,
+            sign="<",
+            expression=Q_("35 feet"),
+        ),
+        "less_than_20": Comparison(
+            "the distance between $place1 and $place2 was",
+            truth=True,
+            sign="<",
+            expression=Q_("20 feet"),
+        ),
+        "meters": Comparison(
+            "the distance between $place1 and $place2 was",
+            sign=">=",
+            expression=Q_("10 meters"),
+        ),
+        "not_equal": Comparison(
+            "the distance between $place1 and $place2 was",
+            truth=True,
+            sign="!=",
+            expression=Q_("35 feet"),
+        ),
+        "more": Comparison(
+            "the distance between $place1 and $place2 was",
+            truth=True,
+            sign=">=",
+            expression=Q_("35 feet"),
+        ),
+        "not_more": Comparison(
+            "the distance between $place1 and $place2 was",
+            truth=False,
+            sign=">",
+            expression=Q_("35 feet"),
+        ),
+        "way_more": Comparison(
+            "the distance between $place1 and $place2 was",
+            truth=True,
+            sign=">=",
+            expression=Q_("30 miles"),
+        ),
+    }
 
+
+@pytest.fixture(scope="class")
+def make_statement(make_predicate, make_comparable) -> Dict[str, Statement]:
+    p = make_predicate
+    c = make_comparable
     return {
         "irrelevant_0": Statement(p["irrelevant_0"], [Term("Craig")]),
         "irrelevant_1": Statement(p["irrelevant_1"], [Term("Dan")]),
         "irrelevant_2": Statement(p["irrelevant_2"], Term("Dan")),
-        "irrelevant_3": Statement(p["irrelevant_3"], [Term("Craig"), Term("Dan")]),
+        "irrelevant_3": Statement(p["irrelevant_3"], [Term("Craig"), Term("circus")]),
         "irrelevant_3_new_context": Statement(
             p["irrelevant_3"], [Term("Craig"), Term("Dan")]
         ),
@@ -113,6 +199,30 @@ def make_statement(make_predicate) -> Dict[str, Statement]:
         ),
         "friends": Statement(p["friends"], [Term("Alice"), Term("Bob")]),
         "no_context": Statement(p["no_context"]),
+        "exact": Statement(c["exact"], terms=[Term("San Francisco"), Term("Oakland")]),
+        "less": Statement(c["less"], terms=[Term("San Francisco"), Term("Oakland")]),
+        "less_whether": Statement(
+            c["less_whether"], terms=[Term("San Francisco"), Term("Oakland")]
+        ),
+        "more": Statement(c["more"], terms=[Term("San Francisco"), Term("Oakland")]),
+        "not_more": Statement(
+            c["not_more"], terms=[Term("San Francisco"), Term("Oakland")]
+        ),
+        "float_distance": Statement(
+            c["float_distance"], terms=[Term("San Francisco"), Term("Oakland")]
+        ),
+        "int_distance": Statement(
+            c["int_distance"], terms=[Term("San Francisco"), Term("Oakland")]
+        ),
+        "higher_int": Statement(
+            c["higher_int"], terms=[Term("San Francisco"), Term("Oakland")]
+        ),
+        "absent_more": Statement(
+            c["more"], terms=[Term("San Francisco"), Term("Oakland")], absent=True
+        ),
+        "absent_way_more": Statement(
+            c["way_more"], terms=[Term("San Francisco"), Term("Oakland")], absent=True
+        ),
     }
 
 

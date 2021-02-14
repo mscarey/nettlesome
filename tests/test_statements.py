@@ -523,7 +523,7 @@ class TestImplication:
 
         complex_whether = self.relevant_whether.new_context(context_names)
         explanation = self.relevant_fact.explain_implication(complex_whether)
-        assert (str[Term("Alice")], Term("Craig")) in explanation.items()
+        assert str(Term("Alice"), Term("Craig")) in explanation.items()
         assert (
             str(explanation)
             == "ContextRegister(<Alice> is like <Craig>, <Bob> is like <Dan>)"
