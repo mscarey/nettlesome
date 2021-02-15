@@ -557,6 +557,21 @@ class TestConsistent:
         explanations = list(left.explanations_consistent_with(right, context=register))
         assert not explanations
 
+    def test_inconsistent(self, make_statement):
+        context = ContextRegister()
+        context.insert_pair(Term("Alice"), Term("Alice"))
+        assert not make_statement["crime"].consistent_with(
+            make_statement["no_crime"], context=context
+        )
+
+    def test_inconsistent_two_terms(self, make_statement):
+        context = ContextRegister()
+        context.insert_pair(Term("Alice"), Term("Alice"))
+        context.insert_pair(Term("Bob"), Term("Bob"))
+        assert not make_statement["shooting"].consistent_with(
+            make_statement["no_shooting"], context=context
+        )
+
 
 class TestAddition:
     @pytest.mark.parametrize(

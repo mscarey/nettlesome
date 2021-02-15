@@ -523,13 +523,12 @@ class TestImplication:
 
         complex_whether = self.relevant_whether.new_context(context_names)
         explanation = self.relevant_fact.explain_implication(complex_whether)
-        assert str(Term("Alice"), Term("Craig")) in explanation.items()
+        assert explanation[Term("Alice").key].compare_keys(Term("Craig"))
         assert (
             str(explanation)
             == "ContextRegister(<Alice> is like <Craig>, <Bob> is like <Dan>)"
         )
-        assert (str[Term("Craig")], Term("Alice")) not in explanation.items()
-        assert (str[Term("Alice")], Term("Craig")) in explanation.items()
+        assert explanation.get(Term("Craig").key) is None
 
     def test_context_registers_for_complex_comparison(self):
         context_names = ContextRegister()
@@ -539,7 +538,7 @@ class TestImplication:
         swapped_entities = self.relevant_fact.new_context(context_names)
         gen = swapped_entities._context_registers(self.relevant_fact, operator.ge)
         register = next(gen)
-        assert register.matches.get("<Alice>") == Term("Bob")
+        assert register.matches.get("<Alice>").compare_keys(Term("Bob"))
 
     def test_no_implication_complex(self):
         murder_fact = Statement(

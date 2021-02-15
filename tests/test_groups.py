@@ -11,41 +11,60 @@ from nettlesome.statements import Statement
 
 
 class TestMakeGroup:
-    def test_group_from_list(self):
-        factor_list = [make_statement["f1"]["f2"]]
+    def test_group_from_list(self, make_statement):
+        factor_list = [make_statement["crime"], make_statement["shooting"]]
         group = ComparableGroup(factor_list)
         assert isinstance(group, ComparableGroup)
-        assert group[1] == make_statement["f2"]
+        assert group[1] == make_statement["shooting"]
 
-    def test_group_from_item(self):
-        factor = make_statement["f1"]
+    def test_group_from_item(self, make_statement):
+        factor = make_statement["shooting"]
         group = ComparableGroup(factor)
         assert isinstance(group, ComparableGroup)
-        assert group[0] == make_statement["f1"]
+        assert group[0] == make_statement["shooting"]
 
     def test_make_empty_group(self):
         group = ComparableGroup()
         assert isinstance(group, ComparableGroup)
         assert len(group) == 0
 
-    def test_factorgroup_from_factorgroup(self):
-        factor_list = [make_statement["f1"]["f2"]]
+    def test_factorgroup_from_factorgroup(self, make_statement):
+        factor_list = [make_statement["crime"], make_statement["shooting"]]
         group = ComparableGroup(factor_list)
         identical_group = ComparableGroup(group)
         assert isinstance(identical_group, ComparableGroup)
-        assert identical_group[0] == make_statement["f1"]
+        assert identical_group[0] == make_statement["crime"]
 
-    def test_one_factor_implies_and_has_same_context_as_other(self):
-        assert make_statement["meters"].implies_same_context(make_statement["f8"])
+    def test_one_factor_implies_and_has_same_context_as_other(self, make_statement):
+        assert make_statement["more"].implies_same_context(
+            make_statement["more_meters"]
+        )
 
-    def test_drop_implied_factors(self):
-        group = ComparableGroup([make_statement["meters"]["f8"]])
+    def test_drop_implied_factors(self, make_statement):
+        group = ComparableGroup([make_statement["more_meters"], make_statement["more"]])
         shorter = group.drop_implied_factors()
         assert len(shorter) == 1
-        assert make_statement["meters"] in group
+        assert make_statement["more_meters"] in group
 
     def test_drop_implied_factors_unmatched_context(self):
-        group = ComparableGroup([make_statement["f9_swap_entities"]["f9_miles"]])
+        """Test that Statements aren't considered redundant because they relate to different entities."""
+        left = Statement(
+            Comparison(
+                "the amount that ${taller}'s height exceeded ${shorter}'s height was",
+                sign=">=",
+                expression="2 inches",
+            ),
+            terms=[Term("Ann"), Term("Ben")],
+        )
+        right = Statement(
+            Comparison(
+                "the amount that ${taller}'s height exceeded ${shorter}'s height was",
+                sign=">=",
+                expression="2 feet",
+            ),
+            terms=[Term("Alice"), Term("Bob")],
+        )
+        group = ComparableGroup([left, right])
         shorter = group.drop_implied_factors()
         assert len(shorter) == 2
 
@@ -63,7 +82,7 @@ class TestMakeGroup:
 
         gen = left._context_registers(right, comparison=means, context=register)
         answer = next(gen)
-        assert answer.get("<Bob>") == dan
+        assert answer.get("<Bob>").compare_keys(dan)
 
 
 class TestSameFactors:
@@ -290,3 +309,9 @@ class TestConsistent:
     def test_consistent_with_none(self):
         group = ComparableGroup([self.slower_general_statement, self.farm_statement])
         assert group.consistent_with(None)
+
+    def test_not_internally_consistent(self, make_statement):
+        group = ComparableGroup(
+            [make_statement["shooting"], make_statement["no_shooting"]]
+        )
+        assert not group.internally_consistent()

@@ -186,6 +186,11 @@ class Comparable(ABC):
     context_factor_names: ClassVar[Tuple[str, ...]] = ()
 
     @property
+    def key(self) -> str:
+        """Return string representation of self for use as a key in a ContextRegister."""
+        return self.short_string
+
+    @property
     def short_string(self) -> str:
         """Return string representation without line breaks."""
         return textwrap.shorten(str(self), width=5000, placeholder="...")
@@ -297,6 +302,17 @@ class Comparable(ABC):
             explanation is not None
             for explanation in self.explanations_consistent_with(other, context)
         )
+
+    def compare_keys(self, other: Optional[Comparable]) -> bool:
+        """
+        Test if self and other would be considered identical in a ContextRegister.
+
+        May return True even if Python's == operation would return False.
+
+        May return False even if the .means() method would return True because self and other
+        have generic terms.
+        """
+        return other is not None and self.key == other.key
 
     def compare_terms(self, other: Comparable, relation: Callable) -> bool:
         r"""
