@@ -273,9 +273,11 @@ class Comparable(ABC):
     ) -> bool:
         if all(
             all(
-                context.get_factor(key) == context_register.get_factor(key)
-                or context.get_factor(context_register.get(str(key))) == key
-                for key in self.generic_factors()
+                context.get_factor(generic) == context_register.get_factor(generic)
+                or generic.compare_keys(
+                    context.get_factor(context_register.get_factor(generic))
+                )
+                for generic in self.generic_factors()
             )
             for context_register in self._context_registers(
                 other=other, comparison=means, context=context
