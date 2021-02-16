@@ -86,40 +86,64 @@ class TestMakeGroup:
 
 
 class TestSameFactors:
-    def test_group_has_same_factors_as_identical_group(self):
-        first_group = ComparableGroup([make_statement["f1"]["f3"]])
-        second_group = ComparableGroup([make_statement["f1"]["f3"]])
+    def test_group_has_same_factors_as_identical_group(self, make_statement):
+        first_group = ComparableGroup(
+            [make_statement["crime"], make_statement["shooting"]]
+        )
+        second_group = ComparableGroup(
+            [make_statement["crime"], make_statement["shooting"]]
+        )
         assert first_group.has_all_factors_of(second_group)
 
-    def test_group_has_same_factors_as_included_group(self):
-        first_group = ComparableGroup([make_statement["f1"]["f2"]["f3"]])
-        second_group = ComparableGroup([make_statement["f1"]["f3"]])
+    def test_group_has_same_factors_as_included_group(self, make_statement):
+        first_group = ComparableGroup(
+            [
+                make_statement["crime"],
+                make_statement["shooting"],
+                make_statement["murder"],
+            ]
+        )
+        second_group = ComparableGroup(
+            [make_statement["crime"], make_statement["murder"]]
+        )
         assert first_group.has_all_factors_of(second_group)
-
-    def test_group_does_not_have_same_factors_as_bigger_group(self):
-        first_group = ComparableGroup([make_statement["f1"]["f2"]["f3"]])
-        second_group = ComparableGroup([make_statement["f1"]["f3"]])
         assert not second_group.has_all_factors_of(first_group)
 
-    def test_group_shares_all_factors_with_bigger_group(self):
-        first_group = ComparableGroup([make_statement["f1"]["f2"]["f3"]])
-        second_group = ComparableGroup([make_statement["f1"]["f3"]])
+    def test_group_shares_all_factors_with_bigger_group(self, make_statement):
+        first_group = ComparableGroup(
+            [
+                make_statement["crime"],
+                make_statement["shooting"],
+                make_statement["murder"],
+            ]
+        )
+        second_group = ComparableGroup(
+            [make_statement["crime"], make_statement["murder"]]
+        )
         assert second_group.shares_all_factors_with(first_group)
-
-    def test_group_does_not_share_all_factors_with_smaller_group(self):
-        first_group = ComparableGroup([make_statement["f1"]["f2"]["f3"]])
-        second_group = ComparableGroup([make_statement["f1"]["f3"]])
         assert not first_group.shares_all_factors_with(second_group)
 
-    def test_group_means_identical_group(self):
-        first_group = ComparableGroup([make_statement["f1"]["f3"]])
-        second_group = ComparableGroup([make_statement["f1"]["f3"]])
+    def test_group_means_identical_group(self, make_statement):
+        first_group = ComparableGroup(
+            [make_statement["crime"], make_statement["murder"]]
+        )
+        second_group = ComparableGroup(
+            [make_statement["crime"], make_statement["murder"]]
+        )
         assert first_group.means(second_group)
         assert means(first_group, second_group)
 
-    def test_group_does_not_mean_different_group(self):
-        first_group = ComparableGroup([make_statement["f1"]["f2"]["f3"]])
-        second_group = ComparableGroup([make_statement["f1"]["f3"]])
+    def test_group_does_not_mean_different_group(self, make_statement):
+        first_group = ComparableGroup(
+            [
+                make_statement["crime"],
+                make_statement["shooting"],
+                make_statement["murder"],
+            ]
+        )
+        second_group = ComparableGroup(
+            [make_statement["crime"], make_statement["murder"]]
+        )
         assert not first_group.means(second_group)
         assert not second_group.means(first_group)
 
@@ -135,20 +159,22 @@ class TestSameFactors:
 
 
 class TestImplication:
-    def test_factorgroup_implies_none(self):
-        group = ComparableGroup([make_statement["f1"]["f2"]])
+    def test_factorgroup_implies_none(self, make_statement):
+        group = ComparableGroup([make_statement["crime"], make_statement["shooting"]])
         assert group.implies(None)
 
-    def test_factorgroup_implication_of_empty_group(self):
-        factor_list = [make_statement["f1"]["f2"]]
+    def test_factorgroup_implication_of_empty_group(self, make_statement):
+        factor_list = [make_statement["crime"], make_statement["shooting"]]
         group = ComparableGroup(factor_list)
         empty_group = ComparableGroup()
         assert group.implies(empty_group)
 
-    def test_explanation_implication_of_factorgroup(self):
-        """The returned Explanation shows that f8_meters matches up with f8."""
-        left = ComparableGroup([make_statement["f9_absent_miles"]["meters"]])
-        right = ComparableGroup([make_statement["f8"]["f9_absent"]])
+    def test_explanation_implication_of_factorgroup(self, make_statement):
+        """Explanation shows the statements in `left` narrow down the quantity more than `right` does."""
+        left = ComparableGroup(
+            [make_statement["absent_way_more"], make_statement["less_than_20"]]
+        )
+        right = ComparableGroup([make_statement["less"], make_statement["absent_more"]])
         explanation = left.explain_implication(right)
         assert "implies" in str(explanation).lower()
 
@@ -182,16 +208,16 @@ class TestContradiction:
 
 
 class TestAdd:
-    def test_add_does_not_consolidate_factors(self):
-        left = ComparableGroup(make_statement["f1"])
-        right = ComparableGroup(make_statement["f1"])
+    def test_add_does_not_consolidate_factors(self, make_statement):
+        left = ComparableGroup(make_statement["crime"])
+        right = ComparableGroup(make_statement["crime"])
         added = left + right
         assert len(added) == 2
         assert isinstance(added, ComparableGroup)
 
-    def test_add_factor_to_factorgroup(self):
-        left = ComparableGroup(make_statement["f1"])
-        right = make_statement["f1"]
+    def test_add_factor_to_factorgroup(self, make_statement):
+        left = ComparableGroup(make_statement["crime"])
+        right = make_statement["crime"]
         added = left + right
         assert len(added) == 2
         assert isinstance(added, ComparableGroup)
@@ -224,8 +250,7 @@ class TestUnion:
 
     def test_union_causes_contradiction(self, make_statement):
         """
-        If these Factors were about the same Term, they would contradict
-        and no union would be possible.
+        Test Factors about the same Term contradict so no union is possible.
         """
         left = ComparableGroup(make_statement["no_shooting"])
         right = ComparableGroup(make_statement["shooting"])

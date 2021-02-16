@@ -339,7 +339,7 @@ class TestCompare:
 
     def test_error_predicate_contradict_factor(self, make_comparable):
         with pytest.raises(TypeError):
-            self.exact.contradicts(
+            make_comparable["exact"].contradicts(
                 Statement(
                     make_comparable["exact"], terms=[Term("thing"), Term("place")]
                 )
