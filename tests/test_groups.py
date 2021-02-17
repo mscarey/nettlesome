@@ -340,3 +340,10 @@ class TestConsistent:
             [make_statement["shooting"], make_statement["no_shooting"]]
         )
         assert not group.internally_consistent()
+
+    def test_all_generic_factors_match(self):
+        left = ComparableGroup(Term("Morning Star"))
+        right = ComparableGroup(Term("Evening Star"))
+        context = ContextRegister()
+        context.insert_pair(left[0], right[0])
+        assert left.all_generic_factors_match(right, context=context)

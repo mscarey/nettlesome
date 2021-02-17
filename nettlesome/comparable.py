@@ -273,7 +273,12 @@ class Comparable(ABC):
     ) -> bool:
         if all(
             all(
-                context.get_factor(generic) == context_register.get_factor(generic)
+                (
+                    context.get_factor(generic) is not None
+                    and context.get_factor(generic).compare_keys(
+                        context_register.get_factor(generic)
+                    )
+                )
                 or generic.compare_keys(
                     context.get_factor(context_register.get_factor(generic))
                 )
@@ -1077,6 +1082,8 @@ class ContextRegister:
                     "'key' and 'value' must both be subclasses of 'Comparable'",
                     f"but {comp} was type {type(comp)}.",
                 )
+            if isinstance(comp, Iterable):
+                raise TypeError("Iterable objects may not be added to ContextRegister")
         self._matches[key.short_string] = value
         self._reverse_matches[value.short_string] = key
 

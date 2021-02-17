@@ -257,3 +257,10 @@ class TestChangeRegisters:
         )
         gen = register.factor_pairs()
         assert next(gen)[0].name == "apple"
+
+    def test_no_iterables_in_register(self):
+        left = ComparableGroup(Term("Morning Star"))
+        right = ComparableGroup(Term("Evening Star"))
+        context = ContextRegister()
+        with pytest.raises(TypeError):
+            context.insert_pair(left, right)
