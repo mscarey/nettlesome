@@ -57,7 +57,7 @@ def make_predicate() -> Dict[str, Predicate]:
 
 
 @pytest.fixture(scope="class")
-def make_comparable() -> Dict[str, Predicate]:
+def make_comparison() -> Dict[str, Predicate]:
     return {
         "acres": Comparison(
             "the distance between $place1 and $place2 was",
@@ -142,9 +142,9 @@ def make_comparable() -> Dict[str, Predicate]:
 
 
 @pytest.fixture(scope="class")
-def make_statement(make_predicate, make_comparable) -> Dict[str, Statement]:
+def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
     p = make_predicate
-    c = make_comparable
+    c = make_comparison
     return {
         "irrelevant_0": Statement(p["irrelevant_0"], [Term("Craig")]),
         "irrelevant_1": Statement(p["irrelevant_1"], [Term("Dan")]),

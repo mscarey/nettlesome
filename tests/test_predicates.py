@@ -172,15 +172,15 @@ class TestCompare:
         with_context = predicate.content_with_terms(context)
         assert with_context.startswith(expected)
 
-    def test_str_not_equal(self, make_comparable):
+    def test_str_not_equal(self, make_comparison):
         assert (
             "the distance between $place1 and $place2 was not equal to 35 foot"
-            in str(make_comparable["not_equal"])
+            in str(make_comparison["not_equal"])
         )
 
-    def test_negated_method(self, make_comparable):
-        assert make_comparable["less"].negated().means(make_comparable["more"])
-        as_false = make_comparable["exact"].negated()
+    def test_negated_method(self, make_comparison):
+        assert make_comparison["less"].negated().means(make_comparison["more"])
+        as_false = make_comparison["exact"].negated()
         assert (
             str(as_false)
             == "that the distance between $place1 and $place2 was not equal to 25 foot"
@@ -206,14 +206,14 @@ class TestCompare:
         with pytest.raises(TypeError):
             make_predicate["crime"].means(Statement("any text"))
 
-    def test_same_meaning_float_and_int(self, make_comparable):
+    def test_same_meaning_float_and_int(self, make_comparison):
         """
         These now evaluate equal even though their equal quantities are different types
         """
-        assert make_comparable["int_distance"].means(make_comparable["float_distance"])
+        assert make_comparison["int_distance"].means(make_comparison["float_distance"])
 
-    def test_no_equality_with_inconsistent_dimensionality(self, make_comparable):
-        assert not make_comparable["more"].means(make_comparable["acres"])
+    def test_no_equality_with_inconsistent_dimensionality(self, make_comparison):
+        assert not make_comparison["more"].means(make_comparison["acres"])
 
     def test_different_truth_value_prevents_equality(self, make_predicate):
         assert not make_predicate["murder"].means(make_predicate["murder_whether"])
@@ -240,13 +240,13 @@ class TestCompare:
         )
         assert not left.means(right)
 
-    def test_greater_than_because_of_quantity(self, make_comparable):
-        assert make_comparable["less_than_20"] > make_comparable["less"]
-        assert make_comparable["less_than_20"] != make_comparable["less"]
+    def test_greater_than_because_of_quantity(self, make_comparison):
+        assert make_comparison["less_than_20"] > make_comparison["less"]
+        assert make_comparison["less_than_20"] != make_comparison["less"]
 
-    def test_greater_float_and_int(self, make_comparable):
-        assert make_comparable["int_distance"] > make_comparable["int_higher"]
-        assert make_comparable["int_higher"] < make_comparable["int_distance"]
+    def test_greater_float_and_int(self, make_comparison):
+        assert make_comparison["int_distance"] > make_comparison["int_higher"]
+        assert make_comparison["int_higher"] < make_comparison["int_distance"]
 
     def test_any_truth_value_implies_none(self, make_predicate):
         assert make_predicate["murder"] > make_predicate["murder_whether"]
@@ -276,15 +276,15 @@ class TestCompare:
         assert not equal.contradicts(less)
         assert not equal.implies(less)
 
-    def test_equal_implies_greater_or_equal(self, make_comparable):
-        assert make_comparable["exact"] > make_comparable["less"]
+    def test_equal_implies_greater_or_equal(self, make_comparison):
+        assert make_comparison["exact"] > make_comparison["less"]
 
-    def test_implication_with_not_equal(self, make_comparable):
-        assert make_comparable["less"] > make_comparable["not_equal"]
+    def test_implication_with_not_equal(self, make_comparison):
+        assert make_comparison["less"] > make_comparison["not_equal"]
 
-    def test_no_implication_with_inconsistent_dimensionality(self, make_comparable):
-        assert not make_comparable["less"] >= make_comparable["acres"]
-        assert not make_comparable["less"] <= make_comparable["acres"]
+    def test_no_implication_with_inconsistent_dimensionality(self, make_comparison):
+        assert not make_comparison["less"] >= make_comparison["acres"]
+        assert not make_comparison["less"] <= make_comparison["acres"]
 
     def test_implication_with_no_truth_value(self):
         assert not self.whether_lived_at > self.lived_at
@@ -311,15 +311,15 @@ class TestCompare:
         again = Predicate("$thing was an apple")
         assert not self.same.contradicts(again)
 
-    def test_not_more_does_not_contradict_less(self, make_comparable):
-        assert not make_comparable["not_more"].contradicts(make_comparable["less"])
+    def test_not_more_does_not_contradict_less(self, make_comparison):
+        assert not make_comparison["not_more"].contradicts(make_comparison["less"])
 
-    def test_irrelevant_does_not_contradict(self, make_comparable):
-        assert not self.same.contradicts(make_comparable["less"])
+    def test_irrelevant_does_not_contradict(self, make_comparison):
+        assert not self.same.contradicts(make_comparison["less"])
 
-    def test_contradiction_by_exact(self, make_comparable):
-        assert make_comparable["exact"].contradicts(make_comparable["less_than_20"])
-        assert make_comparable["less_than_20"].contradicts(make_comparable["exact"])
+    def test_contradiction_by_exact(self, make_comparison):
+        assert make_comparison["exact"].contradicts(make_comparison["less_than_20"])
+        assert make_comparison["less_than_20"].contradicts(make_comparison["exact"])
 
     def test_contradiction_by_equal_quantity(self, make_predicate):
         assert make_predicate["quantity=3"].contradicts(make_predicate["quantity>5"])
@@ -337,11 +337,11 @@ class TestCompare:
             make_predicate["quantity>=4"]
         )
 
-    def test_error_predicate_contradict_factor(self, make_comparable):
+    def test_error_predicate_contradict_factor(self, make_comparison):
         with pytest.raises(TypeError):
-            make_comparable["exact"].contradicts(
+            make_comparison["exact"].contradicts(
                 Statement(
-                    make_comparable["exact"], terms=[Term("thing"), Term("place")]
+                    make_comparison["exact"], terms=[Term("thing"), Term("place")]
                 )
             )
 
@@ -349,12 +349,12 @@ class TestCompare:
         assert not self.whether_lived_at.contradicts(self.lived_at)
         assert not self.lived_at.contradicts(self.whether_lived_at)
 
-    def test_no_contradiction_with_inconsistent_dimensionality(self, make_comparable):
-        assert not make_comparable["meters"].contradicts(make_comparable["acres"])
-        assert not make_comparable["acres"].contradicts(make_comparable["meters"])
+    def test_no_contradiction_with_inconsistent_dimensionality(self, make_comparison):
+        assert not make_comparison["meters"].contradicts(make_comparison["acres"])
+        assert not make_comparison["acres"].contradicts(make_comparison["meters"])
 
-    def test_contradiction_with_quantity(self, make_comparable):
-        assert make_comparable["less_than_20"].contradicts(make_comparable["meters"])
+    def test_contradiction_with_quantity(self, make_comparison):
+        assert make_comparison["less_than_20"].contradicts(make_comparison["meters"])
 
     def test_contradictory_date_ranges(self):
         later = Comparison(
