@@ -1,3 +1,5 @@
+import pytest
+
 from nettlesome.comparable import (
     ContextRegister,
     consistent_with,
@@ -335,6 +337,16 @@ class TestConsistent:
         group = ComparableGroup([self.slower_general_statement, self.farm_statement])
         assert group.consistent_with(None)
 
+    def test_not_internally_consistent_with_context(self, make_statement):
+        context = ContextRegister()
+        context.insert_pair(Term("Alice"), Term("Alice"))
+        context.insert_pair(Term("Bob"), Term("Bob"))
+        group = ComparableGroup(
+            [make_statement["shooting"], make_statement["no_shooting"]]
+        )
+        assert not group.internally_consistent(context=context)
+
+    @pytest.mark.xfail(reason="Always returns True if no context is given.")
     def test_not_internally_consistent(self, make_statement):
         group = ComparableGroup(
             [make_statement["shooting"], make_statement["no_shooting"]]

@@ -430,7 +430,7 @@ class ComparableGroup(Tuple[F, ...], Comparable):
         self, other: ComparableGroup, context: ContextRegister
     ) -> Optional[ComparableGroup]:
         result = self.union_from_explanation_allow_contradiction(other, context)
-        if not result.internally_consistent():
+        if not result.internally_consistent(context=context):
             return None
         return result
 
