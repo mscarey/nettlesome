@@ -6,7 +6,7 @@ import sympy
 from sympy import Interval, oo
 
 
-from nettlesome.terms import Term
+from nettlesome.entities import Entity
 from nettlesome.predicates import Predicate, Comparison, Q_
 from nettlesome.statements import Statement
 
@@ -155,11 +155,11 @@ class TestCompare:
         "context, expected",
         [
             (
-                [Term(name="the book", plural=False)],
+                [Entity(name="the book", plural=False)],
                 "<the book> was names, towns,",
             ),
             (
-                [Term(name="the book's listings", plural=True)],
+                [Entity(name="the book's listings", plural=True)],
                 "<the book's listings> were names, towns,",
             ),
         ],
@@ -292,7 +292,7 @@ class TestCompare:
 
     def test_error_predicate_imply_factor(self):
         with pytest.raises(TypeError):
-            self.same > Statement("$animal was a cat", terms=Term("Mittens"))
+            self.same > Statement("$animal was a cat", terms=Entity("Mittens"))
 
     def test_implication_due_to_dates(self):
         copyright_date_range = Comparison(
@@ -341,7 +341,7 @@ class TestCompare:
         with pytest.raises(TypeError):
             make_comparison["exact"].contradicts(
                 Statement(
-                    make_comparison["exact"], terms=[Term("thing"), Term("place")]
+                    make_comparison["exact"], terms=[Entity("thing"), Entity("place")]
                 )
             )
 

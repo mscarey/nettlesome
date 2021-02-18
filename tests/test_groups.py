@@ -6,7 +6,7 @@ from nettlesome.comparable import (
     contradicts,
     means,
 )
-from nettlesome.terms import Term
+from nettlesome.entities import Entity
 from nettlesome.groups import ComparableGroup
 from nettlesome.predicates import Predicate, Comparison
 from nettlesome.statements import Statement
@@ -56,7 +56,7 @@ class TestMakeGroup:
                 sign=">=",
                 expression="2 inches",
             ),
-            terms=[Term("Ann"), Term("Ben")],
+            terms=[Entity("Ann"), Entity("Ben")],
         )
         right = Statement(
             Comparison(
@@ -64,17 +64,17 @@ class TestMakeGroup:
                 sign=">=",
                 expression="2 feet",
             ),
-            terms=[Term("Alice"), Term("Bob")],
+            terms=[Entity("Alice"), Entity("Bob")],
         )
         group = ComparableGroup([left, right])
         shorter = group.drop_implied_factors()
         assert len(shorter) == 2
 
     def test_make_context_register(self):
-        alice = Term("Alice")
-        bob = Term("Bob")
-        craig = Term("Craig")
-        dan = Term("Dan")
+        alice = Entity("Alice")
+        bob = Entity("Bob")
+        craig = Entity("Craig")
+        dan = Entity("Dan")
 
         left = ComparableGroup([alice, bob])
         right = ComparableGroup([craig, dan])
@@ -151,8 +151,8 @@ class TestSameFactors:
 
     def test_register_for_matching_entities(self):
         known = ContextRegister()
-        alice = Term("Alice")
-        craig = Term("Craig")
+        alice = Entity("Alice")
+        craig = Entity("Craig")
         known.insert_pair(alice, craig)
 
         gen = alice._context_registers(other=craig, comparison=means, context=known)
@@ -184,15 +184,15 @@ class TestImplication:
 class TestContradiction:
     def test_contradiction_of_group(self):
         lived_at = Predicate("$person lived at $residence")
-        bob_lived = Statement(lived_at, terms=[Term("Bob"), Term("Bob's house")])
-        carl_lived = Statement(lived_at, terms=[Term("Carl"), Term("Carl's house")])
+        bob_lived = Statement(lived_at, terms=[Entity("Bob"), Entity("Bob's house")])
+        carl_lived = Statement(lived_at, terms=[Entity("Carl"), Entity("Carl's house")])
         distance_long = Comparison(
             "the distance from the center of $city to $residence was",
             sign=">=",
             expression="50 miles",
         )
         statement_long = Statement(
-            distance_long, terms=[Term("Houston"), Term("Bob's house")]
+            distance_long, terms=[Entity("Houston"), Entity("Bob's house")]
         )
         distance_short = Comparison(
             "the distance from the center of $city to $residence was",
@@ -200,7 +200,7 @@ class TestContradiction:
             expression="10 kilometers",
         )
         statement_short = Statement(
-            distance_short, terms=[Term("El Paso"), Term("Carl's house")]
+            distance_short, terms=[Entity("El Paso"), Entity("Carl's house")]
         )
         left = ComparableGroup([bob_lived, statement_long])
         right = ComparableGroup([carl_lived, statement_short])
@@ -278,30 +278,30 @@ class TestConsistent:
     )
     predicate_farm = Predicate("$person had a farm")
     slower_specific_statement = Statement(
-        predicate_less_specific, terms=Term("the car")
+        predicate_less_specific, terms=Entity("the car")
     )
     slower_general_statement = Statement(
-        predicate_less_general, terms=Term("the pickup")
+        predicate_less_general, terms=Entity("the pickup")
     )
-    faster_statement = Statement(predicate_more, terms=Term("the pickup"))
-    farm_statement = Statement(predicate_farm, terms=Term("Old MacDonald"))
+    faster_statement = Statement(predicate_more, terms=Entity("the pickup"))
+    farm_statement = Statement(predicate_farm, terms=Entity("Old MacDonald"))
 
     def test_group_contradicts_single_factor(self):
         group = ComparableGroup([self.slower_specific_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair(Term("the car"), Term("the pickup"))
+        register.insert_pair(Entity("the car"), Entity("the pickup"))
         assert group.contradicts(self.faster_statement, context=register)
 
     def test_one_statement_does_not_contradict_group(self):
         group = ComparableGroup([self.slower_general_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair(Term("the pickup"), Term("the pickup"))
+        register.insert_pair(Entity("the pickup"), Entity("the pickup"))
         assert not self.faster_statement.contradicts(group, context=register)
 
     def test_group_inconsistent_with_single_factor(self):
         group = ComparableGroup([self.slower_specific_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair(Term("the car"), Term("the pickup"))
+        register.insert_pair(Entity("the car"), Entity("the pickup"))
         assert not group.consistent_with(self.faster_statement, context=register)
         assert not consistent_with(group, self.faster_statement, context=register)
 
@@ -314,19 +314,19 @@ class TestConsistent:
     def test_group_inconsistent_with_one_statement(self):
         group = ComparableGroup([self.slower_specific_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair(Term("the car"), Term("the pickup"))
+        register.insert_pair(Entity("the car"), Entity("the pickup"))
         assert not group.consistent_with(self.faster_statement, context=register)
 
     def test_one_statement_inconsistent_with_group(self):
         group = ComparableGroup([self.slower_specific_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair(Term("the pickup"), Term("the car"))
+        register.insert_pair(Entity("the pickup"), Entity("the car"))
         assert not self.faster_statement.consistent_with(group, context=register)
 
     def test_one_statement_consistent_with_group(self):
         group = ComparableGroup([self.slower_general_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair(Term("the pickup"), Term("the pickup"))
+        register.insert_pair(Entity("the pickup"), Entity("the pickup"))
         assert self.faster_statement.consistent_with(group, context=register)
 
     def test_no_contradiction_of_none(self):
@@ -339,8 +339,8 @@ class TestConsistent:
 
     def test_not_internally_consistent_with_context(self, make_statement):
         context = ContextRegister()
-        context.insert_pair(Term("Alice"), Term("Alice"))
-        context.insert_pair(Term("Bob"), Term("Bob"))
+        context.insert_pair(Entity("Alice"), Entity("Alice"))
+        context.insert_pair(Entity("Bob"), Entity("Bob"))
         group = ComparableGroup(
             [make_statement["shooting"], make_statement["no_shooting"]]
         )
@@ -354,18 +354,18 @@ class TestConsistent:
         assert not group.internally_consistent()
 
     def test_all_generic_factors_match(self):
-        left = ComparableGroup(Term("Morning Star"))
-        right = ComparableGroup(Term("Evening Star"))
+        left = ComparableGroup(Entity("Morning Star"))
+        right = ComparableGroup(Entity("Evening Star"))
         context = ContextRegister()
         context.insert_pair(left[0], right[0])
         assert left.all_generic_factors_match(right, context=context)
 
     def test_all_generic_factors_match_in_statement(self):
         predicate = Predicate("the telescope pointed at $object")
-        morning = Statement(predicate=predicate, terms=Term("Morning Star"))
-        evening = Statement(predicate=predicate, terms=Term("Evening Star"))
+        morning = Statement(predicate=predicate, terms=Entity("Morning Star"))
+        evening = Statement(predicate=predicate, terms=Entity("Evening Star"))
         left = ComparableGroup(morning)
         right = ComparableGroup(evening)
         context = ContextRegister()
-        context.insert_pair(Term("Morning Star"), Term("Evening Star"))
+        context.insert_pair(Entity("Morning Star"), Entity("Evening Star"))
         assert left.all_generic_factors_match(right, context=context)

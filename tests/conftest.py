@@ -6,7 +6,7 @@ import pytest
 from nettlesome.comparable import ContextRegister
 from nettlesome.predicates import Predicate, Comparison
 from nettlesome.statements import Statement
-from nettlesome.terms import Term
+from nettlesome.entities import Entity
 
 ureg = UnitRegistry()
 Q_ = ureg.Quantity
@@ -146,97 +146,111 @@ def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
     p = make_predicate
     c = make_comparison
     return {
-        "irrelevant_0": Statement(p["irrelevant_0"], [Term("Craig")]),
-        "irrelevant_1": Statement(p["irrelevant_1"], [Term("Dan")]),
-        "irrelevant_2": Statement(p["irrelevant_2"], Term("Dan")),
-        "irrelevant_3": Statement(p["irrelevant_3"], [Term("Craig"), Term("circus")]),
+        "irrelevant_0": Statement(p["irrelevant_0"], [Entity("Craig")]),
+        "irrelevant_1": Statement(p["irrelevant_1"], [Entity("Dan")]),
+        "irrelevant_2": Statement(p["irrelevant_2"], Entity("Dan")),
+        "irrelevant_3": Statement(
+            p["irrelevant_3"], [Entity("Craig"), Entity("circus")]
+        ),
         "irrelevant_3_new_context": Statement(
-            p["irrelevant_3"], [Term("Craig"), Term("Dan")]
+            p["irrelevant_3"], [Entity("Craig"), Entity("Dan")]
         ),
         "irrelevant_3_context_0": Statement(
-            p["irrelevant_3"], [Term("Craig"), Term("Alice")]
+            p["irrelevant_3"], [Entity("Craig"), Entity("Alice")]
         ),
-        "crime": Statement(p["crime"], Term("Alice")),
-        "crime_generic": Statement(p["crime"], Term("Alice"), generic=True),
-        "crime_specific_person": Statement(p["crime"], Term("Alice", generic=False)),
-        "absent_no_crime": Statement(p["no_crime"], Term("Alice"), absent=True),
-        "no_crime": Statement(p["no_crime"], Term("Alice")),
-        "no_crime_entity_order": Statement(p["no_crime"], [Term("Bob")]),
-        "murder": Statement(p["murder"], terms=[Term("Alice"), Term("Bob")]),
+        "crime": Statement(p["crime"], Entity("Alice")),
+        "crime_generic": Statement(p["crime"], Entity("Alice"), generic=True),
+        "crime_specific_person": Statement(p["crime"], Entity("Alice", generic=False)),
+        "absent_no_crime": Statement(p["no_crime"], Entity("Alice"), absent=True),
+        "no_crime": Statement(p["no_crime"], Entity("Alice")),
+        "no_crime_entity_order": Statement(p["no_crime"], [Entity("Bob")]),
+        "murder": Statement(p["murder"], terms=[Entity("Alice"), Entity("Bob")]),
         "murder_false": Statement(
-            p["murder_false"], terms=[Term("Alice"), Term("Bob")]
+            p["murder_false"], terms=[Entity("Alice"), Entity("Bob")]
         ),
-        "murder_entity_order": Statement(p["murder"], [Term("Bob"), Term("Alice")]),
-        "murder_craig": Statement(p["murder"], [Term("Craig"), Term("Dan")]),
+        "murder_entity_order": Statement(p["murder"], [Entity("Bob"), Entity("Alice")]),
+        "murder_craig": Statement(p["murder"], [Entity("Craig"), Entity("Dan")]),
         "murder_whether": Statement(
-            p["murder_whether"], terms=[Term("Alice"), Term("Bob")]
+            p["murder_whether"], terms=[Entity("Alice"), Entity("Bob")]
         ),
-        "shooting": Statement(p["shooting"], terms=[Term("Alice"), Term("Bob")]),
-        "shooting_self": Statement(p["shooting_self"], terms=[Term("Alice")]),
-        "shooting_craig": Statement(p["shooting"], [Term("Craig"), Term("Dan")]),
-        "shooting_entity_order": Statement(p["shooting"], [Term("Bob"), Term("Alice")]),
-        "no_shooting": Statement(p["no_shooting"], terms=[Term("Alice"), Term("Bob")]),
+        "shooting": Statement(p["shooting"], terms=[Entity("Alice"), Entity("Bob")]),
+        "shooting_self": Statement(p["shooting_self"], terms=[Entity("Alice")]),
+        "shooting_craig": Statement(p["shooting"], [Entity("Craig"), Entity("Dan")]),
+        "shooting_entity_order": Statement(
+            p["shooting"], [Entity("Bob"), Entity("Alice")]
+        ),
+        "no_shooting": Statement(
+            p["no_shooting"], terms=[Entity("Alice"), Entity("Bob")]
+        ),
         "shooting_whether": Statement(
-            p["shooting_whether"], terms=[Term("Alice"), Term("Bob")]
+            p["shooting_whether"], terms=[Entity("Alice"), Entity("Bob")]
         ),
         "no_shooting_entity_order": Statement(
-            p["no_shooting"], [Term("Bob"), Term("Alice")]
+            p["no_shooting"], [Entity("Bob"), Entity("Alice")]
         ),
         "three_entities": Statement(
-            p["three_entities"], [Term("Alice"), Term("Bob"), Term("Craig")]
+            p["three_entities"], [Entity("Alice"), Entity("Bob"), Entity("Craig")]
         ),
         "repeating_entity": Statement(
-            p["three_entities"], [Term("Alice"), Term("Bob"), Term("Alice")]
+            p["three_entities"], [Entity("Alice"), Entity("Bob"), Entity("Alice")]
         ),
         "large_weight": Statement(
             p["large_weight"],
-            Term("Alice"),
+            Entity("Alice"),
         ),
         "small_weight": Statement(
             p["small_weight"],
-            Term("Alice"),
+            Entity("Alice"),
         ),
         "small_weight_bob": Statement(
             p["small_weight"],
-            Term("Bob"),
+            Entity("Bob"),
         ),
-        "friends": Statement(p["friends"], [Term("Alice"), Term("Bob")]),
+        "friends": Statement(p["friends"], [Entity("Alice"), Entity("Bob")]),
         "no_context": Statement(p["no_context"]),
-        "exact": Statement(c["exact"], terms=[Term("San Francisco"), Term("Oakland")]),
-        "less": Statement(c["less"], terms=[Term("San Francisco"), Term("Oakland")]),
+        "exact": Statement(
+            c["exact"], terms=[Entity("San Francisco"), Entity("Oakland")]
+        ),
+        "less": Statement(
+            c["less"], terms=[Entity("San Francisco"), Entity("Oakland")]
+        ),
         "less_than_20": Statement(
-            c["less_than_20"], terms=[Term("San Francisco"), Term("Oakland")]
+            c["less_than_20"], terms=[Entity("San Francisco"), Entity("Oakland")]
         ),
         "less_whether": Statement(
-            c["less_whether"], terms=[Term("San Francisco"), Term("Oakland")]
+            c["less_whether"], terms=[Entity("San Francisco"), Entity("Oakland")]
         ),
-        "more": Statement(c["more"], terms=[Term("San Francisco"), Term("Oakland")]),
+        "more": Statement(
+            c["more"], terms=[Entity("San Francisco"), Entity("Oakland")]
+        ),
         "more_meters": Statement(
-            c["meters"], terms=[Term("San Francisco"), Term("Oakland")]
+            c["meters"], terms=[Entity("San Francisco"), Entity("Oakland")]
         ),
         "not_more": Statement(
-            c["not_more"], terms=[Term("San Francisco"), Term("Oakland")]
+            c["not_more"], terms=[Entity("San Francisco"), Entity("Oakland")]
         ),
         "float_distance": Statement(
-            c["float_distance"], terms=[Term("San Francisco"), Term("Oakland")]
+            c["float_distance"], terms=[Entity("San Francisco"), Entity("Oakland")]
         ),
         "int_distance": Statement(
-            c["int_distance"], terms=[Term("San Francisco"), Term("Oakland")]
+            c["int_distance"], terms=[Entity("San Francisco"), Entity("Oakland")]
         ),
         "higher_int": Statement(
-            c["higher_int"], terms=[Term("San Francisco"), Term("Oakland")]
+            c["higher_int"], terms=[Entity("San Francisco"), Entity("Oakland")]
         ),
         "way_more": Statement(
-            c["way_more"], terms=[Term("San Francisco"), Term("Oakland")]
+            c["way_more"], terms=[Entity("San Francisco"), Entity("Oakland")]
         ),
         "absent_less": Statement(
-            c["less"], terms=[Term("San Francisco"), Term("Oakland")], absent=True
+            c["less"], terms=[Entity("San Francisco"), Entity("Oakland")], absent=True
         ),
         "absent_more": Statement(
-            c["more"], terms=[Term("San Francisco"), Term("Oakland")], absent=True
+            c["more"], terms=[Entity("San Francisco"), Entity("Oakland")], absent=True
         ),
         "absent_way_more": Statement(
-            c["way_more"], terms=[Term("San Francisco"), Term("Oakland")], absent=True
+            c["way_more"],
+            terms=[Entity("San Francisco"), Entity("Oakland")],
+            absent=True,
         ),
     }
 
@@ -276,6 +290,6 @@ def make_complex_fact(make_predicate, make_statement) -> Dict[str, Statement]:
 @pytest.fixture(scope="function")
 def make_context_register() -> ContextRegister:
     context_names = ContextRegister()
-    context_names.insert_pair(key=Term("Alice"), value=Term("Craig"))
-    context_names.insert_pair(key=Term("Bob"), value=Term("Dan"))
+    context_names.insert_pair(key=Entity("Alice"), value=Entity("Craig"))
+    context_names.insert_pair(key=Entity("Bob"), value=Entity("Dan"))
     return context_names

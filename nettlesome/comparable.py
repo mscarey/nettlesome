@@ -175,8 +175,7 @@ class Comparable(ABC):
         this object when replacing another Comparable object's generic terms.
 
     :attr plural:
-        Indicates whether the object refers to multiple things. Can be checked
-        by a StatementTemplate to see whether a verb needs to be made plural.
+        Indicates whether the object refers to multiple things.
     """
 
     generic: bool = False
