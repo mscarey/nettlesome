@@ -186,6 +186,15 @@ class TestStatements:
         )
         assert len(fact.terms) == 1
 
+    def test_indented_string(self):
+        sued = Statement(
+            "$plaintiff sued $defendant for unpaid taxes",
+            terms=[Term("the State of Texas", generic=False), Term("Bob")],
+        )
+        text = sued.str_with_concrete_context
+        assert "\n" in text
+        assert "the State of Texas" in text.split("SPECIFIC CONTEXT")[1]
+
 
 class TestSameMeaning:
     def test_equality_factor_from_same_predicate(self):
