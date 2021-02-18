@@ -373,9 +373,8 @@ class Comparable(ABC):
         if other is None:
             yield context
         elif self.generic or other.generic:
-            if context.get(self.short_string) is None or (
-                context.get(self.short_string).short_string == (other.short_string)
-            ):
+            self_value = context.get(self.key)
+            if self_value is None or (self_value.compare_keys(other)):
                 yield self.generic_register(other)
         else:
             yield from self.terms.ordered_comparison(
