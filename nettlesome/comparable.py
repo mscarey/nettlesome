@@ -273,18 +273,15 @@ class Comparable(ABC):
     ) -> bool:
         if all(
             all(
-                (
-                    context.get_factor(generic) is not None
-                    and context.get_factor(generic).compare_keys(
-                        context_register.get_factor(generic)
-                    )
+                context.assigns_same_value_to_key_factor(
+                    other=other_register, key_factor=generic
                 )
-                or generic.compare_keys(
-                    context.get_factor(context_register.get_factor(generic))
+                or other_register.assigns_same_value_in_reverse(
+                    other=context, key_factor=generic
                 )
                 for generic in self.generic_factors()
             )
-            for context_register in self._context_registers(
+            for other_register in self._context_registers(
                 other=other, comparison=means, context=context
             )
         ):
@@ -1046,6 +1043,24 @@ class ContextRegister:
         for pair in pairs:
             new.insert_pair(pair[0], pair[1])
         return new
+
+    def assigns_same_value_to_key_factor(
+        self, other: ContextRegister, key_factor: Comparable
+    ) -> bool:
+        """Check if both ContextRegisters assign same value to the key for this factor."""
+        self_value = self.get_factor(key_factor)
+        if self_value is None:
+            return False
+        return self_value.compare_keys(other.get_factor(key_factor))
+
+    def assigns_same_value_in_reverse(
+        self, other: ContextRegister, key_factor: Comparable
+    ) -> bool:
+        """Check if the other ContextRegister has the matching key-value pair in reverse."""
+        self_value = self.get_factor(key_factor)
+        if self_value is None:
+            return False
+        return key_factor.compare_keys(other.get_factor(self_value))
 
     def check_match(self, key: Comparable, value: Comparable) -> bool:
         if self.get(key.short_string) is None:

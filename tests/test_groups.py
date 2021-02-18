@@ -359,3 +359,13 @@ class TestConsistent:
         context = ContextRegister()
         context.insert_pair(left[0], right[0])
         assert left.all_generic_factors_match(right, context=context)
+
+    def test_all_generic_factors_match_in_statement(self):
+        predicate = Predicate("the telescope pointed at $object")
+        morning = Statement(predicate=predicate, terms=Term("Morning Star"))
+        evening = Statement(predicate=predicate, terms=Term("Evening Star"))
+        left = ComparableGroup(morning)
+        right = ComparableGroup(evening)
+        context = ContextRegister()
+        context.insert_pair(Term("Morning Star"), Term("Evening Star"))
+        assert left.all_generic_factors_match(right, context=context)
