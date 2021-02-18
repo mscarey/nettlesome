@@ -426,6 +426,17 @@ class ComparableGroup(Tuple[F, ...], Comparable):
         result = [factor.new_context(changes) for factor in self]
         return ComparableGroup(result)
 
+    def union(
+        self, other: Comparable, context: Optional[ContextRegister] = None
+    ) -> Optional[Comparable]:
+        context = context or ContextRegister()
+        explanations = self.explanations_union(other, context)
+        try:
+            explanation = next(explanations)
+        except StopIteration:
+            return None
+        return self.union_from_explanation(other, explanation)
+
     def union_from_explanation(
         self, other: ComparableGroup, context: ContextRegister
     ) -> Optional[ComparableGroup]:

@@ -3,7 +3,7 @@
 from __future__ import annotations
 from typing import Callable, Iterator, List, Optional
 
-from nettlesome.comparable import Comparable
+from nettlesome.comparable import Comparable, ContextRegister
 
 
 class Term(Comparable):
@@ -54,3 +54,8 @@ class Term(Comparable):
             f'Term(name="{self.name}", absent={self.absent}, '
             f"generic={self.generic}, plural={self.plural})"
         )
+
+    def union(
+        self, other: Comparable, context: ContextRegister
+    ) -> Optional[Comparable]:
+        raise NotImplementedError

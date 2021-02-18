@@ -263,7 +263,7 @@ class Comparable(ABC):
         return bool(self.implies(other) and self.short_string != other.short_string)
 
     def __or__(self, other: Comparable):
-        return self.union(other)
+        return self.union(other, context=None)
 
     def __str__(self):
         text = f"the {self.__class__.__name__}" + " {}"
@@ -920,15 +920,9 @@ class Comparable(ABC):
         yield self.terms
 
     def union(
-        self, other: Comparable, context: Optional[ContextRegister] = None
+        self, other: Comparable, context: ContextRegister = None
     ) -> Optional[Comparable]:
-        context = context or ContextRegister()
-        explanations = self.explanations_union(other, context)
-        try:
-            explanation = next(explanations)
-        except StopIteration:
-            return None
-        return self.union_from_explanation(other, explanation)
+        raise NotImplementedError
 
     def _update_context_from_factors(
         self, other: Comparable, context: ContextRegister

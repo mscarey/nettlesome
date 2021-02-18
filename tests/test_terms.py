@@ -98,3 +98,9 @@ class TestContradiction:
     def test_no_contradiction_of_other_entity(self):
         assert not Term("Al").contradicts(Term("Ed"))
         assert not Term("Al").contradicts(Statement("any text"))
+
+
+class TestUnion:
+    def test_union_of_terms(self):
+        with pytest.raises(NotImplementedError):
+            Term("Al") | Term("Ed")
