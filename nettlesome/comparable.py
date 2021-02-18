@@ -233,14 +233,19 @@ class Comparable(ABC):
             context.append(next_factor)
         return FactorSequence(context)
 
-    def __add__(self, other: Comparable) -> Optional[Comparable]:
+    def add(
+        self, other: Comparable, context: Optional[ContextRegister] = None
+    ) -> Optional[Comparable]:
         if not isinstance(other, Comparable):
             raise TypeError
-        if self >= other:
+        if self.implies(other, context=context):
             return self
-        if other >= self:
+        if other.implies(self, context=context):
             return other.new_context(self.generic_factors())
         return None
+
+    def __add__(self, other: Comparable) -> Optional[Comparable]:
+        return self.add(other)
 
     def __ge__(self, other: Optional[Comparable]) -> bool:
         """

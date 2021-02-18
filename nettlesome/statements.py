@@ -200,10 +200,4 @@ class Statement(Term):
     def union(
         self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Optional[Comparable]:
-        if not isinstance(other, Comparable):
-            raise TypeError
-        if self.implies(other, context=context):
-            return self
-        if other.implies(self, context=context):
-            return other.new_context(self.generic_factors())
-        return None
+        return self.add(other, context=context)
