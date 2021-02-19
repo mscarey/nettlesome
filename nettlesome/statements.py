@@ -10,13 +10,13 @@ from nettlesome.comparable import (
     ContextRegister,
     new_context_helper,
 )
-from nettlesome.terms import Term
-
+from nettlesome.factors import Factor
 from nettlesome.formatting import indented, wrapped
 from nettlesome.predicates import Predicate
+from nettlesome.terms import Term
 
 
-class Statement(Term):
+class Statement(Factor):
     r"""
     An assertion accepted as factual by a court.
 
@@ -53,14 +53,13 @@ class Statement(Term):
         self,
         predicate: Union[Predicate, str],
         terms: Union[FactorSequence, Term, Sequence[Term]] = FactorSequence(),
+        name: str = "",
         absent: bool = False,
         generic: bool = False,
     ):
         if isinstance(predicate, str):
             predicate = Predicate(predicate)
         self.predicate = predicate
-        self.absent = absent
-        self.generic = generic
 
         if isinstance(terms, Mapping):
             terms = predicate.template.get_term_sequence_from_mapping(terms)
@@ -83,6 +82,7 @@ class Statement(Term):
                 "Items in the 'terms' parameter should "
                 + "be a subclass of Comparable."
             )
+        super().__init__(name=name, generic=generic, absent=absent)
 
     @property
     def short_string(self) -> str:
