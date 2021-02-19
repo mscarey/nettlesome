@@ -465,6 +465,7 @@ class Comparison(Predicate):
         sign: str = "=",
         expression: Union[date, int, float, Quantity] = 0,
         truth: Optional[bool] = True,
+        include_negatives: Optional[bool] = None,
     ):
         """
         Clean up and test validity of attributes.
@@ -477,6 +478,9 @@ class Comparison(Predicate):
             sign = self.normalized_comparisons[sign]
         self.sign = sign
         self.expression = self.read_quantity(expression)
+        if include_negatives is None:
+            include_negatives = bool(self.magnitude < 0)
+        self.include_negatives = include_negatives
 
         if self.sign and self.sign not in self.opposite_comparisons.keys():
             raise ValueError(
@@ -570,7 +574,7 @@ class Comparison(Predicate):
             return False
 
         if isinstance(self.expression, Quantity):
-            return self.includes_other_quantity(other)
+            return self.implies_quantity_interval(other)
 
         if isinstance(self.expression, date):
             return self.includes_other_date(other)
@@ -584,12 +588,21 @@ class Comparison(Predicate):
         elif ">" in self.sign:
             return Interval(self.magnitude, oo, left_open=bool("=" not in self.sign))
         elif "<" in self.sign:
-            return Interval(-oo, self.magnitude, right_open=bool("=" not in self.sign))
+            return Interval(
+                self.lower_bound,
+                self.magnitude,
+                right_open=bool("=" not in self.sign),
+            )
         # self.sign == "!="
         return sympy.Union(
-            Interval(-oo, self.magnitude, right_open=True),
+            Interval(self.lower_bound, self.magnitude, right_open=True),
             Interval(self.magnitude, oo, left_open=True),
         )
+
+    @property
+    def lower_bound(self):
+        """The lower bound of the range that the Comparison may refer to."""
+        return -oo if self.include_negatives else 0
 
     @property
     def magnitude(self) -> Union[int, float]:
@@ -625,7 +638,7 @@ class Comparison(Predicate):
             return False
 
         if isinstance(self.expression, Quantity):
-            return self.excludes_other_quantity(other)
+            return self.excludes_quantity_interval(other)
 
         if isinstance(self.expression, date):
             return self.excludes_other_date(other)
@@ -718,16 +731,24 @@ class Comparison(Predicate):
     def compare_other_quantity(
         self, other: Comparison
     ) -> Union[bool, EmptySet, Interval, sympy.Union]:
+        def scale_interval(interval: Interval, scalar: Union[int, float]) -> Interval:
+            result = Interval(
+                start=interval.start * scalar,
+                end=interval.end * scalar,
+                left_open=interval.left_open,
+                right_open=interval.right_open,
+            )
+            return result
+
         if not self.consistent_dimensionality(other):
             return False
+        if other.expression.units != self.expression.units:
+            ratio_of_units = other.expression.units / self.expression.units
+            other_interval = scale_interval(other.interval, ratio_of_units)
+        else:
+            other_interval = other.interval
 
-        right_quantity = self.convert_other_quantity(other.expression)
-        solution = self.compare_other_magnitude(
-            self_magnitude=self.magnitude,
-            other_magnitude=right_quantity.magnitude,
-            other_sign=other.sign,
-        )
-        return solution
+        return self.interval.intersect(other_interval)
 
     def excludes_other_date(self, other: Comparison) -> bool:
         interval = self.compare_other_date(other)
@@ -737,12 +758,12 @@ class Comparison(Predicate):
         interval = self.compare_other_number(other)
         return interval == EmptySet
 
-    def excludes_other_quantity(self, other: Comparison) -> bool:
+    def excludes_quantity_interval(self, other: Comparison) -> bool:
         """Test if quantity ranges in self and other are non-overlapping."""
         interval = self.compare_other_quantity(other)
         return interval == EmptySet
 
-    def includes_other_quantity(self, other: Comparison) -> bool:
+    def implies_quantity_interval(self, other: Comparison) -> bool:
         """Test if the range of quantities mentioned in self is a subset of other's."""
 
         interval = self.compare_other_quantity(other)
