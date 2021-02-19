@@ -118,6 +118,13 @@ class TestFacts:
                 (Entity("Al"), Entity("Ben"))
             )
 
+    def test_complex_string(self, make_complex_fact):
+        statement = make_complex_fact["relevant_murder"]
+        assert (
+            "\n    the statement that <Alice> shot <Bob>"
+            in statement.str_with_concrete_context
+        )
+
 
 class TestSameMeaning:
     def test_equality_factor_from_same_predicate(self, make_statement):
