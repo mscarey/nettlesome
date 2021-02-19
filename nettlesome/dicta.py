@@ -18,4 +18,4 @@ class Dictum(Factor):
 
     def __str__(self):
         content = f"{self.statement.short_string}, according to {self.authority}"
-        return super().__str__().format(content).replace("Dictum", "dictum")
+        return super().__str__().format(content)

@@ -126,7 +126,7 @@ class Statement(Factor):
         """Create one-line string representation for inclusion in other Facts."""
         content = str(self.predicate.content_with_terms(self.terms))
         unwrapped = self.predicate.add_truth_to_content(content)
-        return super().__str__().format(unwrapped).replace("Fact", "fact")
+        return super().__str__().format(unwrapped)
 
     @property
     def content(self) -> Optional[str]:

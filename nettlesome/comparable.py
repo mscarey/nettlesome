@@ -265,7 +265,7 @@ class Comparable(ABC):
         return self.union(other, context=None)
 
     def __str__(self):
-        text = f"the {self.__class__.__name__}" + " {}"
+        text = f"the {self.__class__.__name__.lower()}" + " {}"
         if self.generic:
             text = f"<{text}>"
         if self.absent:
