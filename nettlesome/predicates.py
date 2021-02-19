@@ -705,12 +705,7 @@ class Comparison(Predicate):
         ):
             return False
 
-        result = self.compare_other_magnitude(
-            self_magnitude=self.magnitude,
-            other_magnitude=other.magnitude,
-            other_sign=other.sign,
-        )
-        return result
+        return self.interval.intersect(other.interval)
 
     def compare_other_number(
         self, other: Comparison
@@ -721,12 +716,7 @@ class Comparison(Predicate):
         ):
             return False
 
-        result = self.compare_other_magnitude(
-            self_magnitude=self.expression,
-            other_magnitude=other.expression,
-            other_sign=other.sign,
-        )
-        return result
+        return self.interval.intersect(other.interval)
 
     def compare_other_quantity(
         self, other: Comparison
