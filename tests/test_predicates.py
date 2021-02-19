@@ -1,9 +1,9 @@
 from datetime import date
 
-from pint import Quantity
+from pint import Quantity, quantity
 import pytest
 import sympy
-from sympy import Interval, oo
+from sympy import Eq, Interval, oo
 
 
 from nettlesome.entities import Entity
@@ -19,6 +19,18 @@ class TestComparisons:
                 sign=">>",
                 expression=Q_("160 centimeters"),
             )
+
+    def test_comparison_with_string_for_int(self):
+        scones = Comparison(
+            "the number of scones $diner ate was", sign="<", expression="5"
+        )
+        assert scones.interval == sympy.Interval(-oo, 5, right_open=True)
+
+    def test_comparison_with_string_for_float(self):
+        scones = Comparison(
+            "the number of scones $diner ate was", sign=">", expression="2.5"
+        )
+        assert scones.interval == sympy.Interval(2.5, oo, left_open=True)
 
     def test_comparison_interval(self):
         comparison = Comparison(
