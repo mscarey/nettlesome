@@ -263,6 +263,19 @@ class TestImplication:
         )
         assert copyright_date_specific.implies(copyright_date_range)
 
+    def test_not_equal_implies(self):
+        yards = Comparison(
+            "the length of the football field was",
+            sign="!=",
+            expression="100 yards",
+        )
+        meters = Comparison(
+            "the length of the football field was",
+            sign="!=",
+            expression="80 meters",
+        )
+        assert not yards >= meters
+
 
 class TestContradiction:
     def test_not_more_does_not_contradict_less(self, make_comparison):

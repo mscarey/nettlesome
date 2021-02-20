@@ -386,6 +386,34 @@ class Predicate:
         return self.add_truth_to_content(self.content)
 
 
+def scale_interval(interval: Interval, scalar: Union[int, float]) -> Interval:
+    result = Interval(
+        start=interval.start * scalar,
+        end=interval.end * scalar,
+        left_open=interval.left_open,
+        right_open=interval.right_open,
+    )
+    return result
+
+
+def scale_union_of_intervals(
+    ranges: sympy.Union, scalar: Union[int, float]
+) -> sympy.Union:
+    scaled_intervals = [
+        scale_interval(interval=interval, scalar=scalar) for interval in ranges.args
+    ]
+    result = sympy.Union(*scaled_intervals)
+    return result
+
+
+def scale_ranges(
+    ranges: Union[Interval, sympy.Union], scalar: Union[int, float]
+) -> Interval:
+    if isinstance(ranges, Interval):
+        return scale_interval(interval=ranges, scalar=scalar)
+    return scale_union_of_intervals(ranges=ranges, scalar=scalar)
+
+
 class Comparison(Predicate):
     r"""
     A Predicate that compares a described quantity to a constant.
@@ -721,20 +749,12 @@ class Comparison(Predicate):
     def compare_other_quantity(
         self, other: Comparison
     ) -> Union[bool, EmptySet, Interval, sympy.Union]:
-        def scale_interval(interval: Interval, scalar: Union[int, float]) -> Interval:
-            result = Interval(
-                start=interval.start * scalar,
-                end=interval.end * scalar,
-                left_open=interval.left_open,
-                right_open=interval.right_open,
-            )
-            return result
 
         if not self.consistent_dimensionality(other):
             return False
         if other.expression.units != self.expression.units:
             ratio_of_units = other.expression.units / self.expression.units
-            other_interval = scale_interval(other.interval, ratio_of_units)
+            other_interval = scale_ranges(other.interval, ratio_of_units)
         else:
             other_interval = other.interval
 
@@ -757,7 +777,7 @@ class Comparison(Predicate):
         """Test if the range of quantities mentioned in self is a subset of other's."""
 
         interval = self.compare_other_quantity(other)
-        return interval != EmptySet and Eq(interval, self.interval)
+        return interval is not False and self.interval.is_subset(interval)
 
     def includes_other_number(self, other: Comparison) -> bool:
         interval = self.compare_other_number(other)
