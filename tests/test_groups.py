@@ -86,7 +86,13 @@ class TestMakeGroup:
         answer = next(gen)
         assert answer.get("<Bob>").compare_keys(dan)
 
-    def test_get_factor_from_group(self, make_complex_fact):
+    def test_get_factor_by_index(self, make_complex_fact):
+        alice = Entity("Alice")
+        bob = Entity("Bob")
+        group = ComparableGroup([alice, bob])
+        assert group[1].name == "Bob"
+
+    def test_get_factor_by_name(self, make_complex_fact):
         group = ComparableGroup([make_complex_fact["relevant_murder"]])
         entity = group.get_factor_by_name("Alice")
         assert entity.plural is False

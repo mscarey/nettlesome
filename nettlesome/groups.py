@@ -38,11 +38,6 @@ class ComparableGroup(Tuple[F, ...], Comparable):
         added = tuple(self) + ComparableGroup(other)
         return ComparableGroup(added)
 
-    def __getitem__(self, key):
-        if isinstance(key, int):
-            return super().__getitem__(key)
-        return self.__class__(super().__getitem__(key))
-
     @property
     def recursive_factors(self) -> Dict[str, Comparable]:
         r"""
