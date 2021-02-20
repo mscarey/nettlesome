@@ -34,6 +34,3 @@ class Term(Comparable):
     ) -> None:
         self.name = name
         self.generic = generic
-
-    def __repr__(self) -> str:
-        return f'Term(name="{self.name}", generic={self.generic})'

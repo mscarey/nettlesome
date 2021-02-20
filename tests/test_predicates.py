@@ -77,6 +77,7 @@ class TestCompare:
 
     def test_expression_comparison(self, make_comparison):
         assert make_comparison["meters"].expression_comparison() == "at least 10 meter"
+        assert "20 foot" in repr(make_comparison["less_than_20"])
         assert (
             make_comparison["less_than_20"].expression_comparison()
             == "less than 20 foot"

@@ -86,6 +86,11 @@ class TestMakeGroup:
         answer = next(gen)
         assert answer.get("<Bob>").compare_keys(dan)
 
+    def test_get_factor_from_group(self, make_complex_fact):
+        group = ComparableGroup([make_complex_fact["relevant_murder"]])
+        entity = group.get_factor_by_name("Alice")
+        assert entity.plural is False
+
 
 class TestSameFactors:
     def test_group_has_same_factors_as_identical_group(self, make_statement):
@@ -336,6 +341,13 @@ class TestConsistent:
     def test_consistent_with_none(self):
         group = ComparableGroup([self.slower_general_statement, self.farm_statement])
         assert group.consistent_with(None)
+
+    def test_two_inconsistent_groups(self):
+        left = ComparableGroup([self.slower_specific_statement])
+        right = ComparableGroup([self.faster_statement])
+        context = ContextRegister()
+        context.insert_pair(Entity("the car"), Entity("the pickup"))
+        assert not left.consistent_with(right, context=context)
 
     def test_not_internally_consistent_with_context(self, make_statement):
         context = ContextRegister()
