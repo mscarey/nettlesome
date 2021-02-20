@@ -115,6 +115,10 @@ class TestCompare:
                 [Entity(name="the book's listings", plural=True)],
                 "<the book's listings> were names, towns,",
             ),
+            (
+                Entity(name="an entity outside of an iterable"),
+                "<an entity outside of an iterable> was names, towns,",
+            ),
         ],
     )
     def test_make_str_plural(self, context, expected):
@@ -125,19 +129,10 @@ class TestCompare:
         with_context = predicate.content_with_terms(context)
         assert with_context.startswith(expected)
 
-    def test_str_not_equal(self, make_comparison):
-        assert (
-            "the distance between $place1 and $place2 was not equal to 35 foot"
-            in str(make_comparison["not_equal"])
-        )
-
-    def test_negated_method(self, make_comparison):
-        assert make_comparison["less"].negated().means(make_comparison["more"])
-        as_false = make_comparison["exact"].negated()
-        assert (
-            str(as_false)
-            == "that the distance between $place1 and $place2 was not equal to 25 foot"
-        )
+    def test_negated_method(self, make_predicate):
+        predicate = Predicate("$person owned $object")
+        negated = predicate.negated()
+        assert str(negated).lower() == "it was false that $person owned $object"
 
     def test_predicate_equality(self):
         assert self.same.means(self.same)

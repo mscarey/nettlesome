@@ -54,6 +54,15 @@ class TestQuantityInterval:
             expression=Q_("20 miles"),
         )
         assert comparison.interval == Interval(20, oo, left_open=True)
+        assert "quantity=20 mile" in repr(comparison)
+
+    def test_negated_method(self, make_comparison):
+        assert make_comparison["less"].negated().means(make_comparison["more"])
+        as_false = make_comparison["exact"].negated()
+        assert (
+            str(as_false)
+            == "that the distance between $place1 and $place2 was not equal to 25 foot"
+        )
 
     def test_convert_false_statement_about_quantity_to_obverse(self):
         distance = Comparison(
@@ -84,6 +93,20 @@ class TestQuantityInterval:
         assert comparison.interval == sympy.Union(
             Interval(0, 20, right_open=True), Interval(20, oo, left_open=True)
         )
+
+    def test_str_not_equal(self, make_comparison):
+        assert (
+            "the distance between $place1 and $place2 was not equal to 35 foot"
+            in str(make_comparison["not_equal"])
+        )
+
+    def test_content_not_ending_with_was(self):
+        with pytest.raises(ValueError):
+            Comparison(
+                "$person drove for",
+                sign=">=",
+                expression=Q_("20 miles"),
+            )
 
 
 class TestCompareQuantities:
@@ -254,7 +277,7 @@ class TestImplication:
         copyright_date_range = Comparison(
             "the date when $work was created was",
             sign=">=",
-            expression=date(1978, 1, 1),
+            expression="1978-01-01",
         )
         copyright_date_specific = Comparison(
             "the date when $work was created was",

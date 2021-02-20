@@ -23,6 +23,7 @@ from sympy.sets import EmptySet, FiniteSet
 from sympy.solvers.inequalities import solve_rational_inequalities
 
 from nettlesome.comparable import Comparable, FactorSequence
+from nettlesome.terms import Term
 
 ureg = UnitRegistry()
 Q_ = ureg.Quantity
@@ -212,9 +213,7 @@ class Predicate:
         changes = {p: "{}" for p in self.template.placeholders}
         return self.template.substitute(**changes)
 
-    def content_with_terms(
-        self, context: Union[Comparable, Sequence[Comparable]]
-    ) -> str:
+    def content_with_terms(self, terms: Union[Term, Sequence[Term]]) -> str:
         r"""
         Make a sentence by filling in placeholders with names of Factors.
 
@@ -227,9 +226,9 @@ class Predicate:
             of terms for the placeholders in the content template
         """
 
-        if not isinstance(context, Iterable):
-            context = (context,)
-        with_plurals = self.template.substitute_with_plurals(context)
+        if not isinstance(terms, Iterable):
+            terms = (terms,)
+        with_plurals = self.template.substitute_with_plurals(terms)
 
         return with_plurals
 
@@ -703,27 +702,6 @@ class Comparison(Predicate):
             "<=": "no more than",
         }
         return f"{expand[self.sign]} {self.expression}"
-
-    def compare_other_magnitude(
-        self,
-        self_magnitude: Union[int, float],
-        other_magnitude: Union[int, float],
-        other_sign: str,
-    ) -> Union[sympy.Union, Interval, EmptySet]:
-        x = Symbol(name=slugify(self.template.template))
-        # Sympy needs ratios here: the first Poly is the numerator, and
-        # the second Poly is the denominator 1 (specifying the variable x
-        # as the other parameter because it isn't in the denominator).
-        left_inequality = (
-            (Poly(x - self_magnitude), Poly(1, x)),
-            self.sign,
-        )
-        right_inequality = (
-            (Poly(x - other_magnitude), Poly(1, x)),
-            other_sign,
-        )
-        solution = solve_rational_inequalities([[left_inequality, right_inequality]])
-        return solution
 
     def compare_other_date(
         self, other: Comparison
