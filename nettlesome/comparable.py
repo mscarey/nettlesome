@@ -574,24 +574,6 @@ class Comparable(ABC):
             context = context or ContextRegister()
             yield from self._means_if_concrete(other, context)
 
-    def explanations_union(
-        self, other: Comparable, context: Optional[ContextRegister] = None
-    ) -> Iterator[ContextRegister]:
-        context = context or ContextRegister()
-        for partial in self._explanations_union_partial(other, context):
-            for guess in self.possible_contexts(other, partial):
-                answer = self.union_from_explanation(other, guess)
-                if answer:
-                    yield guess
-
-    def _explanations_union_partial(
-        self, other: Comparable, context: ContextRegister
-    ) -> Iterator[ContextRegister]:
-        for likely in self.likely_contexts(other, context):
-            partial = self + other.new_context(likely.reversed())
-            if partial.internally_consistent():
-                yield likely
-
     def generic_register(self, other: Comparable) -> ContextRegister:
         register = ContextRegister()
         register.insert_pair(self, other)
@@ -918,7 +900,8 @@ class Comparable(ABC):
     def union(
         self, other: Comparable, context: ContextRegister = None
     ) -> Optional[Comparable]:
-        raise NotImplementedError
+        """Alias for addition."""
+        return self.add(other=other, context=context)
 
     def _update_context_from_factors(
         self, other: Comparable, context: ContextRegister

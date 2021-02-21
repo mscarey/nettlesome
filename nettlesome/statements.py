@@ -188,11 +188,3 @@ class Statement(Factor):
         for pattern in self.predicate.term_index_permutations():
             sorted_terms = [x for _, x in sorted(zip(pattern, self.terms))]
             yield FactorSequence(sorted_terms)
-
-    def __or__(self, other: Comparable):
-        return self.union(other)
-
-    def union(
-        self, other: Comparable, context: Optional[ContextRegister] = None
-    ) -> Optional[Comparable]:
-        return self.add(other, context=context)

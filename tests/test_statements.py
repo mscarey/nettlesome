@@ -929,6 +929,11 @@ class TestAddition:
         answer = self.specific_fact + self.general_fact
         assert answer.means(self.specific_fact)
 
+    def test_union_is_alias_for_addition(self):
+        """These are different for groups, but the same for statements."""
+        answer = self.specific_fact | self.general_fact
+        assert answer.means(self.specific_fact)
+
     def test_addition_uses_terms_from_left(self):
         answer = self.general_fact + self.specific_fact
         assert "<the car>" in str(answer)

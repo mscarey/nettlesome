@@ -208,6 +208,24 @@ class ComparableGroup(Tuple[F, ...], Comparable):
                                 )
                             )
 
+    def explanations_union(
+        self, other: Comparable, context: Optional[ContextRegister] = None
+    ) -> Iterator[ContextRegister]:
+        context = context or ContextRegister()
+        for partial in self._explanations_union_partial(other, context):
+            for guess in self.possible_contexts(other, partial):
+                answer = self.union_from_explanation(other, guess)
+                if answer:
+                    yield guess
+
+    def _explanations_union_partial(
+        self, other: Comparable, context: ContextRegister
+    ) -> Iterator[ContextRegister]:
+        for likely in self.likely_contexts(other, context):
+            partial = self + other.new_context(likely.reversed())
+            if partial.internally_consistent():
+                yield likely
+
     def verbose_comparison(
         self,
         operation: Callable,
