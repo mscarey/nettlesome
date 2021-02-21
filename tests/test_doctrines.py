@@ -1,5 +1,6 @@
 import pytest
 
+from nettlesome.comparable import ContextRegister
 from nettlesome.doctrines import Doctrine
 from nettlesome.entities import Entity
 from nettlesome.statements import Statement
@@ -63,6 +64,12 @@ class TestDoctrine:
 
     def test_no_implication_no_authority(self):
         assert not self.no_authority.implies(self.generic_authority)
+
+    def test_new_context(self):
+        context = ContextRegister()
+        context.insert_pair(Entity("Twitter user"), Entity("Python Software Foundation", generic=False))
+        new = self.generic_authority.new_context(context)
+        assert "according to the entity Python" in str(new)
 
 class TestInterchangeable:
     identical = Statement(

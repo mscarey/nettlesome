@@ -803,12 +803,6 @@ class Comparable(ABC):
         if self.compare_terms(other, means):
             yield from self._context_registers(other, comparison=means, context=context)
 
-    def means_same_context(self, other) -> bool:
-        same_context = ContextRegister()
-        for key in self.generic_factors():
-            same_context.insert_pair(key, key)
-        return self.means(other, context=same_context)
-
     @new_context_helper
     def new_context(self, changes: ContextRegister) -> Comparable:
         r"""
