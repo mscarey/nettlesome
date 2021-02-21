@@ -74,6 +74,16 @@ class TestContextRegisters:
         with pytest.raises(StopIteration):
             next(gen)
 
+    def test_insert_pair_with_wrong_type(self):
+        context = ContextRegister()
+        with pytest.raises(TypeError):
+            context.insert_pair(Entity("Bob"), Predicate("events transpired"))
+
+    def test_failed_match(self):
+        context = ContextRegister()
+        context.insert_pair(Entity("Bob"), Entity("Alice"))
+        assert context.check_match(Entity("Craig"), Entity("Dan")) is False
+
     def test_context_register_valid(self, make_statement):
         expected = ContextRegister()
         expected.insert_pair(Entity("Alice"), Entity("Bob"))

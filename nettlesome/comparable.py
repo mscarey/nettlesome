@@ -1060,10 +1060,9 @@ class ContextRegister:
         return key_factor.compare_keys(other.get_factor(self_value))
 
     def check_match(self, key: Comparable, value: Comparable) -> bool:
-        if self.get(key.short_string) is None:
+        if self.get(key.key) is None:
             return False
-        # TODO: better test for match, replacing dataclass __eq__
-        return self[key.short_string].short_string == value.short_string
+        return self[key.key].compare_keys(value)
 
     def factor_pairs(self) -> Iterator[Tuple[Comparable, Comparable]]:
         for key, value in self.items():
