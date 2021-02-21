@@ -1,3 +1,5 @@
+import pytest
+
 from nettlesome.doctrines import Doctrine
 from nettlesome.entities import Entity
 from nettlesome.statements import Statement
@@ -119,49 +121,47 @@ class TestInterchangeable:
     def test_no_implication_no_authority(self):
         assert not self.no_authority.implies(self.generic_authority)
 
+    def test_same_because_interchangeable(self, make_doctrine):
+        assert make_doctrine["plotted_per_alice"].means(make_doctrine["plotted_per_craig"])
+        assert make_doctrine["plotted_per_craig"].means(make_doctrine["plotted_per_alice"])
+
+    def test_different_because_not_interchangeable(self, make_doctrine):
+        assert not make_doctrine["plotted_per_alice"].means(make_doctrine["plotted_per_bob"])
+        assert not make_doctrine["plotted_per_bob"].means(make_doctrine["plotted_per_alice"])
+
 class TestComplex:
 
-    def test_means_self(self, make_doctrine):
-        assert make_doctrine["generic_authority"].means(make_doctrine["generic_authority"])
+    @pytest.mark.parametrize(
+        "left, right, expected",
+        [("generic", "generic", True),
+        ("no", "no", True),
+        ("specific", "specific", True),
+        ("generic", "specific", False),
+        ("specific", "generic", False),
+        ("specific", "no", False),
+        ]
+    )
+    def test_doctrines_same_meaning(self, make_doctrine, left, right, expected):
+        assert make_doctrine[f"{left}_authority"].means(make_doctrine[f"{right}_authority"]) is expected
+        assert make_doctrine[f"{left}_authority_reversed"].means(make_doctrine[f"{right}_authority"]) is expected
+        assert make_doctrine[f"{left}_authority"].means(make_doctrine[f"{right}_authority_reversed"]) is expected
+        assert make_doctrine[f"{left}_authority_reversed"].means(make_doctrine[f"{right}_authority_reversed"]) is expected
 
-    def test_means_self_with_no_authority(self, make_doctrine):
-        assert make_doctrine["no_authority"].means(make_doctrine["no_authority"])
-
-    def test_means_self_with_specific_authority(self, make_doctrine):
-        assert make_doctrine["specific_authority"].means(make_doctrine["specific_authority"])
-
-    def test_not_same_meaning(self, make_doctrine):
-        assert not make_doctrine["generic_authority"].means(make_doctrine["no_authority"])
-
-    def test_not_same_meaning_None_on_left(self, make_doctrine):
-        assert not make_doctrine["no_authority"].means(make_doctrine["generic_authority"])
-
-    def test_not_same_meaning_specific_entity(self, make_doctrine):
-        assert not make_doctrine["specific_authority"].means(make_doctrine["no_authority"])
-
-    def test_not_same_meaning_None_on_left_specific_entity(self, make_doctrine):
-        assert not make_doctrine["no_authority"].means(make_doctrine["specific_authority"])
-
-    def test_no_authority_implies_none(self, make_doctrine):
-        assert make_doctrine["no_authority"].implies(make_doctrine["no_authority"])
-
-    def test_generic_authority_implies_none(self, make_doctrine):
-        assert make_doctrine["generic_authority"].implies(make_doctrine["no_authority"])
-
-    def test_no_implication_of_specific(self, make_doctrine):
-        assert not make_doctrine["generic_authority"].implies(make_doctrine["specific_authority"])
-
-    def test_implication_by_specific(self, make_doctrine):
-        assert make_doctrine["specific_authority"].implies(make_doctrine["generic_authority"])
-
-    def test_no_implication_of_specific_by_none(self, make_doctrine):
-        assert not make_doctrine["no_authority"].implies(make_doctrine["specific_authority"])
-
-    def test_implication_of_none_by_specific(self, make_doctrine):
-        assert make_doctrine["specific_authority"].implies(make_doctrine["no_authority"])
-
-    def test_implies_self(self, make_doctrine):
-        assert make_doctrine["generic_authority"].implies(make_doctrine["generic_authority"])
-
-    def test_no_implication_no_authority(self, make_doctrine):
-        assert not make_doctrine["no_authority"].implies(make_doctrine["generic_authority"])
+    @pytest.mark.parametrize(
+        "left, right, expected",
+        [("no", "no", True),
+        ("no", "generic", False),
+        ("no", "specific", False),
+        ("generic", "generic", True),
+        ("generic", "no", True),
+        ("generic", "specific", False),
+        ("specific", "specific", True),
+        ("specific", "generic", True),
+        ("specific", "no", True),
+        ]
+    )
+    def test_doctrines_imply(self, make_doctrine, left, right, expected):
+        assert make_doctrine[f"{left}_authority"].implies(make_doctrine[f"{right}_authority"]) is expected
+        assert make_doctrine[f"{left}_authority_reversed"].implies(make_doctrine[f"{right}_authority"]) is expected
+        assert make_doctrine[f"{left}_authority"].implies(make_doctrine[f"{right}_authority_reversed"]) is expected
+        assert make_doctrine[f"{left}_authority_reversed"].implies(make_doctrine[f"{right}_authority_reversed"]) is expected

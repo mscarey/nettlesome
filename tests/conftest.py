@@ -191,6 +191,7 @@ def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
             p["no_shooting"], [Entity("Bob"), Entity("Alice")]
         ),
         "plotted": Statement(p["plotted"], [Entity("Alice"), Entity("Craig")]),
+        "plotted_reversed": Statement(p["plotted"], [Entity("Alice"), Entity("Craig")]),
         "three_entities": Statement(
             p["three_entities"], [Entity("Alice"), Entity("Bob"), Entity("Craig")]
         ),
@@ -289,15 +290,24 @@ def make_complex_fact(make_predicate, make_statement) -> Dict[str, Statement]:
         ),
         "relevant_plotted_murder": Statement(
             p["relevant"], (f["plotted"], f["murder"])
+        ),
+        "relevant_plotted_reversed_murder": Statement(
+            p["relevant"], (f["plotted_reversed"], f["murder"])
         )
     }
 
 @pytest.fixture(scope="class")
-def make_doctrine(make_complex_fact) -> Dict[str, Doctrine]:
+def make_doctrine(make_complex_fact, make_statement) -> Dict[str, Doctrine]:
     return {
         "generic_authority": Doctrine(statement=make_complex_fact["relevant_plotted_murder"], authority=Entity("a lawyer")),
+        "generic_authority_reversed": Doctrine(statement=make_complex_fact["relevant_plotted_reversed_murder"], authority=Entity("a lawyer")),
         "specific_authority": Doctrine(statement=make_complex_fact["relevant_plotted_murder"], authority=Entity("Clarence Darrow", generic=False)),
-        "no_authority": Doctrine(statement=make_complex_fact["relevant_plotted_murder"])
+        "specific_authority_reversed": Doctrine(statement=make_complex_fact["relevant_plotted_reversed_murder"], authority=Entity("Clarence Darrow", generic=False)),
+        "no_authority": Doctrine(statement=make_complex_fact["relevant_plotted_murder"]),
+        "no_authority_reversed": Doctrine(statement=make_complex_fact["relevant_plotted_reversed_murder"]),
+        "plotted_per_alice": Doctrine(statement=make_statement["plotted"], authority=Entity("Alice")),
+        "plotted_per_bob": Doctrine(statement=make_statement["plotted"], authority=Entity("Bob")),
+        "plotted_per_craig": Doctrine(statement=make_statement["plotted"], authority=Entity("Craig")),
     }
 
 @pytest.fixture(scope="function")
