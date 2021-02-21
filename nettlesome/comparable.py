@@ -280,9 +280,6 @@ class Comparable(ABC):
                 context.assigns_same_value_to_key_factor(
                     other=other_register, key_factor=generic
                 )
-                or other_register.assigns_same_value_in_reverse(
-                    other=context, key_factor=generic
-                )
                 for generic in self.generic_factors()
             )
             for other_register in self._context_registers(
@@ -1049,15 +1046,6 @@ class ContextRegister:
         if self_value is None:
             return False
         return self_value.compare_keys(other.get_factor(key_factor))
-
-    def assigns_same_value_in_reverse(
-        self, other: ContextRegister, key_factor: Comparable
-    ) -> bool:
-        """Check if the other ContextRegister has the matching key-value pair in reverse."""
-        self_value = self.get_factor(key_factor)
-        if self_value is None:
-            return False
-        return key_factor.compare_keys(other.get_factor(self_value))
 
     def check_match(self, key: Comparable, value: Comparable) -> bool:
         if self.get(key.key) is None:
