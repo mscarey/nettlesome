@@ -10,7 +10,9 @@ from typing import (
     Sequence,
     Tuple,
     TypeVar,
+    Union
 )
+from nettlesome.factors import Factor
 
 from nettlesome.comparable import (
     Comparable,
@@ -30,9 +32,12 @@ class ComparableGroup(Tuple[F, ...], Comparable):
     a :class:`.Procedure` should be ComparableGroups.
     """
 
-    def __new__(cls, value: Sequence = ()):
-        value = Comparable.wrap_with_tuple(value)
-        return tuple.__new__(ComparableGroup, value)
+    def __new__(cls, value: Union[Sequence[Factor], Factor] = ()):
+        if isinstance(value, Iterable):
+            sequence = tuple(value)
+        else:
+            sequence = (value,)
+        return tuple.__new__(ComparableGroup, sequence)
 
     def __add__(self, other) -> ComparableGroup:
         added = tuple(self) + ComparableGroup(other)

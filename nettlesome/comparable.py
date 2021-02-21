@@ -975,15 +975,6 @@ class Comparable(ABC):
                 if register_or_none is not None:
                     yield register_or_none
 
-    @staticmethod
-    def wrap_with_tuple(item):
-        if item is None:
-            return ()
-        if isinstance(item, Iterable):
-            return tuple(item)
-        return (item,)
-
-
 class ContextRegister:
     r"""
     A mapping of corresponding :class:`Factor`\s from two different contexts.

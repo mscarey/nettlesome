@@ -49,7 +49,7 @@ class Entity(Term):
 
     def __repr__(self) -> str:
         return (
-            f'Entity(name="{self.name}" '
+            f"Entity(name='{self.name}', "
             f"generic={self.generic}, plural={self.plural})"
         )
 
