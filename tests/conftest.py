@@ -4,6 +4,7 @@ from pint import UnitRegistry
 import pytest
 
 from nettlesome.comparable import ContextRegister
+from nettlesome.doctrines import Doctrine
 from nettlesome.predicates import Predicate, Comparison
 from nettlesome.statements import Statement
 from nettlesome.entities import Entity
@@ -29,6 +30,7 @@ def make_predicate() -> Dict[str, Predicate]:
         "shooting_self": Predicate("$shooter shot $shooter"),
         "no_shooting": Predicate("$shooter shot $victim", truth=False),
         "shooting_whether": Predicate("$shooter shot $victim", truth=None),
+        "plotted": Predicate("$plotter1 plotted with $plotter2"),
         "crime": Predicate("$person1 committed a crime"),
         "no_crime": Predicate("$person1 committed a crime", truth=False),
         "three_entities": Predicate("$planner told $intermediary to hire $shooter"),
@@ -188,6 +190,7 @@ def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
         "no_shooting_entity_order": Statement(
             p["no_shooting"], [Entity("Bob"), Entity("Alice")]
         ),
+        "plotted": Statement(p["plotted"], [Entity("Alice"), Entity("Craig")]),
         "three_entities": Statement(
             p["three_entities"], [Entity("Alice"), Entity("Bob"), Entity("Craig")]
         ),
@@ -284,8 +287,18 @@ def make_complex_fact(make_predicate, make_statement) -> Dict[str, Statement]:
         "relevant_murder_alice_craig": Statement(
             p["relevant"], (f["shooting"], f["murder_craig"])
         ),
+        "relevant_plotted_murder": Statement(
+            p["relevant"], (f["plotted"], f["murder"])
+        )
     }
 
+@pytest.fixture(scope="class")
+def make_doctrine(make_complex_fact) -> Dict[str, Doctrine]:
+    return {
+        "generic_authority": Doctrine(statement=make_complex_fact["relevant_plotted_murder"], authority=Entity("a lawyer")),
+        "specific_authority": Doctrine(statement=make_complex_fact["relevant_plotted_murder"], authority=Entity("Clarence Darrow", generic=False)),
+        "no_authority": Doctrine(statement=make_complex_fact["relevant_plotted_murder"])
+    }
 
 @pytest.fixture(scope="function")
 def make_context_register() -> ContextRegister:
