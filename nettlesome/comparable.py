@@ -230,20 +230,6 @@ class Comparable(ABC):
             context.append(next_factor)
         return FactorSequence(context)
 
-    def add(
-        self, other: Comparable, context: Optional[ContextRegister] = None
-    ) -> Optional[Comparable]:
-        if not isinstance(other, Comparable):
-            raise TypeError
-        if self.implies(other, context=context):
-            return self
-        if other.implies(self, context=context):
-            return other.new_context(self.generic_factors())
-        return None
-
-    def __add__(self, other: Comparable) -> Optional[Comparable]:
-        return self.add(other)
-
     def __ge__(self, other: Optional[Comparable]) -> bool:
         """
         Call :meth:`implies` as an alias.
@@ -257,7 +243,7 @@ class Comparable(ABC):
         """Test whether ``self`` implies ``other`` and ``self`` != ``other``."""
         if other is None:
             return True
-        return bool(self.implies(other) and self.short_string != other.short_string)
+        return bool(self.implies(other) and not self.compare_keys(other))
 
     def __or__(self, other: Comparable):
         return self.union(other, context=None)
@@ -512,7 +498,7 @@ class Comparable(ABC):
                 if not other.__dict__.get("absent"):
                     test = other._implies_if_present(self, context.reversed())
                     yield from (register.reversed() for register in test)
-        elif isinstance(other, Sequence):
+        elif isinstance(other, Iterable):
             yield from other.explanations_contradiction(
                 self, context=context.reversed()
             )

@@ -34,3 +34,17 @@ class Term(Comparable):
     ) -> None:
         self.name = name
         self.generic = generic
+
+    def add(
+        self, other: Term, context: Optional[ContextRegister] = None
+    ) -> Optional[Term]:
+        if not isinstance(other, Term):
+            raise TypeError
+        if self.implies(other, context=context):
+            return self
+        if other.implies(self, context=context):
+            return other.new_context(self.generic_factors())
+        return None
+
+    def __add__(self, other: Term) -> Optional[Comparable]:
+        return self.add(other)

@@ -9,8 +9,9 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
+    Type,
     TypeVar,
-    Union
+    Union,
 )
 from nettlesome.factors import Factor
 
@@ -21,10 +22,10 @@ from nettlesome.comparable import (
 )
 from nettlesome.explanations import Explanation
 
-F = TypeVar("F", bound="Comparable")
+F = TypeVar("F", bound="Factor")
 
 
-class ComparableGroup(Tuple[F, ...], Comparable):
+class ComparableGroup(Comparable):
     r"""
     Factors to be used together in a comparison.
 
@@ -32,16 +33,50 @@ class ComparableGroup(Tuple[F, ...], Comparable):
     a :class:`.Procedure` should be ComparableGroups.
     """
 
-    def __new__(cls, value: Union[Sequence[Factor], Factor] = ()):
-        if isinstance(value, Iterable):
-            sequence = tuple(value)
+    def __init__(self, factors: Union[Sequence[Factor], Factor] = ()):
+        if isinstance(factors, Iterable):
+            self.sequence = tuple(factors)
         else:
-            sequence = (value,)
-        return tuple.__new__(ComparableGroup, sequence)
+            self.sequence = (factors,)
+        for factor in self.sequence:
+            if not isinstance(factor, Factor):
+                raise TypeError(
+                    f'Object "{factor} could not be included in '
+                    f"{self.__class__.__name__} because it is "
+                    f"type {factor.__class__.__name__}, not type Factor"
+                )
 
-    def __add__(self, other) -> ComparableGroup:
-        added = tuple(self) + ComparableGroup(other)
-        return ComparableGroup(added)
+    def _at_index(self, key: int) -> Factor:
+        return self.sequence[key]
+
+    def __getitem__(self, key: Union[int, slice]) -> Union[Factor, ComparableGroup]:
+        if isinstance(key, slice):
+            start, stop, step = key.indices(len(self))
+            return ComparableGroup(
+                [self._at_index(i) for i in range(start, stop, step)]
+            )
+        return self._at_index(key)
+
+    def __iter__(self):
+        yield from self.sequence
+
+    def __len__(self):
+        return len(self.sequence)
+
+    def __next__(self):
+        yield from self.sequence
+
+    def _add_group(self, other: ComparableGroup) -> ComparableGroup:
+        combined = self.sequence[:] + other.sequence[:]
+        return ComparableGroup(combined)
+
+    def __add__(
+        self, other: Union[ComparableGroup, Sequence[Factor], Factor]
+    ) -> ComparableGroup:
+        if isinstance(other, ComparableGroup):
+            return self._add_group(other)
+        to_add = ComparableGroup(other)
+        return self._add_group(to_add)
 
     @property
     def recursive_factors(self) -> Dict[str, Comparable]:
@@ -56,6 +91,12 @@ class ComparableGroup(Tuple[F, ...], Comparable):
         for context in self:
             result.update(context.recursive_factors)
         return result
+
+    def __gt__(self, other: Optional[Comparable]) -> bool:
+        """Test whether ``self`` implies ``other`` and ``self`` != ``other``."""
+        if other is None:
+            return True
+        return bool(self.implies(other) and not self.means(other))
 
     def _must_contradict_one_factor(
         self, other_factor: Comparable, context: ContextRegister
@@ -118,7 +159,7 @@ class ComparableGroup(Tuple[F, ...], Comparable):
         if context is None:
             context = ContextRegister()
 
-        if isinstance(other, Sequence):
+        if isinstance(other, Iterable):
             for other_factor in other:
                 yield from self._explain_contradicts_factor(
                     other_factor, context=context
@@ -456,8 +497,8 @@ class ComparableGroup(Tuple[F, ...], Comparable):
         return self.union_from_explanation(other, explanation)
 
     def union_from_explanation(
-        self, other: ComparableGroup, context: ContextRegister
-    ) -> Optional[ComparableGroup]:
+        self, other: Comparable, context: ContextRegister
+    ) -> Optional[Comparable]:
         result = self.union_from_explanation_allow_contradiction(other, context)
         if not result.internally_consistent(context=context):
             return None
