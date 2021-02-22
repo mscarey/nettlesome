@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Text, Tuple
+from typing import Dict
 
 from pint import UnitRegistry
 import pytest
@@ -293,22 +293,46 @@ def make_complex_fact(make_predicate, make_statement) -> Dict[str, Statement]:
         ),
         "relevant_plotted_reversed_murder": Statement(
             p["relevant"], (f["plotted_reversed"], f["murder"])
-        )
+        ),
     }
+
 
 @pytest.fixture(scope="class")
 def make_doctrine(make_complex_fact, make_statement) -> Dict[str, Doctrine]:
     return {
-        "generic_authority": Doctrine(statement=make_complex_fact["relevant_plotted_murder"], authority=Entity("a lawyer")),
-        "generic_authority_reversed": Doctrine(statement=make_complex_fact["relevant_plotted_reversed_murder"], authority=Entity("a lawyer")),
-        "specific_authority": Doctrine(statement=make_complex_fact["relevant_plotted_murder"], authority=Entity("Clarence Darrow", generic=False)),
-        "specific_authority_reversed": Doctrine(statement=make_complex_fact["relevant_plotted_reversed_murder"], authority=Entity("Clarence Darrow", generic=False)),
-        "no_authority": Doctrine(statement=make_complex_fact["relevant_plotted_murder"]),
-        "no_authority_reversed": Doctrine(statement=make_complex_fact["relevant_plotted_reversed_murder"]),
-        "plotted_per_alice": Doctrine(statement=make_statement["plotted"], authority=Entity("Alice")),
-        "plotted_per_bob": Doctrine(statement=make_statement["plotted"], authority=Entity("Bob")),
-        "plotted_per_craig": Doctrine(statement=make_statement["plotted"], authority=Entity("Craig")),
+        "generic_authority": Doctrine(
+            statement=make_complex_fact["relevant_plotted_murder"],
+            authority=Entity("a lawyer"),
+        ),
+        "generic_authority_reversed": Doctrine(
+            statement=make_complex_fact["relevant_plotted_reversed_murder"],
+            authority=Entity("a lawyer"),
+        ),
+        "specific_authority": Doctrine(
+            statement=make_complex_fact["relevant_plotted_murder"],
+            authority=Entity("Clarence Darrow", generic=False),
+        ),
+        "specific_authority_reversed": Doctrine(
+            statement=make_complex_fact["relevant_plotted_reversed_murder"],
+            authority=Entity("Clarence Darrow", generic=False),
+        ),
+        "no_authority": Doctrine(
+            statement=make_complex_fact["relevant_plotted_murder"]
+        ),
+        "no_authority_reversed": Doctrine(
+            statement=make_complex_fact["relevant_plotted_reversed_murder"]
+        ),
+        "plotted_per_alice": Doctrine(
+            statement=make_statement["plotted"], authority=Entity("Alice")
+        ),
+        "plotted_per_bob": Doctrine(
+            statement=make_statement["plotted"], authority=Entity("Bob")
+        ),
+        "plotted_per_craig": Doctrine(
+            statement=make_statement["plotted"], authority=Entity("Craig")
+        ),
     }
+
 
 @pytest.fixture(scope="function")
 def make_context_register() -> ContextRegister:

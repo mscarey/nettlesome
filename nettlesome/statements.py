@@ -1,8 +1,8 @@
 from copy import deepcopy
 import operator
 
-from typing import ClassVar, Dict, Iterator, List, Mapping
-from typing import Optional, Sequence, Tuple, Union
+from typing import Dict, Iterator, Mapping
+from typing import Optional, Sequence, Union
 
 from nettlesome.comparable import (
     Comparable,
@@ -52,11 +52,13 @@ class Statement(Factor):
     def __init__(
         self,
         predicate: Union[Predicate, str],
-        terms: Union[FactorSequence, Term, Sequence[Term]] = FactorSequence(),
+        terms: Optional[Union[FactorSequence, Term, Sequence[Term]]] = None,
         name: str = "",
         absent: bool = False,
         generic: bool = False,
     ):
+        terms = terms or FactorSequence()
+
         if isinstance(predicate, str):
             predicate = Predicate(predicate)
         self.predicate = predicate
@@ -151,7 +153,7 @@ class Statement(Factor):
         :returns:
             whether ``self`` implies ``other`` under the given assumption.
         """
-        if self.predicate >= other.predicate:
+        if isinstance(other, Statement) and self.predicate >= other.predicate:
             yield from super()._implies_if_concrete(other, context)
 
     def _contradicts_if_present(

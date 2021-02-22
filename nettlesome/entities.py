@@ -60,8 +60,3 @@ class Entity(Term):
             if self.generic or self.name != other.name:
                 return False
         return super().implies(other=other, context=context)
-
-    def union(
-        self, other: Comparable, context: ContextRegister
-    ) -> Optional[Comparable]:
-        raise NotImplementedError

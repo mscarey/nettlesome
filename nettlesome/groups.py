@@ -245,7 +245,7 @@ class FactorGroup(Comparable):
                             )
 
     def explanations_union(
-        self, other: Comparable, context: Optional[ContextRegister] = None
+        self, other: FactorGroup, context: Optional[ContextRegister] = None
     ) -> Iterator[ContextRegister]:
         context = context or ContextRegister()
         for partial in self._explanations_union_partial(other, context):
@@ -262,11 +262,11 @@ class FactorGroup(Comparable):
             if partial.internally_consistent():
                 yield likely
 
-    def verbose_comparison(
+    def _verbose_comparison(
         self,
         operation: Callable,
         still_need_matches: Sequence[Comparable],
-        explanation: Optional[Explanation] = None,
+        explanation: Explanation,
     ) -> Iterator[Explanation]:
         r"""
         Find ways for two unordered sets of :class:`.Factor`\s to satisfy a comparison.
@@ -314,7 +314,7 @@ class FactorGroup(Comparable):
                     for new_matches in updated_mappings:
                         if new_matches is not None:
                             yield from iter(
-                                self.verbose_comparison(
+                                self._verbose_comparison(
                                     still_need_matches=still_need_matches,
                                     operation=operation,
                                     explanation=new_explanation,
@@ -331,7 +331,7 @@ class FactorGroup(Comparable):
             operation=operator.ge,
         )
 
-        yield from self.verbose_comparison(
+        yield from self._verbose_comparison(
             operation=operator.ge,
             still_need_matches=list(other),
             explanation=explanation,
