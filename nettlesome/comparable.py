@@ -134,11 +134,12 @@ def convert_changes_to_register(
     if not isinstance(changes, Iterable):
         changes = [changes]
     if terms_to_replace:
-        if not isinstance(changes, List):
-            raise ValueError(
-                "If 'terms_to_replace' is given, 'changes' must be a list of replacements, "
-                f"not type {type(changes)}."
-            )
+        for change in changes:
+            if not isinstance(change, Comparable):
+                raise TypeError(
+                    "If 'terms_to_replace' is given, 'changes' must be a list of replacement "
+                    f"Terms, but {change} was type {type(change)}."
+                )
         if len(terms_to_replace) != len(changes):
             raise ValueError(
                 "Cannot create ContextRegister because 'terms_to_replace' is not the same length "
