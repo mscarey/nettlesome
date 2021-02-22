@@ -8,9 +8,3 @@ class Factor(Term):
     ) -> None:
         self.absent = absent
         super().__init__(name=name, generic=generic)
-
-    def __repr__(self) -> str:
-        return (
-            f'{self.__class__.__name__}(name="{self.name}", '
-            f"generic={self.generic}, absent={self.absent})"
-        )
