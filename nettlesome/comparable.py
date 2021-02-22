@@ -209,10 +209,7 @@ class Comparable(ABC):
         """
         answers: Dict[str, Comparable] = {self.short_string: self}
         for context in self.terms:
-            if isinstance(context, Iterable):
-                for item in context:
-                    answers.update(item.recursive_factors)
-            elif context is not None:
+            if context is not None:
                 answers.update(context.recursive_factors)
         return answers
 
@@ -951,6 +948,7 @@ class Comparable(ABC):
                 register_or_none = context.merged_with(new_register_variation)
                 if register_or_none is not None:
                     yield register_or_none
+
 
 class ContextRegister:
     r"""
