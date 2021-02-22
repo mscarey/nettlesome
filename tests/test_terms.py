@@ -100,7 +100,27 @@ class TestContradiction:
         assert not Entity("Al").contradicts(Statement("any text"))
 
 
-class TestUnion:
-    def test_union_of_terms(self):
+class TestAdd:
+    def test_union_not_valid_alias(self):
         with pytest.raises(TypeError):
             Entity("Al") | Entity("Ed")
+
+    def test_add_generic(self):
+        new = Entity("Al") + Entity("Ed")
+        assert new.name == "Al"
+
+    def test_no_adding_string(self):
+        with pytest.raises(TypeError):
+            Entity("Al") + "Ed"
+
+    def test_add_generic_and_specific(self):
+        new = Entity("Al") + Entity("Mister Ed", generic=False)
+        assert new.name == "Mister Ed"
+
+    def test_two_specifics_will_not_add(self):
+        new = Entity("Inimitable", generic=False) + Entity("Original", generic=False)
+        assert new is None
+
+    def test_two_specifics_with_same_name_will_add(self):
+        new = Entity("Identical", generic=False) + Entity("Identical", generic=False)
+        assert new.name == "Identical"

@@ -53,6 +53,14 @@ class Entity(Term):
             f"generic={self.generic}, plural={self.plural})"
         )
 
+    def implies(
+        self, other: Optional[Comparable], context: Optional[ContextRegister] = None
+    ) -> bool:
+        if isinstance(other, Entity) and other.generic is False:
+            if self.generic or self.name != other.name:
+                return False
+        return super().implies(other=other, context=context)
+
     def union(
         self, other: Comparable, context: ContextRegister
     ) -> Optional[Comparable]:
