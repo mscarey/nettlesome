@@ -240,7 +240,7 @@ class TestStatements:
         predicate = Predicate("$person1 and $person2 went up the hill")
         terms = [Entity("Jack"), Entity("Jill")]
         assert (
-            predicate.content_with_terms(terms) == "<Jack> and <Jill> went up the hill"
+            predicate._content_with_terms(terms) == "<Jack> and <Jill> went up the hill"
         )
 
     def test_factor_terms_do_not_match_predicate(self):
@@ -1036,6 +1036,7 @@ class TestAddition:
     def test_addition_uses_terms_from_left(self):
         answer = self.general_fact + self.specific_fact
         assert "<the car>" in str(answer)
+        assert "the-car-s-speed" in answer.slug
 
     def test_add_unrelated_factors(self):
         murder = Statement(Predicate("$person committed a murder"), terms=Entity("Al"))

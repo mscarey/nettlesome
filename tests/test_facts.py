@@ -109,12 +109,12 @@ class TestFacts:
         assert len(make_statement["crime"]) == 1
 
     def test_predicate_with_entities(self, make_statement):
-        content = make_statement["crime"].predicate.content_with_terms([Entity("Jim")])
+        content = make_statement["crime"].predicate._content_with_terms([Entity("Jim")])
         assert "<Jim> committed" in content
 
     def test_reciprocal_with_wrong_number_of_entities(self, make_statement):
         with pytest.raises(ValueError):
-            make_statement["crime"].predicate.content_with_terms(
+            make_statement["crime"].predicate._content_with_terms(
                 (Entity("Al"), Entity("Ben"))
             )
 

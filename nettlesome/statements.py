@@ -14,6 +14,7 @@ from nettlesome.factors import Factor
 from nettlesome.formatting import indented, wrapped
 from nettlesome.predicates import Predicate
 from nettlesome.terms import Term
+from slugify import slugify
 
 
 class Statement(Factor):
@@ -52,7 +53,9 @@ class Statement(Factor):
     def __init__(
         self,
         predicate: Union[Predicate, str],
-        terms: Optional[Union[FactorSequence, Term, Sequence[Term]]] = None,
+        terms: Union[
+            FactorSequence, Term, Sequence[Term], Mapping[str, Term], None
+        ] = None,
         name: str = "",
         absent: bool = False,
         generic: bool = False,
@@ -91,12 +94,17 @@ class Statement(Factor):
         return str(self)
 
     @property
+    def slug(self) -> str:
+        subject = self.predicate._content_with_terms(self.terms).removesuffix(" was")
+        return slugify(subject)
+
+    @property
     def terms(self) -> FactorSequence:
         return self._terms
 
     @property
     def wrapped_string(self):
-        content = str(self.predicate.content_with_terms(self.terms))
+        content = str(self.predicate._content_with_terms(self.terms))
         unwrapped = self.predicate.add_truth_to_content(content)
         text = wrapped(super().__str__().format(unwrapped))
         return text
@@ -126,7 +134,7 @@ class Statement(Factor):
 
     def __str__(self):
         """Create one-line string representation for inclusion in other Facts."""
-        content = str(self.predicate.content_with_terms(self.terms))
+        content = str(self.predicate._content_with_terms(self.terms))
         unwrapped = self.predicate.add_truth_to_content(content)
         return super().__str__().format(unwrapped)
 
@@ -138,7 +146,7 @@ class Statement(Factor):
     def _means_if_concrete(
         self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Iterator[ContextRegister]:
-        if self.predicate.means(other.predicate):
+        if isinstance(other, Statement) and self.predicate.means(other.predicate):
             yield from super()._means_if_concrete(other, context)
 
     def __len__(self):

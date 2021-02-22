@@ -16,11 +16,9 @@ from typing import Any, ClassVar, Dict, Iterable, Mapping
 from typing import List, Optional, Sequence, Union
 
 from pint import UnitRegistry, Quantity
-from slugify import slugify
 import sympy
-from sympy import Eq, Interval, Poly, Symbol, oo
+from sympy import Eq, Interval, oo
 from sympy.sets import EmptySet, FiniteSet
-from sympy.solvers.inequalities import solve_rational_inequalities
 
 from nettlesome.comparable import Comparable, FactorSequence
 from nettlesome.terms import Term
@@ -58,7 +56,7 @@ class StatementTemplate(Template):
             )
         return None
 
-    def get_template_with_plurals(self, context: Sequence[Comparable]) -> str:
+    def get_template_with_plurals(self, context: FactorSequence) -> str:
         """
         Get a version of self with "was" replaced by "were" for any plural terms.
 
@@ -92,7 +90,7 @@ class StatementTemplate(Template):
         return FactorSequence(result)
 
     def _check_number_of_terms(
-        self, placeholders: List[str], context: Sequence[Comparable]
+        self, placeholders: List[str], context: FactorSequence
     ) -> None:
         if len(set(placeholders)) != len(context):
             raise ValueError(
@@ -102,7 +100,7 @@ class StatementTemplate(Template):
         return None
 
     def mapping_placeholder_to_term(
-        self, context: Sequence[Comparable]
+        self, context: FactorSequence
     ) -> Dict[str, Comparable]:
         """
         Get a mapping of template placeholders to context terms.
@@ -115,7 +113,7 @@ class StatementTemplate(Template):
         return dict(zip(self.placeholders, context))
 
     def mapping_placeholder_to_term_name(
-        self, context: Sequence[Comparable]
+        self, context: FactorSequence
     ) -> Dict[str, str]:
         """
         Get a mapping of template placeholders to the names of their context terms.
@@ -129,7 +127,7 @@ class StatementTemplate(Template):
         mapping_to_string = {k: v.short_string for k, v in mapping.items()}
         return mapping_to_string
 
-    def substitute_with_plurals(self, context: Sequence[Comparable]) -> str:
+    def substitute_with_plurals(self, context: Iterable[Term]) -> str:
         """
         Update template text with strings representing Comparable terms.
 
@@ -213,7 +211,7 @@ class Predicate:
         changes = {p: "{}" for p in self.template.placeholders}
         return self.template.substitute(**changes)
 
-    def content_with_terms(self, terms: Union[Term, Sequence[Term]]) -> str:
+    def _content_with_terms(self, terms: Iterable[Term]) -> str:
         r"""
         Make a sentence by filling in placeholders with names of Factors.
 
@@ -225,9 +223,6 @@ class Predicate:
             a sentence created by substituting string representations
             of terms for the placeholders in the content template
         """
-
-        if not isinstance(terms, Iterable):
-            terms = (terms,)
         with_plurals = self.template.substitute_with_plurals(terms)
 
         return with_plurals

@@ -115,10 +115,6 @@ class TestCompare:
                 [Entity(name="the book's listings", plural=True)],
                 "<the book's listings> were names, towns,",
             ),
-            (
-                Entity(name="an entity outside of an iterable"),
-                "<an entity outside of an iterable> was names, towns,",
-            ),
         ],
     )
     def test_make_str_plural(self, context, expected):
@@ -126,7 +122,7 @@ class TestCompare:
             "$thing were names, towns, and telephone numbers of telephone subscribers"
         )
         predicate = Predicate(phrase)
-        with_context = predicate.content_with_terms(context)
+        with_context = predicate._content_with_terms(context)
         assert with_context.startswith(expected)
 
     def test_negated_method(self, make_predicate):
