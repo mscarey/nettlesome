@@ -2,7 +2,12 @@ import operator
 
 import pytest
 
-from nettlesome.comparable import ContextRegister, FactorSequence, means
+from nettlesome.comparable import (
+    ContextRegister,
+    FactorSequence,
+    means,
+    expand_string_from_source,
+)
 from nettlesome.entities import Entity
 from nettlesome.predicates import Comparison, Q_, Predicate
 from nettlesome.statements import Statement
@@ -148,6 +153,21 @@ class TestStatements:
         city = Predicate("$place was a city")
         with pytest.raises(TypeError):
             Statement(city, terms=["New York"])
+
+    def test_expand_string_from_statement(self, make_complex_fact):
+        source = make_complex_fact["relevant_murder"]
+        expanded = expand_string_from_source(factor="Alice", source=source)
+        assert expanded.name == "Alice"
+
+    def test_expand_string_from_statement_with_key(self, make_complex_fact):
+        source = make_complex_fact["relevant_murder"]
+        expanded = expand_string_from_source(factor="<Alice>", source=source)
+        assert expanded.name == "Alice"
+
+    def test_dont_expand_string_from_statement(self, make_complex_fact):
+        source = make_complex_fact["relevant_murder"]
+        with pytest.raises(ValueError):
+            expand_string_from_source(factor="Jim", source=source)
 
     def test_concrete_to_abstract(self):
         predicate = Predicate("$person had a farm")
@@ -305,9 +325,15 @@ class TestSameMeaning:
         new_fact = relevant_fact.new_context(changes)
 
         assert relevant_fact.means(new_fact)
+        explanation = relevant_fact.explain_same_meaning(new_fact)
+        assert explanation["<Alice>"].name == "Deb"
 
     def test_interchangeable_concrete_terms(self):
-        """Detect that placeholders differing only by a final digit are interchangeable."""
+        """
+        Detect that placeholders differing only by a final digit are interchangeable.
+
+        There will be no keys in the explanation because no terms are generic.
+        """
         ann = Entity("Ann", generic=False)
         bob = Entity("Bob", generic=False)
 
@@ -321,6 +347,10 @@ class TestSameMeaning:
         )
 
         assert ann_and_bob_were_family.means(bob_and_ann_were_family)
+        explanation = ann_and_bob_were_family.explain_same_meaning(
+            bob_and_ann_were_family
+        )
+        assert len(explanation) == 0
 
     def test_means_despite_plural(self):
         directory = Entity("the telephone directory", plural=False)
@@ -340,6 +370,7 @@ class TestSameMeaning:
 class TestImplication:
     def test_statement_implies_none(self):
         assert Statement(Predicate("good morning")).implies(None)
+        assert Statement(Predicate("good morning")) > None
 
     def test_specific_statement_implies_generic(self):
         concrete = Statement(Predicate("$person was a person"), terms=Entity("Alice"))
@@ -889,13 +920,19 @@ class TestConsistent:
         sign="<",
         expression=Q_("1 gram"),
     )
+    p_smallish_weight = Comparison(
+        "the amount of gold $person possessed was",
+        sign="<",
+        expression=Q_("100 grams"),
+    )
     p_large_weight = Comparison(
         "the amount of gold $person possessed was",
         sign=">=",
         expression=Q_("100 kilograms"),
     )
-    small = Statement(p_large_weight, terms=Entity("Alice"))
-    big = Statement(p_small_weight, terms=Entity("Bob"))
+    big = Statement(p_large_weight, terms=Entity("Alice"))
+    small = Statement(p_small_weight, terms=Entity("Bob"))
+    smallish = Statement(p_smallish_weight, terms=Entity("Karen"))
 
     def test_contradictory_facts_about_same_entity(self):
         register = ContextRegister()
@@ -908,6 +945,19 @@ class TestConsistent:
 
     def test_factor_consistent_with_none(self):
         assert self.small.consistent_with(None)
+
+    def test_explain_consistent(self):
+        gen = self.small.explanations_consistent_with(self.smallish)
+        explanation = next(gen)
+        assert explanation["<Bob>"].compare_keys(Entity("Karen"))
+
+    def test_explain_consistent_if_implied(self):
+        gen = self.smallish.explanations_consistent_with(self.small)
+        explanation = next(gen)
+        assert explanation["<Karen>"].compare_keys(Entity("Bob"))
+
+    def test_no_explanation_consistent(self):
+        assert self.small.explain_contradiction(self.smallish) is None
 
 
 class TestAddition:

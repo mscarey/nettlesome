@@ -41,6 +41,12 @@ class TestMakeGroup:
         assert isinstance(identical_group, ComparableGroup)
         assert identical_group[0] == make_statement["crime"]
 
+    def test_recursive_factors_from_factorgroup(self, make_statement):
+        factor_list = [make_statement["crime"], make_statement["shooting"]]
+        group = ComparableGroup(factor_list)
+        factors = group.recursive_factors
+        assert factors["<Alice>"].name == "Alice"
+
     def test_one_factor_implies_and_has_same_context_as_other(self, make_statement):
         assert make_statement["more"].implies_same_context(
             make_statement["more_meters"]
