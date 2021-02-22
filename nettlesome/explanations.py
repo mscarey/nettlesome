@@ -23,7 +23,7 @@ class Explanation:
 
     def __init__(
         self,
-        factor_matches: ContextRegister,
+        factor_matches: List[Tuple[Comparable, Comparable]],
         context: Optional[ContextRegister] = None,
         operation: Callable = operator.ge,
     ):

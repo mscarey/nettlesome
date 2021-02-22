@@ -1,5 +1,4 @@
 from datetime import date
-from math import exp
 
 from pint import Quantity, quantity
 import pytest
