@@ -4,7 +4,7 @@ import pytest
 
 from nettlesome.comparable import ContextRegister, means
 from nettlesome.entities import Entity
-from nettlesome.groups import ComparableGroup
+from nettlesome.groups import FactorGroup
 from nettlesome.predicates import Predicate
 from nettlesome.statements import Statement
 
@@ -162,18 +162,14 @@ class TestLikelyContext:
         assert context.check_match(Entity("Alice"), Entity("Alice"))
 
     def test_likely_context_two_factors(self, make_statement):
-        left = ComparableGroup(
-            [make_statement["murder"], make_statement["large_weight"]]
-        )
+        left = FactorGroup([make_statement["murder"], make_statement["large_weight"]])
         right = make_statement["small_weight_bob"]
         context = next(left.likely_contexts(right))
         assert context.check_match(Entity("Alice"), Entity("Bob"))
 
     def test_likely_context_two_by_two(self, make_statement):
-        left = ComparableGroup(
-            [make_statement["murder"], make_statement["large_weight"]]
-        )
-        right = ComparableGroup(
+        left = FactorGroup([make_statement["murder"], make_statement["large_weight"]])
+        right = FactorGroup(
             (make_statement["murder_entity_order"], make_statement["small_weight_bob"])
         )
         context = next(left.likely_contexts(right))
@@ -190,8 +186,8 @@ class TestLikelyContext:
         copyrightable = Statement(
             "$work was copyrightable", terms=Entity("the Lotus menu command hierarchy")
         )
-        left = ComparableGroup([copyrightable, copyright_registered])
-        right = ComparableGroup(
+        left = FactorGroup([copyrightable, copyright_registered])
+        right = FactorGroup(
             Statement("$work was copyrightable", terms=Entity("the Java API"))
         )
         context = next(left.likely_contexts(right))
@@ -218,7 +214,7 @@ class TestLikelyContext:
 
     def test_union_one_generic_not_matched(self):
         """
-        Here, both ComparableGroups have "fact that <> was a computer program".
+        Here, both FactorGroups have "fact that <> was a computer program".
         But they each have another generic that can't be matched:
         that <the Java API> was a literal element of <the Java language>
         and
@@ -243,8 +239,8 @@ class TestLikelyContext:
             terms=[Entity("the Java API"), Entity("the Java language")],
         )
 
-        left = ComparableGroup([lotus_program, controlled])
-        right = ComparableGroup([language_program, part])
+        left = FactorGroup([lotus_program, controlled])
+        right = FactorGroup([language_program, part])
 
         new = left | right
         text = (
@@ -275,8 +271,8 @@ class TestChangeRegisters:
         assert next(gen)[0].name == "apple"
 
     def test_no_iterables_in_register(self):
-        left = ComparableGroup()
-        right = ComparableGroup()
+        left = FactorGroup()
+        right = FactorGroup()
         context = ContextRegister()
         with pytest.raises(TypeError):
             context.insert_pair(left, right)

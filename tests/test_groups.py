@@ -9,7 +9,7 @@ from nettlesome.comparable import (
     means,
 )
 from nettlesome.entities import Entity
-from nettlesome.groups import ComparableGroup
+from nettlesome.groups import FactorGroup
 from nettlesome.predicates import Predicate, Comparison
 from nettlesome.statements import Statement
 
@@ -17,35 +17,35 @@ from nettlesome.statements import Statement
 class TestMakeGroup:
     def test_group_from_list(self, make_statement):
         factor_list = [make_statement["crime"], make_statement["shooting"]]
-        group = ComparableGroup(factor_list)
-        assert isinstance(group, ComparableGroup)
+        group = FactorGroup(factor_list)
+        assert isinstance(group, FactorGroup)
         assert group[1] == make_statement["shooting"]
 
     def test_make_empty_group(self):
-        group = ComparableGroup()
+        group = FactorGroup()
         assert len(group) == 0
 
     def test_group_from_item(self, make_statement):
         factor = make_statement["shooting"]
-        group = ComparableGroup(factor)
-        assert isinstance(group, ComparableGroup)
+        group = FactorGroup(factor)
+        assert isinstance(group, FactorGroup)
         assert group[0] == make_statement["shooting"]
 
     def test_make_empty_group(self):
-        group = ComparableGroup()
-        assert isinstance(group, ComparableGroup)
+        group = FactorGroup()
+        assert isinstance(group, FactorGroup)
         assert len(group) == 0
 
     def test_factorgroup_from_factorgroup(self, make_statement):
         factor_list = [make_statement["crime"], make_statement["shooting"]]
-        group = ComparableGroup(factor_list)
-        identical_group = ComparableGroup(group)
-        assert isinstance(identical_group, ComparableGroup)
+        group = FactorGroup(factor_list)
+        identical_group = FactorGroup(group)
+        assert isinstance(identical_group, FactorGroup)
         assert identical_group[0] == make_statement["crime"]
 
     def test_recursive_factors_from_factorgroup(self, make_statement):
         factor_list = [make_statement["crime"], make_statement["shooting"]]
-        group = ComparableGroup(factor_list)
+        group = FactorGroup(factor_list)
         factors = group.recursive_factors
         assert factors["<Alice>"].name == "Alice"
 
@@ -55,7 +55,7 @@ class TestMakeGroup:
         )
 
     def test_drop_implied_factors(self, make_statement):
-        group = ComparableGroup([make_statement["more_meters"], make_statement["more"]])
+        group = FactorGroup([make_statement["more_meters"], make_statement["more"]])
         shorter = group.drop_implied_factors()
         assert len(shorter) == 1
         assert make_statement["more_meters"] in group
@@ -78,14 +78,14 @@ class TestMakeGroup:
             ),
             terms=[Entity("Alice"), Entity("Bob")],
         )
-        group = ComparableGroup([left, right])
+        group = FactorGroup([left, right])
         shorter = group.drop_implied_factors()
         assert len(shorter) == 2
 
     def test_make_context_register(self, make_statement):
 
-        left = ComparableGroup([make_statement["shooting"], make_statement["murder"]])
-        right = ComparableGroup(
+        left = FactorGroup([make_statement["shooting"], make_statement["murder"]])
+        right = FactorGroup(
             [make_statement["shooting_craig"], make_statement["murder_craig"]]
         )
 
@@ -97,84 +97,72 @@ class TestMakeGroup:
         assert answer.get("<Alice>").compare_keys(Entity("Craig"))
 
     def test_get_factor_by_index(self, make_statement):
-        group = ComparableGroup([make_statement["friends"], make_statement["less"]])
+        group = FactorGroup([make_statement["friends"], make_statement["less"]])
         assert group[1].key.endswith("was less than 35 foot")
 
     def test_get_factor_by_name(self, make_complex_fact):
-        group = ComparableGroup([make_complex_fact["relevant_murder"]])
+        group = FactorGroup([make_complex_fact["relevant_murder"]])
         entity = group.get_factor_by_name("Alice")
         assert entity.plural is False
 
     def test_iterate_through_factors(self, make_complex_fact):
-        group = ComparableGroup([make_complex_fact["relevant_murder"]])
+        group = FactorGroup([make_complex_fact["relevant_murder"]])
         gen = iter(group)
         factor = next(gen)
         assert factor.short_string.endswith("statement that <Alice> murdered <Bob>")
 
     def test_cannot_add_entity(self):
         with pytest.raises(TypeError):
-            ComparableGroup(Entity("Morning Star"))
+            FactorGroup(Entity("Morning Star"))
 
 
 class TestSameFactors:
     def test_group_has_same_factors_as_identical_group(self, make_statement):
-        first_group = ComparableGroup(
-            [make_statement["crime"], make_statement["shooting"]]
-        )
-        second_group = ComparableGroup(
+        first_group = FactorGroup([make_statement["crime"], make_statement["shooting"]])
+        second_group = FactorGroup(
             [make_statement["crime"], make_statement["shooting"]]
         )
         assert first_group.has_all_factors_of(second_group)
 
     def test_group_has_same_factors_as_included_group(self, make_statement):
-        first_group = ComparableGroup(
+        first_group = FactorGroup(
             [
                 make_statement["crime"],
                 make_statement["shooting"],
                 make_statement["murder"],
             ]
         )
-        second_group = ComparableGroup(
-            [make_statement["crime"], make_statement["murder"]]
-        )
+        second_group = FactorGroup([make_statement["crime"], make_statement["murder"]])
         assert first_group.has_all_factors_of(second_group)
         assert not second_group.has_all_factors_of(first_group)
 
     def test_group_shares_all_factors_with_bigger_group(self, make_statement):
-        first_group = ComparableGroup(
+        first_group = FactorGroup(
             [
                 make_statement["crime"],
                 make_statement["shooting"],
                 make_statement["murder"],
             ]
         )
-        second_group = ComparableGroup(
-            [make_statement["crime"], make_statement["murder"]]
-        )
+        second_group = FactorGroup([make_statement["crime"], make_statement["murder"]])
         assert second_group.shares_all_factors_with(first_group)
         assert not first_group.shares_all_factors_with(second_group)
 
     def test_group_means_identical_group(self, make_statement):
-        first_group = ComparableGroup(
-            [make_statement["crime"], make_statement["murder"]]
-        )
-        second_group = ComparableGroup(
-            [make_statement["crime"], make_statement["murder"]]
-        )
+        first_group = FactorGroup([make_statement["crime"], make_statement["murder"]])
+        second_group = FactorGroup([make_statement["crime"], make_statement["murder"]])
         assert first_group.means(second_group)
         assert means(first_group, second_group)
 
     def test_group_does_not_mean_different_group(self, make_statement):
-        first_group = ComparableGroup(
+        first_group = FactorGroup(
             [
                 make_statement["crime"],
                 make_statement["shooting"],
                 make_statement["murder"],
             ]
         )
-        second_group = ComparableGroup(
-            [make_statement["crime"], make_statement["murder"]]
-        )
+        second_group = FactorGroup([make_statement["crime"], make_statement["murder"]])
         assert not first_group.means(second_group)
         assert not second_group.means(first_group)
 
@@ -191,35 +179,35 @@ class TestSameFactors:
 
 class TestImplication:
     def test_factorgroup_implies_none(self, make_statement):
-        group = ComparableGroup([make_statement["crime"], make_statement["shooting"]])
+        group = FactorGroup([make_statement["crime"], make_statement["shooting"]])
         assert group.implies(None)
 
     def test_factorgroup_implication_of_empty_group(self, make_statement):
         factor_list = [make_statement["crime"], make_statement["shooting"]]
-        group = ComparableGroup(factor_list)
-        empty_group = ComparableGroup()
+        group = FactorGroup(factor_list)
+        empty_group = FactorGroup()
         assert group.implies(empty_group)
         assert group[:1].implies(empty_group)
 
     def test_explanation_implication_of_factorgroup(self, make_statement):
         """Explanation shows the statements in `left` narrow down the quantity more than `right` does."""
-        left = ComparableGroup(
+        left = FactorGroup(
             [make_statement["absent_way_more"], make_statement["less_than_20"]]
         )
-        right = ComparableGroup([make_statement["less"], make_statement["absent_more"]])
+        right = FactorGroup([make_statement["less"], make_statement["absent_more"]])
         explanation = left.explain_implication(right)
         assert "implies" in str(explanation).lower()
 
     def test_ge_not_gt(self, make_statement):
-        left = ComparableGroup([make_statement["shooting"], make_statement["murder"]])
-        right = ComparableGroup(
+        left = FactorGroup([make_statement["shooting"], make_statement["murder"]])
+        right = FactorGroup(
             [make_statement["shooting_craig"], make_statement["murder_craig"]]
         )
         assert left >= right
         assert not left > right
 
     def test_greater_than_none(self, make_statement):
-        left = ComparableGroup()
+        left = FactorGroup()
         assert left > None
 
 
@@ -244,8 +232,8 @@ class TestContradiction:
         statement_short = Statement(
             distance_short, terms=[Entity("El Paso"), Entity("Carl's house")]
         )
-        left = ComparableGroup([bob_lived, statement_long])
-        right = ComparableGroup([carl_lived, statement_short])
+        left = FactorGroup([bob_lived, statement_long])
+        right = FactorGroup([carl_lived, statement_short])
         explanation = left.explain_contradiction(right)
         assert explanation["<Houston>"].name == "El Paso"
         assert contradicts(left, right)
@@ -253,30 +241,30 @@ class TestContradiction:
 
 class TestAdd:
     def test_add_does_not_consolidate_factors(self, make_statement):
-        left = ComparableGroup(make_statement["crime"])
-        right = ComparableGroup(make_statement["crime"])
+        left = FactorGroup(make_statement["crime"])
+        right = FactorGroup(make_statement["crime"])
         added = left + right
         assert len(added) == 2
-        assert isinstance(added, ComparableGroup)
+        assert isinstance(added, FactorGroup)
 
     def test_add_factor_to_factorgroup(self, make_statement):
-        left = ComparableGroup(make_statement["crime"])
+        left = FactorGroup(make_statement["crime"])
         right = make_statement["crime"]
         added = left + right
         assert len(added) == 2
-        assert isinstance(added, ComparableGroup)
+        assert isinstance(added, FactorGroup)
 
 
 class TestUnion:
     def test_factors_combined_because_of_implication(self, make_statement):
-        left = ComparableGroup(make_statement["more"])
-        right = ComparableGroup(make_statement["more_meters"])
+        left = FactorGroup(make_statement["more"])
+        right = FactorGroup(make_statement["more_meters"])
         added = left | right
         assert len(added) == 1
         assert "35 foot" in str(added[0])
 
     def test_union_with_factor_outside_group(self, make_statement):
-        left = ComparableGroup(make_statement["more_meters"])
+        left = FactorGroup(make_statement["more_meters"])
         right = make_statement["more"]
         added = left | right
         assert len(added) == 1
@@ -287,8 +275,8 @@ class TestUnion:
         If these Factors were about the same Term, they would contradict
         and no union would be possible.
         """
-        left = ComparableGroup(make_statement["no_shooting_entity_order"])
-        right = ComparableGroup(make_statement["shooting"])
+        left = FactorGroup(make_statement["no_shooting_entity_order"])
+        right = FactorGroup(make_statement["shooting"])
         combined = left | right
         assert len(combined) == 2
 
@@ -296,8 +284,8 @@ class TestUnion:
         """
         Test Factors about the same Term contradict so no union is possible.
         """
-        left = ComparableGroup(make_statement["no_shooting"])
-        right = ComparableGroup(make_statement["shooting"])
+        left = FactorGroup(make_statement["no_shooting"])
+        right = FactorGroup(make_statement["shooting"])
         combined = left | right
         assert combined is None
 
@@ -329,59 +317,59 @@ class TestConsistent:
     farm_statement = Statement(predicate_farm, terms=Entity("Old MacDonald"))
 
     def test_group_contradicts_single_factor(self):
-        group = ComparableGroup([self.slower_specific_statement, self.farm_statement])
+        group = FactorGroup([self.slower_specific_statement, self.farm_statement])
         register = ContextRegister()
         register.insert_pair(Entity("the car"), Entity("the pickup"))
         assert group.contradicts(self.faster_statement, context=register)
 
     def test_one_statement_does_not_contradict_group(self):
-        group = ComparableGroup([self.slower_general_statement, self.farm_statement])
+        group = FactorGroup([self.slower_general_statement, self.farm_statement])
         register = ContextRegister()
         register.insert_pair(Entity("the pickup"), Entity("the pickup"))
         assert not self.faster_statement.contradicts(group, context=register)
 
     def test_group_inconsistent_with_single_factor(self):
-        group = ComparableGroup([self.slower_specific_statement, self.farm_statement])
+        group = FactorGroup([self.slower_specific_statement, self.farm_statement])
         register = ContextRegister()
         register.insert_pair(Entity("the car"), Entity("the pickup"))
         assert not group.consistent_with(self.faster_statement, context=register)
         assert not consistent_with(group, self.faster_statement, context=register)
 
     def test_groups_with_one_statement_consistent(self):
-        specific_group = ComparableGroup([self.slower_specific_statement])
-        general_group = ComparableGroup([self.faster_statement])
+        specific_group = FactorGroup([self.slower_specific_statement])
+        general_group = FactorGroup([self.faster_statement])
         assert specific_group.consistent_with(general_group)
         assert consistent_with(specific_group, general_group)
 
     def test_group_inconsistent_with_one_statement(self):
-        group = ComparableGroup([self.slower_specific_statement, self.farm_statement])
+        group = FactorGroup([self.slower_specific_statement, self.farm_statement])
         register = ContextRegister()
         register.insert_pair(Entity("the car"), Entity("the pickup"))
         assert not group.consistent_with(self.faster_statement, context=register)
 
     def test_one_statement_inconsistent_with_group(self):
-        group = ComparableGroup([self.slower_specific_statement, self.farm_statement])
+        group = FactorGroup([self.slower_specific_statement, self.farm_statement])
         register = ContextRegister()
         register.insert_pair(Entity("the pickup"), Entity("the car"))
         assert not self.faster_statement.consistent_with(group, context=register)
 
     def test_one_statement_consistent_with_group(self):
-        group = ComparableGroup([self.slower_general_statement, self.farm_statement])
+        group = FactorGroup([self.slower_general_statement, self.farm_statement])
         register = ContextRegister()
         register.insert_pair(Entity("the pickup"), Entity("the pickup"))
         assert self.faster_statement.consistent_with(group, context=register)
 
     def test_no_contradiction_of_none(self):
-        group = ComparableGroup([self.slower_general_statement, self.farm_statement])
+        group = FactorGroup([self.slower_general_statement, self.farm_statement])
         assert not group.contradicts(None)
 
     def test_consistent_with_none(self):
-        group = ComparableGroup([self.slower_general_statement, self.farm_statement])
+        group = FactorGroup([self.slower_general_statement, self.farm_statement])
         assert group.consistent_with(None)
 
     def test_two_inconsistent_groups(self):
-        left = ComparableGroup([self.slower_specific_statement])
-        right = ComparableGroup([self.faster_statement])
+        left = FactorGroup([self.slower_specific_statement])
+        right = FactorGroup([self.faster_statement])
         context = ContextRegister()
         context.insert_pair(Entity("the car"), Entity("the pickup"))
         assert not left.consistent_with(right, context=context)
@@ -390,24 +378,20 @@ class TestConsistent:
         context = ContextRegister()
         context.insert_pair(Entity("Alice"), Entity("Alice"))
         context.insert_pair(Entity("Bob"), Entity("Bob"))
-        group = ComparableGroup(
-            [make_statement["shooting"], make_statement["no_shooting"]]
-        )
+        group = FactorGroup([make_statement["shooting"], make_statement["no_shooting"]])
         assert not group.internally_consistent(context=context)
 
     @pytest.mark.xfail(reason="Always returns True if no context is given.")
     def test_not_internally_consistent(self, make_statement):
-        group = ComparableGroup(
-            [make_statement["shooting"], make_statement["no_shooting"]]
-        )
+        group = FactorGroup([make_statement["shooting"], make_statement["no_shooting"]])
         assert not group.internally_consistent()
 
     def test_all_generic_factors_match_in_statement(self):
         predicate = Predicate("the telescope pointed at $object")
         morning = Statement(predicate=predicate, terms=Entity("Morning Star"))
         evening = Statement(predicate=predicate, terms=Entity("Evening Star"))
-        left = ComparableGroup(morning)
-        right = ComparableGroup(evening)
+        left = FactorGroup(morning)
+        right = FactorGroup(evening)
         context = ContextRegister()
         context.insert_pair(Entity("Morning Star"), Entity("Evening Star"))
         assert left.all_generic_factors_match(right, context=context)

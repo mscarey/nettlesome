@@ -25,12 +25,12 @@ from nettlesome.explanations import Explanation
 F = TypeVar("F", bound="Factor")
 
 
-class ComparableGroup(Comparable):
+class FactorGroup(Comparable):
     r"""
     Factors to be used together in a comparison.
 
     The inputs, outputs, and despite terms of
-    a :class:`.Procedure` should be ComparableGroups.
+    a :class:`.Procedure` should be FactorGroups.
     """
 
     def __init__(self, factors: Union[Sequence[Factor], Factor] = ()):
@@ -49,12 +49,10 @@ class ComparableGroup(Comparable):
     def _at_index(self, key: int) -> Factor:
         return self.sequence[key]
 
-    def __getitem__(self, key: Union[int, slice]) -> Union[Factor, ComparableGroup]:
+    def __getitem__(self, key: Union[int, slice]) -> Union[Factor, FactorGroup]:
         if isinstance(key, slice):
             start, stop, step = key.indices(len(self))
-            return ComparableGroup(
-                [self._at_index(i) for i in range(start, stop, step)]
-            )
+            return FactorGroup([self._at_index(i) for i in range(start, stop, step)])
         return self._at_index(key)
 
     def __iter__(self):
@@ -63,16 +61,16 @@ class ComparableGroup(Comparable):
     def __len__(self):
         return len(self.sequence)
 
-    def _add_group(self, other: ComparableGroup) -> ComparableGroup:
+    def _add_group(self, other: FactorGroup) -> FactorGroup:
         combined = self.sequence[:] + other.sequence[:]
-        return ComparableGroup(combined)
+        return FactorGroup(combined)
 
     def __add__(
-        self, other: Union[ComparableGroup, Sequence[Factor], Factor]
-    ) -> ComparableGroup:
-        if isinstance(other, ComparableGroup):
+        self, other: Union[FactorGroup, Sequence[Factor], Factor]
+    ) -> FactorGroup:
+        if isinstance(other, FactorGroup):
             return self._add_group(other)
-        to_add = ComparableGroup(other)
+        to_add = FactorGroup(other)
         return self._add_group(to_add)
 
     @property
@@ -136,7 +134,7 @@ class ComparableGroup(Comparable):
             return True
         if context is None:
             context = ContextRegister()
-        if isinstance(other, ComparableGroup):
+        if isinstance(other, FactorGroup):
             for other_factor in other:
                 if self._must_contradict_one_factor(other_factor, context=context):
                     return False
@@ -288,7 +286,7 @@ class ComparableGroup(Comparable):
 
         :param explanation:
             an :class:`.Explanation` showing which :class:`.Factor`\s listed in the
-            ComparableGroups were matched to each other, and also including a
+            FactorGroups were matched to each other, and also including a
             :class:`.ContextRegister`\.
 
         :yields:
@@ -324,7 +322,7 @@ class ComparableGroup(Comparable):
                             )
 
     def explanations_implication(
-        self, other: ComparableGroup, context: Optional[ContextRegister] = None
+        self, other: FactorGroup, context: Optional[ContextRegister] = None
     ) -> Iterator[Explanation]:
 
         explanation = Explanation(
@@ -340,7 +338,7 @@ class ComparableGroup(Comparable):
         )
 
     def explanations_has_all_factors_of(
-        self, other: ComparableGroup, context: Optional[ContextRegister] = None
+        self, other: FactorGroup, context: Optional[ContextRegister] = None
     ) -> Iterator[ContextRegister]:
         yield from self.comparison(
             operation=means, still_need_matches=list(other), matches=context
@@ -353,7 +351,7 @@ class ComparableGroup(Comparable):
         return generics
 
     def has_all_factors_of(
-        self, other: ComparableGroup, context: Optional[ContextRegister] = None
+        self, other: FactorGroup, context: Optional[ContextRegister] = None
     ) -> bool:
         return any(
             register is not None
@@ -361,7 +359,7 @@ class ComparableGroup(Comparable):
         )
 
     def explanations_shares_all_factors_with(
-        self, other: ComparableGroup, context: Optional[ContextRegister] = None
+        self, other: FactorGroup, context: Optional[ContextRegister] = None
     ) -> Iterator[ContextRegister]:
         context = context or ContextRegister()
         context_for_other = context.reversed()
@@ -375,7 +373,7 @@ class ComparableGroup(Comparable):
         )
 
     def shares_all_factors_with(
-        self, other: ComparableGroup, context: Optional[ContextRegister] = None
+        self, other: FactorGroup, context: Optional[ContextRegister] = None
     ) -> bool:
         return any(
             register is not None
@@ -395,7 +393,7 @@ class ComparableGroup(Comparable):
 
     def _context_registers(
         self,
-        other: ComparableGroup,
+        other: FactorGroup,
         comparison: Callable,
         context: ContextRegister,
     ) -> Iterator[ContextRegister]:
@@ -421,7 +419,7 @@ class ComparableGroup(Comparable):
                 yield from self._likely_contexts_for_factor(other, new_context, i + 1)
 
     def _likely_contexts_for_factorgroup(
-        self, other: ComparableGroup, context: ContextRegister, j: int = 0
+        self, other: FactorGroup, context: ContextRegister, j: int = 0
     ) -> Iterator[ContextRegister]:
         if j == len(other):
             yield context
@@ -443,7 +441,7 @@ class ComparableGroup(Comparable):
         else:
             yield from self._likely_contexts_for_factor(other, context)
 
-    def drop_implied_factors(self) -> ComparableGroup:
+    def drop_implied_factors(self) -> FactorGroup:
         """
         Reduce group by removing redundant members implied by other members.
 
@@ -461,7 +459,7 @@ class ComparableGroup(Comparable):
                 elif current.implies_same_context(item):
                     unchecked.remove(item)
             result.append(current)
-        return ComparableGroup(result)
+        return FactorGroup(result)
 
     def internally_consistent(self, context: Optional[ContextRegister] = None) -> bool:
         """
@@ -478,9 +476,9 @@ class ComparableGroup(Comparable):
                     return False
         return True
 
-    def new_context(self, changes: ContextRegister) -> ComparableGroup:
+    def new_context(self, changes: ContextRegister) -> FactorGroup:
         result = [factor.new_context(changes) for factor in self]
-        return ComparableGroup(result)
+        return FactorGroup(result)
 
     def union(
         self, other: Comparable, context: Optional[ContextRegister] = None
@@ -502,8 +500,8 @@ class ComparableGroup(Comparable):
         return result
 
     def union_from_explanation_allow_contradiction(
-        self, other: ComparableGroup, context: ContextRegister
-    ) -> ComparableGroup:
+        self, other: FactorGroup, context: ContextRegister
+    ) -> FactorGroup:
         updated_context = context.reversed() if context else None
         result = self + other.new_context(changes=updated_context)
         result = result.drop_implied_factors()
