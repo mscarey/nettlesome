@@ -108,6 +108,23 @@ class TestStatements:
             in result.short_string.lower()
         )
 
+    def test_new_context_from_list(self):
+        predicate_shot = Predicate("$shooter shot $victim")
+        shot = Statement(predicate_shot, terms=[Entity("Alice"), Entity("Bob")])
+        changes = [Entity("Leslie"), Entity("Mike")]
+        result = shot.new_context(changes)
+        assert (
+            "the Statement that <leslie> shot <mike>".lower()
+            in result.short_string.lower()
+        )
+
+    def test_new_context_wrong_list_length(self):
+        predicate_shot = Predicate("$shooter shot $victim")
+        shot = Statement(predicate_shot, terms=[Entity("Alice"), Entity("Bob")])
+        changes = [Entity("Leslie"), Entity("Mike"), Entity("Dan")]
+        with pytest.raises(ValueError):
+            shot.new_context(changes)
+
     def test_too_much_info_to_change_context(self):
         """Test that a list of terms to replace requires "changes" to be consistent."""
         statement = Statement(
