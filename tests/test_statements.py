@@ -127,7 +127,7 @@ class TestStatements:
         told = Statement(
             predicate_told, terms=[Entity("Henry"), Entity("Jenna"), no_gun]
         )
-        new = shot.new_context(changes=["Henry", "Jenna"], source=told)
+        new = shot.new_context(changes=["Henry", Entity("Jenna")], source=told)
         assert "<henry> shot <jenna>" in new.short_string.lower()
 
     def test_new_context_no_strings_with_terms_to_replace(self):
@@ -145,6 +145,15 @@ class TestStatements:
                 terms_to_replace=[Entity("Alice"), Entity("Bob")],
                 source=told,
             )
+
+    def test_new_context_use_terms_to_replace(self):
+        predicate_shot = Predicate("$shooter shot $victim")
+        shot = Statement(predicate_shot, terms=[Entity("Alice"), Entity("Bob")])
+        new = shot.new_context(
+            changes=[Entity("Henry"), Entity("Jenna")],
+            terms_to_replace=[Entity("Alice"), Entity("Bob")],
+        )
+        assert "<henry> shot <jenna>" in new.short_string.lower()
 
     def test_new_context_wrong_list_length(self):
         predicate_shot = Predicate("$shooter shot $victim")
