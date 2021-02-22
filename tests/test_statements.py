@@ -1041,3 +1041,19 @@ class TestAddition:
         murder = Statement(Predicate("$person committed a murder"), terms=Entity("Al"))
         crime = Statement(Predicate("$person committed a crime"), terms=Entity("Al"))
         assert murder + crime is None
+
+    def test_add_with_specific_entity(self):
+        """Result has specific factors from the implying Factor, but generic factors from the left."""
+        left = Statement(
+            "$entity bought $item", terms=[Entity("Alice"), Entity("a box of pencils")]
+        )
+        right = Statement(
+            "$entity bought $item",
+            terms=[
+                Entity("the State of Texas", generic=False),
+                Entity("a box of erasers"),
+            ],
+        )
+        new = left + right
+        assert new.terms[0].name == "the State of Texas"
+        assert new.terms[1].name == "a box of pencils"

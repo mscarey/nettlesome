@@ -35,6 +35,15 @@ class Term(Comparable):
         self.name = name
         self.generic = generic
 
+    def _borrow_generic_context(self, other: Term) -> Term:
+        self_factors = list(self.recursive_factors.values())
+        other_factors = list(other.recursive_factors.values())
+        changes = ContextRegister()
+        for i, factor in enumerate(self_factors):
+            if factor.generic:
+                changes.insert_pair(factor, other_factors[i])
+        return self.new_context(changes)
+
     def add(
         self, other: Term, context: Optional[ContextRegister] = None
     ) -> Optional[Term]:
@@ -43,7 +52,7 @@ class Term(Comparable):
         if self.implies(other, context=context):
             return self
         if other.implies(self, context=context):
-            return other.new_context(self.generic_factors())
+            return other._borrow_generic_context(self)
         return None
 
     def __add__(self, other: Term) -> Optional[Comparable]:
