@@ -245,9 +245,6 @@ class Comparable(ABC):
             return True
         return bool(self.implies(other) and not self.compare_keys(other))
 
-    def __or__(self, other: Comparable):
-        return self.union(other, context=None)
-
     def __str__(self):
         text = f"the {self.__class__.__name__.lower()}" + " {}"
         if self.generic:
@@ -874,12 +871,6 @@ class Comparable(ABC):
     def term_permutations(self) -> Iterator[FactorSequence]:
         """Generate permutations of context factors that preserve same meaning."""
         yield self.terms
-
-    def union(
-        self, other: Comparable, context: ContextRegister = None
-    ) -> Optional[Comparable]:
-        """Alias for addition."""
-        return self.add(other=other, context=context)
 
     def _update_context_from_factors(
         self, other: Comparable, context: ContextRegister

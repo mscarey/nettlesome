@@ -250,7 +250,7 @@ class FactorGroup(Comparable):
         context = context or ContextRegister()
         for partial in self._explanations_union_partial(other, context):
             for guess in self.possible_contexts(other, partial):
-                answer = self.union_from_explanation(other, guess)
+                answer = self._union_from_explanation(other, guess)
                 if answer:
                     yield guess
 
@@ -480,26 +480,38 @@ class FactorGroup(Comparable):
         result = [factor.new_context(changes) for factor in self]
         return FactorGroup(result)
 
+    def __or__(self, other: Union[FactorGroup, Factor]) -> Optional[FactorGroup]:
+        return self.union(other, context=None)
+
     def union(
-        self, other: Comparable, context: Optional[ContextRegister] = None
-    ) -> Optional[Comparable]:
+        self,
+        other: Union[FactorGroup, Factor],
+        context: Optional[ContextRegister] = None,
+    ) -> Optional[FactorGroup]:
         context = context or ContextRegister()
+        if not isinstance(other, FactorGroup):
+            other = FactorGroup(other)
+        return self._union(other=other, context=context)
+
+    def _union(
+        self, other: FactorGroup, context: ContextRegister
+    ) -> Optional[FactorGroup]:
         explanations = self.explanations_union(other, context)
         try:
             explanation = next(explanations)
         except StopIteration:
             return None
-        return self.union_from_explanation(other, explanation)
+        return self._union_from_explanation(other, explanation)
 
-    def union_from_explanation(
-        self, other: Comparable, context: ContextRegister
-    ) -> Optional[Comparable]:
-        result = self.union_from_explanation_allow_contradiction(other, context)
+    def _union_from_explanation(
+        self, other: FactorGroup, context: ContextRegister
+    ) -> Optional[FactorGroup]:
+        result = self._union_from_explanation_allow_contradiction(other, context)
         if not result.internally_consistent(context=context):
             return None
         return result
 
-    def union_from_explanation_allow_contradiction(
+    def _union_from_explanation_allow_contradiction(
         self, other: FactorGroup, context: ContextRegister
     ) -> FactorGroup:
         updated_context = context.reversed() if context else None

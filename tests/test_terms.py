@@ -102,5 +102,5 @@ class TestContradiction:
 
 class TestUnion:
     def test_union_of_terms(self):
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(TypeError):
             Entity("Al") | Entity("Ed")

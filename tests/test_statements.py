@@ -1033,11 +1033,6 @@ class TestAddition:
         answer = self.specific_fact + self.general_fact
         assert answer.means(self.specific_fact)
 
-    def test_union_is_alias_for_addition(self):
-        """These are different for groups, but the same for statements."""
-        answer = self.specific_fact | self.general_fact
-        assert answer.means(self.specific_fact)
-
     def test_addition_uses_terms_from_left(self):
         answer = self.general_fact + self.specific_fact
         assert "<the car>" in str(answer)
@@ -1046,32 +1041,3 @@ class TestAddition:
         murder = Statement(Predicate("$person committed a murder"), terms=Entity("Al"))
         crime = Statement(Predicate("$person committed a crime"), terms=Entity("Al"))
         assert murder + crime is None
-        assert murder | crime is None
-
-    def test_union_with_string_fails(self):
-        murder = Statement(Predicate("$person committed a murder"), terms=Entity("Al"))
-        with pytest.raises(TypeError):
-            murder | "a string"
-
-    def test_union_same_as_adding(self):
-        dave = Entity("Dave")
-        speed_template = "${driver}'s driving speed was"
-        fast_fact = Statement(
-            Comparison(speed_template, sign=">=", expression="100 miles per hour"),
-            terms=dave,
-        )
-        slow_fact = Statement(
-            Comparison(
-                speed_template,
-                sign=">=",
-                expression="20 miles per hour",
-            ),
-            terms=dave,
-        )
-        new = fast_fact | slow_fact
-        assert new.means(fast_fact)
-
-    def test_union_uses_terms_from_left(self):
-        new = self.general_fact | self.specific_fact
-        assert new.means(self.specific_fact)
-        assert new.terms[0].name == "the car"

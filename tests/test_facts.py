@@ -602,9 +602,7 @@ class TestAddition:
     def test_add_unrelated_factors(self, make_statement):
         assert make_statement["murder"] + make_statement["crime"] is None
 
-
-class TestUnion:
-    def test_union_same_as_adding(self):
+    def test_same_meaning_after_adding_implied(self):
         dave = Entity("Dave")
         speed_template = "${driver}'s driving speed was"
         fast_fact = Statement(
@@ -619,5 +617,5 @@ class TestUnion:
             ),
             terms=dave,
         )
-        new = fast_fact | slow_fact
+        new = fast_fact + slow_fact
         assert new.means(fast_fact)

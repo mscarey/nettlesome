@@ -21,10 +21,6 @@ class TestMakeGroup:
         assert isinstance(group, FactorGroup)
         assert group[1] == make_statement["shooting"]
 
-    def test_make_empty_group(self):
-        group = FactorGroup()
-        assert len(group) == 0
-
     def test_group_from_item(self, make_statement):
         factor = make_statement["shooting"]
         group = FactorGroup(factor)
