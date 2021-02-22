@@ -63,9 +63,6 @@ class ComparableGroup(Comparable):
     def __len__(self):
         return len(self.sequence)
 
-    def __next__(self):
-        yield from self.sequence
-
     def _add_group(self, other: ComparableGroup) -> ComparableGroup:
         combined = self.sequence[:] + other.sequence[:]
         return ComparableGroup(combined)

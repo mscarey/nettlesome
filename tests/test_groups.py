@@ -82,32 +82,38 @@ class TestMakeGroup:
         shorter = group.drop_implied_factors()
         assert len(shorter) == 2
 
-    def test_make_context_register(self):
-        alice = Entity("Alice")
-        bob = Entity("Bob")
-        craig = Entity("Craig")
-        dan = Entity("Dan")
+    def test_make_context_register(self, make_statement):
 
-        left = ComparableGroup([alice, bob])
-        right = ComparableGroup([craig, dan])
+        left = ComparableGroup([make_statement["shooting"], make_statement["murder"]])
+        right = ComparableGroup(
+            [make_statement["shooting_craig"], make_statement["murder_craig"]]
+        )
 
         register = ContextRegister()
-        register.insert_pair(alice, craig)
+        register.insert_pair(Entity("Alice"), Entity("Craig"))
 
         gen = left._context_registers(right, comparison=means, context=register)
         answer = next(gen)
-        assert answer.get("<Bob>").compare_keys(dan)
+        assert answer.get("<Alice>").compare_keys(Entity("Craig"))
 
-    def test_get_factor_by_index(self, make_complex_fact):
-        alice = Entity("Alice")
-        bob = Entity("Bob")
-        group = ComparableGroup([alice, bob])
-        assert group[1].name == "Bob"
+    def test_get_factor_by_index(self, make_statement):
+        group = ComparableGroup([make_statement["friends"], make_statement["less"]])
+        assert group[1].key.endswith("was less than 35 foot")
 
     def test_get_factor_by_name(self, make_complex_fact):
         group = ComparableGroup([make_complex_fact["relevant_murder"]])
         entity = group.get_factor_by_name("Alice")
         assert entity.plural is False
+
+    def test_iterate_through_factors(self, make_complex_fact):
+        group = ComparableGroup([make_complex_fact["relevant_murder"]])
+        gen = iter(group)
+        factor = next(gen)
+        assert factor.short_string.endswith("statement that <Alice> murdered <Bob>")
+
+    def test_cannot_add_entity(self):
+        with pytest.raises(TypeError):
+            ComparableGroup(Entity("Morning Star"))
 
 
 class TestSameFactors:
@@ -193,6 +199,7 @@ class TestImplication:
         group = ComparableGroup(factor_list)
         empty_group = ComparableGroup()
         assert group.implies(empty_group)
+        assert group[:1].implies(empty_group)
 
     def test_explanation_implication_of_factorgroup(self, make_statement):
         """Explanation shows the statements in `left` narrow down the quantity more than `right` does."""
@@ -202,6 +209,18 @@ class TestImplication:
         right = ComparableGroup([make_statement["less"], make_statement["absent_more"]])
         explanation = left.explain_implication(right)
         assert "implies" in str(explanation).lower()
+
+    def test_ge_not_gt(self, make_statement):
+        left = ComparableGroup([make_statement["shooting"], make_statement["murder"]])
+        right = ComparableGroup(
+            [make_statement["shooting_craig"], make_statement["murder_craig"]]
+        )
+        assert left >= right
+        assert not left > right
+
+    def test_greater_than_none(self, make_statement):
+        left = ComparableGroup()
+        assert left > None
 
 
 class TestContradiction:
@@ -382,13 +401,6 @@ class TestConsistent:
             [make_statement["shooting"], make_statement["no_shooting"]]
         )
         assert not group.internally_consistent()
-
-    def test_all_generic_factors_match(self):
-        left = ComparableGroup(Entity("Morning Star"))
-        right = ComparableGroup(Entity("Evening Star"))
-        context = ContextRegister()
-        context.insert_pair(left[0], right[0])
-        assert left.all_generic_factors_match(right, context=context)
 
     def test_all_generic_factors_match_in_statement(self):
         predicate = Predicate("the telescope pointed at $object")

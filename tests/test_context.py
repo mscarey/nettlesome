@@ -275,8 +275,8 @@ class TestChangeRegisters:
         assert next(gen)[0].name == "apple"
 
     def test_no_iterables_in_register(self):
-        left = ComparableGroup(Entity("Morning Star"))
-        right = ComparableGroup(Entity("Evening Star"))
+        left = ComparableGroup()
+        right = ComparableGroup()
         context = ContextRegister()
         with pytest.raises(TypeError):
             context.insert_pair(left, right)
