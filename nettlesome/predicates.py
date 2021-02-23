@@ -400,11 +400,19 @@ def scale_union_of_intervals(
     return result
 
 
+def scale_finiteset(elements: FiniteSet, scalar: Union[int, float]) -> sympy.Union:
+    scaled_intervals = [element * scalar for element in elements.args]
+    result = FiniteSet(*scaled_intervals)
+    return result
+
+
 def scale_ranges(
     ranges: Union[Interval, sympy.Union], scalar: Union[int, float]
 ) -> Interval:
     if isinstance(ranges, Interval):
         return scale_interval(interval=ranges, scalar=scalar)
+    if isinstance(ranges, FiniteSet):
+        return scale_finiteset(elements=ranges, scalar=scalar)
     return scale_union_of_intervals(ranges=ranges, scalar=scalar)
 
 

@@ -5,7 +5,7 @@ with open("readme.md", "r") as fh:
 
 setuptools.setup(
     name="nettlesome",
-    version="0.1.0",
+    version="0.1.1",
     author="Matt Carey",
     author_email="matt@authorityspoke.com",
     description="simplified semantic reasoning",

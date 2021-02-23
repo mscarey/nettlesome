@@ -401,3 +401,21 @@ class TestContradiction:
         no_cows = Predicate("the number of cows $person owned was", truth=False)
         assert not more_cows.contradicts(no_cows)
         assert not no_cows.contradicts(more_cows)
+
+    def test_contradiction_exact_different_unit(self):
+        acres = Comparison(
+            "the size of the farm was", sign=">", expression=Q_("2000 acres")
+        )
+        kilometers = Comparison(
+            "the size of the farm was", sign="=", expression=Q_("2 square kilometers")
+        )
+        assert acres.contradicts(kilometers)
+
+    def test_no_contradiction_exact_different_unit(self):
+        acres = Comparison(
+            "the size of the farm was", sign=">", expression=Q_("20 acres")
+        )
+        kilometers = Comparison(
+            "the size of the farm was", sign="=", expression=Q_("100 square kilometers")
+        )
+        assert not acres.contradicts(kilometers)
