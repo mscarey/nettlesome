@@ -8,7 +8,7 @@ from typing import (
     Iterator,
     Optional,
     Sequence,
-    TypeVar,
+    Tuple,
     Union,
 )
 from nettlesome.factors import Factor
@@ -19,38 +19,37 @@ from nettlesome.comparable import (
     means,
 )
 from nettlesome.explanations import Explanation
+from nettlesome.terms import Term
 
-F = TypeVar("F", bound="Factor")
 
-
-class FactorGroup(Comparable):
+class TermGroup(Comparable):
     r"""
-    Factors to be used together in a comparison.
-
-    The inputs, outputs, and despite terms of
-    a :class:`.Procedure` should be FactorGroups.
+    Terms to be used together in a comparison.
     """
+    term_class = Term
 
-    def __init__(self, factors: Union[Sequence[Factor], Factor] = ()):
-        if isinstance(factors, Iterable):
+    def __init__(self, factors: Union[TermGroup, Sequence[Term], Term] = ()):
+        if isinstance(factors, self.__class__):
+            self.sequence: Tuple[Term, ...] = factors.sequence
+        elif isinstance(factors, Iterable):
             self.sequence = tuple(factors)
         else:
             self.sequence = (factors,)
         for factor in self.sequence:
-            if not isinstance(factor, Factor):
+            if not isinstance(factor, self.term_class):
                 raise TypeError(
                     f'Object "{factor} could not be included in '
                     f"{self.__class__.__name__} because it is "
-                    f"type {factor.__class__.__name__}, not type Factor"
+                    f"type {factor.__class__.__name__}, not type {self.term_class.__name__}"
                 )
 
-    def _at_index(self, key: int) -> Factor:
+    def _at_index(self, key: int) -> Term:
         return self.sequence[key]
 
-    def __getitem__(self, key: Union[int, slice]) -> Union[Factor, FactorGroup]:
+    def __getitem__(self, key: Union[int, slice]) -> Union[Term, TermGroup]:
         if isinstance(key, slice):
             start, stop, step = key.indices(len(self))
-            return FactorGroup([self._at_index(i) for i in range(start, stop, step)])
+            return self.__class__([self._at_index(i) for i in range(start, stop, step)])
         return self._at_index(key)
 
     def __iter__(self):
@@ -59,16 +58,14 @@ class FactorGroup(Comparable):
     def __len__(self):
         return len(self.sequence)
 
-    def _add_group(self, other: FactorGroup) -> FactorGroup:
+    def _add_group(self, other: TermGroup) -> TermGroup:
         combined = self.sequence[:] + other.sequence[:]
-        return FactorGroup(combined)
+        return self.__class__(combined)
 
-    def __add__(
-        self, other: Union[FactorGroup, Sequence[Factor], Factor]
-    ) -> FactorGroup:
-        if isinstance(other, FactorGroup):
+    def __add__(self, other: Union[TermGroup, Sequence[Term], Term]) -> TermGroup:
+        if isinstance(other, self.__class__):
             return self._add_group(other)
-        to_add = FactorGroup(other)
+        to_add = self.__class__(other)
         return self._add_group(to_add)
 
     @property
@@ -132,7 +129,7 @@ class FactorGroup(Comparable):
             return True
         if context is None:
             context = ContextRegister()
-        if isinstance(other, FactorGroup):
+        if isinstance(other, self.__class__):
             for other_factor in other:
                 if self._must_contradict_one_factor(other_factor, context=context):
                     return False
@@ -243,7 +240,7 @@ class FactorGroup(Comparable):
                             )
 
     def explanations_union(
-        self, other: FactorGroup, context: Optional[ContextRegister] = None
+        self, other: TermGroup, context: Optional[ContextRegister] = None
     ) -> Iterator[ContextRegister]:
         context = context or ContextRegister()
         for partial in self._explanations_union_partial(other, context):
@@ -323,8 +320,8 @@ class FactorGroup(Comparable):
         self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Iterator[Explanation]:
 
-        if not isinstance(other, FactorGroup):
-            other = FactorGroup(other)
+        if not isinstance(other, self.__class__):
+            other = self.__class__(other)
 
         explanation = Explanation(
             factor_matches=[],
@@ -339,7 +336,7 @@ class FactorGroup(Comparable):
         )
 
     def explanations_has_all_factors_of(
-        self, other: FactorGroup, context: Optional[ContextRegister] = None
+        self, other: TermGroup, context: Optional[ContextRegister] = None
     ) -> Iterator[ContextRegister]:
         yield from self.comparison(
             operation=means, still_need_matches=list(other), matches=context
@@ -352,7 +349,7 @@ class FactorGroup(Comparable):
         return generics
 
     def has_all_factors_of(
-        self, other: FactorGroup, context: Optional[ContextRegister] = None
+        self, other: TermGroup, context: Optional[ContextRegister] = None
     ) -> bool:
         return any(
             register is not None
@@ -360,7 +357,7 @@ class FactorGroup(Comparable):
         )
 
     def explanations_shares_all_factors_with(
-        self, other: FactorGroup, context: Optional[ContextRegister] = None
+        self, other: TermGroup, context: Optional[ContextRegister] = None
     ) -> Iterator[ContextRegister]:
         context = context or ContextRegister()
         context_for_other = context.reversed()
@@ -374,7 +371,7 @@ class FactorGroup(Comparable):
         )
 
     def shares_all_factors_with(
-        self, other: FactorGroup, context: Optional[ContextRegister] = None
+        self, other: TermGroup, context: Optional[ContextRegister] = None
     ) -> bool:
         return any(
             register is not None
@@ -394,7 +391,7 @@ class FactorGroup(Comparable):
 
     def _context_registers(
         self,
-        other: FactorGroup,
+        other: TermGroup,
         comparison: Callable,
         context: ContextRegister,
     ) -> Iterator[ContextRegister]:
@@ -420,7 +417,7 @@ class FactorGroup(Comparable):
                 yield from self._likely_contexts_for_factor(other, new_context, i + 1)
 
     def _likely_contexts_for_factorgroup(
-        self, other: FactorGroup, context: ContextRegister, j: int = 0
+        self, other: TermGroup, context: ContextRegister, j: int = 0
     ) -> Iterator[ContextRegister]:
         if j == len(other):
             yield context
@@ -442,7 +439,7 @@ class FactorGroup(Comparable):
         else:
             yield from self._likely_contexts_for_factor(other, context)
 
-    def drop_implied_factors(self) -> FactorGroup:
+    def drop_implied_factors(self) -> TermGroup:
         """
         Reduce group by removing redundant members implied by other members.
 
@@ -460,7 +457,7 @@ class FactorGroup(Comparable):
                 elif current.implies_same_context(item):
                     unchecked.remove(item)
             result.append(current)
-        return FactorGroup(result)
+        return self.__class__(result)
 
     def internally_consistent(self, context: Optional[ContextRegister] = None) -> bool:
         """
@@ -477,26 +474,24 @@ class FactorGroup(Comparable):
                     return False
         return True
 
-    def new_context(self, changes: ContextRegister) -> FactorGroup:
+    def new_context(self, changes: ContextRegister) -> TermGroup:
         result = [factor.new_context(changes) for factor in self]
-        return FactorGroup(result)
+        return self.__class__(result)
 
-    def __or__(self, other: Union[FactorGroup, Factor]) -> Optional[FactorGroup]:
+    def __or__(self, other: Union[TermGroup, Factor]) -> Optional[TermGroup]:
         return self.union(other, context=None)
 
     def union(
         self,
-        other: Union[FactorGroup, Factor],
+        other: Union[TermGroup, Factor],
         context: Optional[ContextRegister] = None,
-    ) -> Optional[FactorGroup]:
+    ) -> Optional[TermGroup]:
         context = context or ContextRegister()
-        if not isinstance(other, FactorGroup):
-            other = FactorGroup(other)
+        if not isinstance(other, self.__class__):
+            other = self.__class__(other)
         return self._union(other=other, context=context)
 
-    def _union(
-        self, other: FactorGroup, context: ContextRegister
-    ) -> Optional[FactorGroup]:
+    def _union(self, other: TermGroup, context: ContextRegister) -> Optional[TermGroup]:
         explanations = self.explanations_union(other, context)
         try:
             explanation = next(explanations)
@@ -505,17 +500,24 @@ class FactorGroup(Comparable):
         return self._union_from_explanation(other, explanation)
 
     def _union_from_explanation(
-        self, other: FactorGroup, context: ContextRegister
-    ) -> Optional[FactorGroup]:
+        self, other: TermGroup, context: ContextRegister
+    ) -> Optional[TermGroup]:
         result = self._union_from_explanation_allow_contradiction(other, context)
         if not result.internally_consistent(context=context):
             return None
         return result
 
     def _union_from_explanation_allow_contradiction(
-        self, other: FactorGroup, context: ContextRegister
-    ) -> FactorGroup:
+        self, other: TermGroup, context: ContextRegister
+    ) -> TermGroup:
         updated_context = context.reversed() if context else None
         result = self + other.new_context(changes=updated_context)
         result = result.drop_implied_factors()
         return result
+
+
+class FactorGroup(TermGroup):
+    r"""
+    Factors to be used together in a comparison.
+    """
+    term_class = Factor
