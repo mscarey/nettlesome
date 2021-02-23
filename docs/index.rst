@@ -1,10 +1,19 @@
 .. Nettlesome documentation master file, created by
    sphinx-quickstart on Mon Feb 22 21:37:12 2021.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
-Welcome to Nettlesome's documentation!
 ======================================
+Nettlesome: Simple Semantic Reasoning
+======================================
+
+`Nettlesome <https://github.com/mscarey/nettlesome>`_ is a Python
+library defining a limited grammar of natural-language statements
+that can be compared automatically for implication or contradiction.
+Although Nettlesome was designed to be used for legal annotations in
+the `AuthoritySpoke <https://github.com/mscarey/nettlesome>`_ library,
+Nettlesome itself doesn't depend on any legal concepts or specialized knowledge.
+
+Release v\. |release|.
+
 
 .. toctree::
    :maxdepth: 2
