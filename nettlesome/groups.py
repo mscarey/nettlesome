@@ -8,8 +8,6 @@ from typing import (
     Iterator,
     Optional,
     Sequence,
-    Tuple,
-    Type,
     TypeVar,
     Union,
 )
@@ -322,8 +320,11 @@ class FactorGroup(Comparable):
                             )
 
     def explanations_implication(
-        self, other: FactorGroup, context: Optional[ContextRegister] = None
+        self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Iterator[Explanation]:
+
+        if not isinstance(other, FactorGroup):
+            other = FactorGroup(other)
 
         explanation = Explanation(
             factor_matches=[],

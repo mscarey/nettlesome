@@ -382,7 +382,7 @@ class Comparable(ABC):
         )
 
     def _contradicts_if_present(
-        self, other: Comparable, context: Optional[ContextRegister] = None
+        self, other: Comparable, context: ContextRegister
     ) -> Iterator[ContextRegister]:
         """
         Test if ``self`` would contradict ``other`` if neither was ``absent``.

@@ -211,7 +211,7 @@ class Predicate:
         changes = {p: "{}" for p in self.template.placeholders}
         return self.template.substitute(**changes)
 
-    def _content_with_terms(self, terms: Iterable[Term]) -> str:
+    def _content_with_terms(self, terms: FactorSequence) -> str:
         r"""
         Make a sentence by filling in placeholders with names of Factors.
 

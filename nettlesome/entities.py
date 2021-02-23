@@ -1,7 +1,7 @@
 """:class:`.Comparable` subclass for things that can be referenced in a Statement."""
 
 from __future__ import annotations
-from typing import Callable, Iterator, List, Optional
+from typing import Optional
 
 from nettlesome.comparable import Comparable, ContextRegister
 from nettlesome.terms import Term

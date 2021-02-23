@@ -1,7 +1,5 @@
 import pytest
 
-from typing import Sequence
-
 from nettlesome.comparable import (
     ContextRegister,
     consistent_with,

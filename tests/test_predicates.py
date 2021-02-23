@@ -1,13 +1,9 @@
 from datetime import date
 
-from pint import Quantity, quantity
 import pytest
-import sympy
-from sympy import Eq, Interval, oo
-
 
 from nettlesome.entities import Entity
-from nettlesome.predicates import Predicate, Comparison, Q_
+from nettlesome.predicates import Predicate
 from nettlesome.statements import Statement
 
 
