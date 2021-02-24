@@ -150,7 +150,7 @@ class Statement(Factor):
             yield from super()._means_if_concrete(other, context)
 
     def __len__(self):
-        return len(self.terms)
+        return len(self.generic_factors())
 
     def _implies_if_concrete(
         self, other: Comparable, context: Optional[ContextRegister] = None

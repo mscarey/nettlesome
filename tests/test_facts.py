@@ -125,6 +125,13 @@ class TestFacts:
             in statement.str_with_concrete_context
         )
 
+    def test_length_with_specific_term(self):
+        statement = Statement(
+            "$person paid tax to $state",
+            terms=[Entity("Alice"), Entity("the State of Texas", generic=False)],
+        )
+        assert len(statement) == 1
+
 
 class TestSameMeaning:
     def test_equality_factor_from_same_predicate(self, make_statement):
