@@ -1,3 +1,4 @@
+import operator
 import pytest
 
 from nettlesome.comparable import (
