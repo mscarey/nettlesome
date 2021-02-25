@@ -18,6 +18,7 @@ class TestMakeGroup:
         group = FactorGroup(factor_list)
         assert isinstance(group, FactorGroup)
         assert group[1] == make_statement["shooting"]
+        assert 'Statement(Predicate(template="$person1 committed' in repr(group)
 
     def test_group_from_item(self, make_statement):
         factor = make_statement["shooting"]

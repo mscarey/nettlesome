@@ -58,6 +58,9 @@ class TermGroup(Comparable):
     def __len__(self):
         return len(self.sequence)
 
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({repr(self.sequence)})"
+
     def _add_group(self, other: TermGroup) -> TermGroup:
         combined = self.sequence[:] + other.sequence[:]
         return self.__class__(combined)
@@ -521,3 +524,6 @@ class FactorGroup(TermGroup):
     Factors to be used together in a comparison.
     """
     term_class = Factor
+
+    def __repr__(self) -> str:
+        return super().__repr__()

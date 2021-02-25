@@ -128,8 +128,8 @@ class Statement(Factor):
 
     def __repr__(self):
         return (
-            f"{self.__class__.__name__}({self.predicate}, terms={self.terms}, "
-            f"absent={self.absent}, generic={self.generic})"
+            f"{self.__class__.__name__}({repr(self.predicate)}, terms={self.terms}"
+            f"{', absent=True' if self.absent else ''}{', absent=True' if self.absent else ''})"
         )
 
     def __str__(self):
