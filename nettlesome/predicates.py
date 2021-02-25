@@ -56,7 +56,7 @@ class StatementTemplate(Template):
             )
         return None
 
-    def get_template_with_plurals(self, context: FactorSequence) -> str:
+    def get_template_with_plurals(self, context: TermSequence) -> str:
         """
         Get a version of self with "was" replaced by "were" for any plural terms.
 
