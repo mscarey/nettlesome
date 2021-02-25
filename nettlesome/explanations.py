@@ -31,22 +31,10 @@ class Explanation:
         self.context = context or ContextRegister()
         self.operation = operation
 
-    @property
-    def reason(self) -> str:
-        """Make statement matching analagous context factors of self and other."""
-
-        similies = [
-            f'{key.short_string} {"are" if (key.plural) else "is"} like {value.short_string}'
-            for key, value in self.context.factor_pairs()
-        ]
-        if len(similies) > 1:
-            similies[-2:] = [", and ".join(similies[-2:])]
-        return ", ".join(similies)
-
     def __str__(self):
         indent = "  "
         relation = self.operation_names[self.operation]
-        context_text = f" Because {self.reason},\n" if self.context else "\n"
+        context_text = f" Because {self.context.reason},\n" if self.context else "\n"
         text = f"EXPLANATION:{context_text}"
         for match in self.factor_matches:
             left = textwrap.indent(str(match[0]), prefix=indent)

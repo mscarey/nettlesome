@@ -32,5 +32,5 @@ class TestContext:
         explanation = Explanation(
             factor_matches=[(self.fact_al, self.fact_alice)], context=answers
         )
-        assert "<the bull> is like <the cow>" in explanation.reason
+        assert "<the bull> is like <the cow>" in explanation.context.reason
         assert "terms=(Entity(name='Al'" in repr(explanation)

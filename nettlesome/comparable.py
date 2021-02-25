@@ -951,11 +951,19 @@ class ContextRegister:
         return "ContextRegister({})".format(self._matches.__repr__())
 
     def __str__(self) -> str:
-        item_names = [
-            f"{str(k)} is like {v.short_string}" for k, v in self.matches.items()
+        return f"ContextRegister({self.reason})"
+
+    @property
+    def reason(self) -> str:
+        """Make statement matching analagous context factors of self and other."""
+
+        similies = [
+            f'{key.short_string} {"are" if (key.plural) else "is"} like {value.short_string}'
+            for key, value in self.factor_pairs()
         ]
-        items = ", ".join(item_names)
-        return f"ContextRegister({items})"
+        if len(similies) > 1:
+            similies[-2:] = [", and ".join(similies[-2:])]
+        return ", ".join(similies)
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, self.__class__):
