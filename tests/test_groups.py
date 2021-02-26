@@ -8,6 +8,7 @@ from nettlesome.comparable import (
     means,
 )
 from nettlesome.entities import Entity
+from nettlesome.explanations import Explanation
 from nettlesome.groups import FactorGroup
 from nettlesome.predicates import Predicate, Comparison
 from nettlesome.statements import Statement
@@ -223,6 +224,7 @@ class TestImplication:
         assert left > None
 
     def test_interchangeable_terms_in_factorgroup(self):
+        """Fails whether the method is 'comparison' or '_verbose_comparison'"""
         left = FactorGroup(
             [
                 Statement(
@@ -279,6 +281,11 @@ class TestImplication:
                     ),
                 ),
             ]
+        )
+        explanation = Explanation(
+            factor_matches=[],
+            context=ContextRegister(),
+            operation=operator.ge,
         )
         gen = left.comparison(operation=operator.ge, still_need_matches=right)
         result = next(gen)

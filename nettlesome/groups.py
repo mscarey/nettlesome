@@ -226,7 +226,15 @@ class TermGroup(Comparable):
         else:
             other_factor = still_need_matches.pop()
             for self_factor in self:
+
+                # BUG: doesn't consider context, may be false positive
+                # should be self_factor.comparison(other_factor, operation=operation, context=context)
+                # or
+                # yield from self_factor.explain_comparison(other_factor, operation=operation, context=context)
+
+                # there must be an issue involving interchangeable terms
                 if operation(self_factor, other_factor):
+
                     updated_mappings = iter(
                         self_factor.update_context_register(
                             other=other_factor, context=matches, comparison=operation

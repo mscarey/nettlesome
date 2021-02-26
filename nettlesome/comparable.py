@@ -358,9 +358,11 @@ class Comparable(ABC):
             if self_value is None or (self_value.compare_keys(other)):
                 yield self.generic_register(other)
         else:
-            yield from self.terms.ordered_comparison(
-                other=other.terms, operation=comparison, context=context
-            )
+            for term_permutation in self.term_permutations():
+                for other_permutation in other.term_permutations():
+                    yield from term_permutation.ordered_comparison(
+                        other=other_permutation, operation=comparison, context=context
+                    )
 
     def contradicts(
         self, other: Optional[Comparable], context: Optional[ContextRegister] = None
