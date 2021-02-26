@@ -222,6 +222,68 @@ class TestImplication:
         left = FactorGroup()
         assert left > None
 
+    def test_interchangeable_terms_in_factorgroup(self):
+        left = FactorGroup(
+            [
+                Statement(
+                    Comparison(
+                        template="the distance between $place1 and $place2 was",
+                        truth=True,
+                        sign="<=",
+                        expression="35 foot",
+                    ),
+                    terms=(
+                        Entity(name="Scylla", generic=True, plural=False),
+                        Entity(name="Charybdis", generic=True, plural=False),
+                    ),
+                ),
+                Statement(
+                    Comparison(
+                        template="the distance between ${monster} and a boat used by ${hero} was",
+                        truth=True,
+                        sign="<=",
+                        expression="5 foot",
+                    ),
+                    terms=(
+                        Entity(name="Scylla", generic=True, plural=False),
+                        Entity(name="Ulysses", generic=True, plural=False),
+                    ),
+                ),
+            ]
+        )
+
+        right = FactorGroup(
+            [
+                Statement(
+                    Comparison(
+                        template="the distance between $place1 and $place2 was",
+                        truth=True,
+                        sign="<=",
+                        expression="35 foot",
+                    ),
+                    terms=(
+                        Entity(name="Charybdis", generic=True, plural=False),
+                        Entity(name="Scylla", generic=True, plural=False),
+                    ),
+                ),
+                Statement(
+                    Comparison(
+                        template="the distance between $thing and a boat used by $person was",
+                        truth=True,
+                        sign="<=",
+                        expression="5 foot",
+                    ),
+                    terms=(
+                        Entity(name="Scylla", generic=True, plural=False),
+                        Entity(name="Ulysses", generic=True, plural=False),
+                    ),
+                ),
+            ]
+        )
+        gen = left.comparison(operation=operator.ge, still_need_matches=right)
+        result = next(gen)
+        assert result
+
 
 class TestContradiction:
     def test_contradiction_of_group(self):

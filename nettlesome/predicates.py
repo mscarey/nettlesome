@@ -532,7 +532,7 @@ class Comparison(Predicate):
         result = super().__repr__()
         return (
             result.rstrip(")")
-            + f', comparison="{self.sign}", quantity="{self.expression}")'
+            + f', sign="{self.sign}", expression="{self.expression}")'
         )
 
     @classmethod
