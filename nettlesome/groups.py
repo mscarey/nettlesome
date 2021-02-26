@@ -59,7 +59,7 @@ class TermGroup(Comparable):
         return len(self.sequence)
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}{repr(self.sequence)}"
+        return f"{self.__class__.__name__}({repr(list(self.sequence))})"
 
     def _add_group(self, other: TermGroup) -> TermGroup:
         combined = self.sequence[:] + other.sequence[:]

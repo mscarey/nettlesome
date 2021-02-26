@@ -330,12 +330,11 @@ class Comparable(ABC):
         For instance, "<Ann> and <Bob> both were members of the same family" has a
         second ordering "<Bob> and <Ann> both were members of the same family".
         """
-        valid = True
         for i, self_factor in enumerate(ordering):
             if not (self_factor is other.terms[i] is None):
                 if not (self_factor and relation(self_factor, other.terms[i])):
-                    valid = False
-        return valid
+                    return False
+        return True
 
     def _context_registers(
         self,

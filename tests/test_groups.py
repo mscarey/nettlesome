@@ -120,6 +120,22 @@ class TestSameFactors:
         )
         assert first_group.has_all_factors_of(second_group)
 
+    def test_likely_contexts_with_identical_factor(self, make_statement):
+        first_group = FactorGroup([make_statement["shooting"], make_statement["crime"]])
+        second_group = FactorGroup([make_statement["crime"]])
+        gen = first_group.likely_contexts(second_group)
+        context = next(gen)
+        assert context.get("<Alice>").name == "Alice"
+
+    def test_likely_contexts_to_identical_factor(self, make_statement):
+        first_group = FactorGroup([make_statement["shooting"]])
+        second_group = FactorGroup(
+            [make_statement["crime"], make_statement["shooting"]]
+        )
+        gen = first_group.likely_contexts(second_group)
+        context = next(gen)
+        assert context.get("<Alice>").name == "Alice"
+
     def test_group_has_same_factors_as_included_group(self, make_statement):
         first_group = FactorGroup(
             [
@@ -330,6 +346,8 @@ class TestConsistent:
         register.insert_pair(Entity("the car"), Entity("the pickup"))
         assert not group.consistent_with(self.faster_statement, context=register)
         assert not consistent_with(group, self.faster_statement, context=register)
+        assert repr(group).startswith("FactorGroup([Statement")
+        assert '"30.0 mile / hour"' in repr(group)
 
     def test_groups_with_one_statement_consistent(self):
         specific_group = FactorGroup([self.slower_specific_statement])

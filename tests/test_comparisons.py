@@ -54,7 +54,7 @@ class TestQuantityInterval:
             expression=Q_("20 miles"),
         )
         assert comparison.interval == Interval(20, oo, left_open=True)
-        assert "quantity=20 mile" in repr(comparison)
+        assert 'quantity="20 mile' in repr(comparison)
 
     def test_negated_method(self, make_comparison):
         assert make_comparison["less"].negated().means(make_comparison["more"])
