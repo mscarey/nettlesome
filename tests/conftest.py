@@ -5,7 +5,8 @@ import pytest
 
 from nettlesome.comparable import ContextRegister
 from nettlesome.doctrines import Doctrine
-from nettlesome.predicates import Predicate, Comparison
+from nettlesome.predicates import Predicate
+from nettlesome.quantities import Comparison
 from nettlesome.statements import Statement
 from nettlesome.entities import Entity
 

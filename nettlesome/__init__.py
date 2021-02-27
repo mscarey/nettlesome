@@ -3,7 +3,8 @@
 from .doctrines import Doctrine
 from .entities import Entity
 from .groups import FactorGroup
-from .predicates import Comparison, Predicate
+from .predicates import Predicate
+from .quantities import Comparison, DateRange, NumberRange, UnitRange
 from .statements import Statement
 
 __version__ = "0.1.2"

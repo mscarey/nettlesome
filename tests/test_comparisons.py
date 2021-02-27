@@ -5,7 +5,8 @@ import pytest
 import sympy
 from sympy import Interval, oo
 
-from nettlesome.predicates import Predicate, Comparison
+from nettlesome.predicates import Predicate
+from nettlesome.quantities import Comparison
 from nettlesome.statements import Statement
 
 ureg = UnitRegistry()
@@ -38,14 +39,14 @@ class TestQuantityInterval:
             "the number of people at the party was", sign="<", expression=25
         )
         assert -5 not in party.interval
-        assert party.include_negatives is False
+        assert party.quantity_range.include_negatives is False
 
     def test_comparison_negative_magnitude(self):
         comparison = Comparison(
             "the balance in the bank account was", sign="<=", expression=-100
         )
-        assert comparison.magnitude == -100
-        assert comparison.include_negatives is True
+        assert comparison.quantity_range.magnitude == -100
+        assert comparison.quantity_range.include_negatives is True
 
     def test_comparison_interval(self):
         comparison = Comparison(

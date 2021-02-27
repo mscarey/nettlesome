@@ -5,7 +5,8 @@ import pytest
 from nettlesome.comparable import ContextRegister, FactorSequence, means
 from nettlesome.entities import Entity
 
-from nettlesome.predicates import Comparison, Q_, Predicate
+from nettlesome.predicates import Predicate
+from nettlesome.quantities import Comparison, Q_
 from nettlesome.statements import Statement
 
 

@@ -10,7 +10,8 @@ from nettlesome.comparable import (
 from nettlesome.entities import Entity
 from nettlesome.explanations import Explanation
 from nettlesome.groups import FactorGroup
-from nettlesome.predicates import Predicate, Comparison
+from nettlesome.predicates import Predicate
+from nettlesome.quantities import Comparison
 from nettlesome.statements import Statement
 
 
