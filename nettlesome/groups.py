@@ -331,9 +331,6 @@ class TermGroup(Comparable):
         self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Iterator[Explanation]:
 
-        if not isinstance(other, self.__class__):
-            other = self.__class__(other)
-
         explanation = Explanation(
             factor_matches=[],
             context=context or ContextRegister(),

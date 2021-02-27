@@ -6,7 +6,7 @@ import sympy
 from sympy import Interval, oo
 
 from nettlesome.predicates import Predicate
-from nettlesome.quantities import Comparison
+from nettlesome.quantities import Comparison, NumberRange
 from nettlesome.statements import Statement
 
 ureg = UnitRegistry()
@@ -45,7 +45,7 @@ class TestQuantityInterval:
         comparison = Comparison(
             "the balance in the bank account was", sign="<=", expression=-100
         )
-        assert comparison.quantity_range.magnitude == -100
+        assert comparison.quantity_range.magnitude() == -100
         assert comparison.quantity_range.include_negatives is True
 
     def test_comparison_interval(self):
@@ -110,6 +110,11 @@ class TestQuantityInterval:
                 sign=">=",
                 expression=Q_("20 miles"),
             )
+
+    def test_cannot_reuse_quantity_range_for_number(self):
+        dogs = Comparison("the number of dogs was", sign=">", expression="3 gallons")
+        with pytest.raises(TypeError):
+            NumberRange(quantity=dogs.quantity)
 
 
 class TestCompareQuantities:
@@ -439,3 +444,9 @@ class TestContradiction:
             "the size of the farm was", sign="=", expression=Q_("100 square kilometers")
         )
         assert not acres.contradicts(kilometers)
+
+    def test_reuse_quantity_range_for_contradiction(self):
+        dogs = Comparison("the number of dogs was", sign=">", expression=3)
+        cats = Comparison("the number of cats was", quantity_range=dogs.quantity_range)
+        fewer_cats = Comparison("the number of cats was", sign="<", expression=3)
+        assert cats.contradicts(fewer_cats)

@@ -12,10 +12,10 @@ from __future__ import annotations
 from itertools import product
 
 from string import Template
-from typing import Any, ClassVar, Dict, Iterable, Mapping
-from typing import List, Optional, Sequence, Union
+from typing import Any, Dict, Iterable, Mapping
+from typing import List, Optional, Sequence
 
-from pint import UnitRegistry, Quantity
+from pint import UnitRegistry
 
 
 from nettlesome.comparable import Comparable, FactorSequence
@@ -54,7 +54,7 @@ class StatementTemplate(Template):
             )
         return None
 
-    def get_template_with_plurals(self, context: TermSequence) -> str:
+    def get_template_with_plurals(self, context: FactorSequence) -> str:
         """
         Get a version of self with "was" replaced by "were" for any plural terms.
 
