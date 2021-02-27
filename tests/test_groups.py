@@ -283,11 +283,6 @@ class TestImplication:
                 ),
             ]
         )
-        explanation = Explanation(
-            factor_matches=[],
-            context=ContextRegister(),
-            operation=operator.ge,
-        )
         gen = left.comparison(operation=operator.ge, still_need_matches=right)
         result = next(gen)
         assert result

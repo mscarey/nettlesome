@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import ABC, abstractproperty
 from datetime import date
 from typing import Any, ClassVar, Dict, Optional, Union
 
@@ -66,9 +66,7 @@ class QuantityRange(ABC):
     }
     normalized_comparisons: ClassVar[Dict[str, str]] = {"=": "==", "<>": "!="}
 
-    def __init__(
-        self, sign: str = "", include_negatives: Optional[bool] = None
-    ) -> None:
+    def __init__(self, sign: str, include_negatives: Optional[bool] = None) -> None:
         if sign in self.normalized_comparisons:
             sign = self.normalized_comparisons[sign]
         if sign not in self.opposite_comparisons.keys():
@@ -78,7 +76,7 @@ class QuantityRange(ABC):
 
         self.sign = sign
         if include_negatives is None:
-            include_negatives = bool(self.magnitude() < 0)
+            include_negatives = bool(self.magnitude < 0)
         self.include_negatives = include_negatives
 
     def __repr__(self):
@@ -115,19 +113,19 @@ class QuantityRange(ABC):
     @property
     def interval(self) -> Union[FiniteSet, Interval, sympy.Union]:
         if self.sign == "==":
-            return FiniteSet(self.magnitude())
+            return FiniteSet(self.magnitude)
         elif ">" in self.sign:
-            return Interval(self.magnitude(), oo, left_open=bool("=" not in self.sign))
+            return Interval(self.magnitude, oo, left_open=bool("=" not in self.sign))
         elif "<" in self.sign:
             return Interval(
                 self.lower_bound,
-                self.magnitude(),
+                self.magnitude,
                 right_open=bool("=" not in self.sign),
             )
         # self.sign == "!="
         return sympy.Union(
-            Interval(self.lower_bound, self.magnitude(), right_open=True),
-            Interval(self.magnitude(), oo, left_open=True),
+            Interval(self.lower_bound, self.magnitude, right_open=True),
+            Interval(self.magnitude, oo, left_open=True),
         )
 
     @property
@@ -135,7 +133,7 @@ class QuantityRange(ABC):
         """The lower bound of the range that the Comparison may refer to."""
         return -oo if self.include_negatives else 0
 
-    @abstractmethod
+    @abstractproperty
     def magnitude(self) -> Union[int, float]:
         pass
 
@@ -181,13 +179,14 @@ class UnitRange(QuantityRange):
     def __init__(
         self,
         quantity: Quantity,
-        sign: Optional[str] = None,
+        sign: str = "",
         include_negatives: Optional[bool] = None,
     ) -> None:
         self.quantity = quantity
         self.domain = S.Reals
         super().__init__(sign=sign, include_negatives=include_negatives)
 
+    @property
     def magnitude(self) -> Union[int, float]:
         return self.quantity.magnitude
 
@@ -235,13 +234,14 @@ class DateRange(QuantityRange):
     def __init__(
         self,
         quantity: date,
-        sign: Optional[str] = None,
+        sign: str = "",
         include_negatives: Optional[bool] = None,
     ) -> None:
         self.quantity = quantity
         self.domain = S.Naturals
         super().__init__(sign=sign, include_negatives=include_negatives)
 
+    @property
     def magnitude(self) -> Union[int, float]:
         return int(self.quantity.strftime("%Y%m%d"))
 
@@ -250,7 +250,7 @@ class NumberRange(QuantityRange):
     def __init__(
         self,
         quantity: Union[int, float],
-        sign: Optional[str] = None,
+        sign: str = "",
         include_negatives: Optional[bool] = None,
     ) -> None:
         if not isinstance(quantity, (int, float)):
@@ -265,6 +265,7 @@ class NumberRange(QuantityRange):
             self.domain = S.Reals
         super().__init__(sign=sign, include_negatives=include_negatives)
 
+    @property
     def magnitude(self) -> Union[int, float]:
         return self.quantity
 
@@ -333,7 +334,7 @@ class Comparison(Predicate):
     def __init__(
         self,
         template: str,
-        sign: Optional[str] = None,
+        sign: str = "",
         expression: Union[date, int, float, Quantity] = 0,
         truth: Optional[bool] = True,
         include_negatives: Optional[bool] = None,
@@ -423,7 +424,7 @@ class Comparison(Predicate):
         return Q_(quantity)
 
     @property
-    def interval(self) -> [Interval, sympy.Union, EmptySet]:
+    def interval(self) -> Union[FiniteSet, Interval, sympy.Union]:
         return self.quantity_range.interval
 
     @property

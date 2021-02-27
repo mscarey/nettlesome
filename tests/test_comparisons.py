@@ -45,7 +45,7 @@ class TestQuantityInterval:
         comparison = Comparison(
             "the balance in the bank account was", sign="<=", expression=-100
         )
-        assert comparison.quantity_range.magnitude() == -100
+        assert comparison.quantity_range.magnitude == -100
         assert comparison.quantity_range.include_negatives is True
 
     def test_comparison_interval(self):
