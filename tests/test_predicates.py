@@ -71,11 +71,13 @@ class TestCompare:
         assert lived_at.content == also_lived_at.content
 
     def test_expression_comparison(self, make_comparison):
-        assert make_comparison["meters"].expression_comparison() == "at least 10 meter"
+        assert (
+            make_comparison["meters"].quantity_range.expression_comparison()
+            == "at least 10 meter"
+        )
         assert "20 foot" in repr(make_comparison["less_than_20"])
         assert (
-            make_comparison["less_than_20"].expression_comparison()
-            == "less than 20 foot"
+            str(make_comparison["less_than_20"].quantity_range) == "less than 20 foot"
         )
 
     def test_predicate_has_no_expression_comparison(self):

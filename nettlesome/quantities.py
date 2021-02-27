@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC
 from datetime import date
-from typing import Any, ClassVar, Dict, Optional, Union
+from typing import Any, ClassVar, Dict, Optional, Type, Union
 
 from pint import UnitRegistry, Quantity
 import sympy
@@ -238,7 +238,9 @@ class UnitRange(QuantityRange):
         if not self.consistent_dimensionality(other):
             return False
         other_interval = self.get_unit_converted_interval(other)
-        return Eq(self.interval, other_interval)
+        if not self.interval.is_subset(other_interval):
+            return False
+        return other_interval.is_subset(self.interval)
 
 
 class DateRange(QuantityRange):
@@ -279,6 +281,11 @@ class NumberRange(QuantityRange):
         sign: Optional[str] = None,
         include_negatives: Optional[bool] = None,
     ) -> None:
+        if not isinstance(quantity, (int, float)):
+            raise TypeError(
+                f'"quantity" must be a number (integer or float), '
+                f'not "{quantity}", which is type {type(quantity)}.'
+            )
         self.quantity = quantity
         if isinstance(self.quantity, int):
             self.domain = S.Naturals0
@@ -384,7 +391,7 @@ class Comparison(Predicate):
                     quantity=quantity,
                     include_negatives=include_negatives,
                 )
-            elif isinstance(expression, Quantity):
+            elif isinstance(quantity, Quantity):
                 self.quantity_range = UnitRange(
                     sign=sign,
                     quantity=quantity,
@@ -491,13 +498,13 @@ class Comparison(Predicate):
         if not self._same_meaning_as_true_predicate(other):
             return False
 
-        if not isinstance(other, Comparison):
+        if not isinstance(other, self.__class__):
             return False
 
         if not (self.truth is other.truth is True):
             return False
 
-        return self.quantity_range._excludes_quantity_interval(other.quantity_range)
+        return self.quantity_range.contradicts(other.quantity_range)
 
     def negated(self) -> Comparison:
         """Copy ``self``, with the opposite truth value."""
