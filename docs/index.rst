@@ -21,7 +21,6 @@ Nettlesome itself doesn't depend on any legal concepts or specialized knowledge.
    :caption: Contents:
 
 
-
 Indices and tables
 ==================
 

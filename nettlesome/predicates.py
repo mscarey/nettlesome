@@ -8,7 +8,7 @@ the `pint <https://pint.readthedocs.io/en/>`_ library).
 
 from __future__ import annotations
 
-from datetime import date
+
 from itertools import product
 
 from string import Template

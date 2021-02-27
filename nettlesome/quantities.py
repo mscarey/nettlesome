@@ -36,7 +36,7 @@ def scale_union_of_intervals(
     return result
 
 
-def scale_finiteset(elements: FiniteSet, scalar: Union[int, float]) -> sympy.Union:
+def scale_finiteset(elements: FiniteSet, scalar: Union[int, float]) -> FiniteSet:
     scaled_intervals = [element * scalar for element in elements.args]
     result = FiniteSet(*scaled_intervals)
     return result
@@ -44,7 +44,7 @@ def scale_finiteset(elements: FiniteSet, scalar: Union[int, float]) -> sympy.Uni
 
 def scale_ranges(
     ranges: Union[Interval, sympy.Union], scalar: Union[int, float]
-) -> Interval:
+) -> Union[Interval, FiniteSet, sympy.Union]:
     if isinstance(ranges, Interval):
         return scale_interval(interval=ranges, scalar=scalar)
     if isinstance(ranges, FiniteSet):
@@ -71,7 +71,7 @@ class QuantityRange:
     ) -> None:
         if sign in self.normalized_comparisons:
             sign = self.normalized_comparisons[sign]
-        if sign and sign not in self.opposite_comparisons.keys():
+        if sign not in self.opposite_comparisons.keys():
             raise ValueError(
                 f'"sign" string parameter must be one of {self.opposite_comparisons.keys()}.'
             )
@@ -80,6 +80,15 @@ class QuantityRange:
         if include_negatives is None:
             include_negatives = bool(self.magnitude < 0)
         self.include_negatives = include_negatives
+
+    def __repr__(self):
+        return (
+            f'{self.__class__.__name__}(quantity="{self.quantity}", '
+            f'sign="{self.sign}", include_negatives={self.include_negatives})'
+        )
+
+    def __str__(self) -> str:
+        return self.expression_comparison()
 
     def excludes_other_interval(self, other: Comparison) -> bool:
         result = self.interval.intersect(other.interval)
@@ -105,30 +114,7 @@ class QuantityRange:
             ">=": "at least",
             "<=": "no more than",
         }
-        return f"{expand[self.sign]} {self.expression}"
-
-    def implies(self, other: Any) -> bool:
-        return isinstance(other, self.__class__)
-
-    @property
-    def magnitude(self) -> Union[int, float]:
-        return 0
-
-    def compare_other_quantity(
-        self, other: QuantityRange
-    ) -> Union[bool, EmptySet, Interval, sympy.Union]:
-
-        return self.interval.intersect(other.interval)
-
-    def consistent_dimensionality(self, other: QuantityRange) -> bool:
-        """Test if ``other`` has a quantity parameter consistent with ``self``."""
-        return isinstance(other, self.__class__)
-
-    def convert_other_quantity(self, other_quantity: Quantity) -> Quantity:
-        """Convert other's quantity to match dimensional units of self's quantity."""
-        if not isinstance(other_quantity, Quantity):
-            raise TypeError(f"{other_quantity} is not a Pint Quantity.")
-        return other_quantity.to(self.expression.units)
+        return f"{expand[self.sign]} {self.quantity}"
 
     @property
     def interval(self) -> Union[FiniteSet, Interval, sympy.Union]:
@@ -152,6 +138,45 @@ class QuantityRange:
     def lower_bound(self):
         """The lower bound of the range that the Comparison may refer to."""
         return -oo if self.include_negatives else 0
+
+    @property
+    def magnitude(self) -> Union[int, float]:
+        return 0
+
+    def compare_other_quantity(
+        self, other: QuantityRange
+    ) -> Union[bool, EmptySet, Interval, sympy.Union]:
+
+        return self.interval.intersect(other.interval)
+
+    def consistent_dimensionality(self, other: QuantityRange) -> bool:
+        """Test if ``other`` has a quantity parameter consistent with ``self``."""
+        return isinstance(other, self.__class__)
+
+    def contradicts(self, other: Any) -> bool:
+        if not isinstance(other, self.__class__):
+            return False
+        return self._excludes_quantity_interval(other.interval)
+
+    def implies(self, other: Any) -> bool:
+        if not isinstance(other, self.__class__):
+            return False
+        return self._implies_quantity_interval(other.interval)
+
+    def _excludes_quantity_interval(
+        self, other_interval: Union[sympy.Union, Interval, FiniteSet]
+    ) -> bool:
+        """Test if quantity ranges in self and other are non-overlapping."""
+        combined_interval = self.interval.intersect(other_interval)
+        return combined_interval == EmptySet
+
+    def _implies_quantity_interval(
+        self, other_interval: Union[sympy.Union, Interval, FiniteSet]
+    ) -> bool:
+        """Test if the range of quantities mentioned in self is a subset of other's."""
+
+        combined_interval = self.interval.intersect(other_interval)
+        return self.interval.is_subset(combined_interval)
 
     def opposite_meaning(self) -> None:
         self.sign = self.opposite_comparisons[self.sign]
@@ -177,11 +202,43 @@ class UnitRange(QuantityRange):
             return False
         return self.quantity.dimensionality == other.quantity.dimensionality
 
-    def implies(self, other: Any) -> bool:
-        if not super().implies(other):
-            return False
+    def convert_other_quantity(self, other_quantity: Quantity) -> Quantity:
+        """Convert other's quantity to match dimensional units of self's quantity."""
+        if not isinstance(other_quantity, Quantity):
+            raise TypeError(f"{other_quantity} is not a Pint Quantity.")
+        return other_quantity.to(self.expression.units)
 
-        return self.implies_quantity_interval(other)
+    def contradicts(self, other: Any) -> bool:
+        if not self.consistent_dimensionality(other):
+            return False
+        other_interval = self.get_unit_converted_interval(other)
+        return self._excludes_quantity_interval(other_interval)
+
+    def implies(self, other: Any) -> bool:
+        if not self.consistent_dimensionality(other):
+            return False
+        other_interval = self.get_unit_converted_interval(other)
+        return self._implies_quantity_interval(other_interval)
+
+    def get_unit_converted_interval(
+        self, other: UnitRange
+    ) -> Union[Interval, FiniteSet, sympy.Union]:
+        if not isinstance(other, UnitRange):
+            raise TypeError(
+                f"Unit coversions only available for type UnitRange, not {other.__class__}."
+            )
+        if other.quantity.units != self.quantity.units:
+            ratio_of_units = other.quantity.units / self.quantity.units
+            other_interval = scale_ranges(other.interval, ratio_of_units)
+        else:
+            other_interval = other.interval
+        return other_interval
+
+    def means(self, other: Any) -> bool:
+        if not self.consistent_dimensionality(other):
+            return False
+        other_interval = self.get_unit_converted_interval(other)
+        return Eq(self.interval, other_interval)
 
 
 class DateRange(QuantityRange):
@@ -199,11 +256,20 @@ class DateRange(QuantityRange):
     def magnitude(self) -> Union[int, float]:
         return int(self.quantity.strftime("%Y%m%d"))
 
-    def implies(self, other: Any) -> bool:
-        if not super().implies(other):
+    def contradicts(self, other: Any) -> bool:
+        if not isinstance(other, self.__class__):
             return False
-        interval = self.interval.intersect(other.interval)
-        return interval != EmptySet and Eq(interval, self.interval)
+        return self._excludes_quantity_interval(other.interval)
+
+    def implies(self, other: Any) -> bool:
+        if not isinstance(other, self.__class__):
+            return False
+        return self._implies_quantity_interval(other.interval)
+
+    def means(self, other: Any) -> bool:
+        if not isinstance(other, self.__class__):
+            return False
+        return Eq(self.interval, other.interval)
 
 
 class NumberRange(QuantityRange):
@@ -220,14 +286,14 @@ class NumberRange(QuantityRange):
             self.domain = S.Reals
         super().__init__(sign=sign, include_negatives=include_negatives)
 
-    def implies(self, other: Any) -> bool:
-        if not super().implies(other):
-            return False
-        return self.includes_other_number(other)
-
     @property
     def magnitude(self) -> Union[int, float]:
         return self.quantity
+
+    def means(self, other: Any) -> bool:
+        if not isinstance(other, self.__class__):
+            return False
+        return Eq(self.interval, other.interval)
 
 
 class Comparison(Predicate):
@@ -331,8 +397,8 @@ class Comparison(Predicate):
                     include_negatives=include_negatives,
                 )
 
-            if truth is False:
-                truth = True
+            if self.truth is False:
+                self.truth = True
                 self.quantity_range.opposite_meaning()
 
         if not self.content.endswith("was"):
@@ -344,7 +410,7 @@ class Comparison(Predicate):
 
     def __repr__(self):
         result = super().__repr__()
-        return result.rstrip(")") + f', quantity_range="{self.quantity_range}")'
+        return result.rstrip(")") + f", quantity_range={repr(self.quantity_range)})"
 
     @classmethod
     def read_quantity(
@@ -387,9 +453,17 @@ class Comparison(Predicate):
     def interval(self) -> [Interval, sympy.Union, EmptySet]:
         return self.quantity_range.interval
 
+    @property
+    def quantity(self) -> Union[int, float, Quantity, date]:
+        return self.quantity_range.quantity
+
+    @property
+    def sign(self) -> str:
+        return self.quantity_range.sign
+
     def add_truth_to_content(self, content: str) -> str:
         content = super().add_truth_to_content(content)
-        return f"{content} {self.expression_comparison()}"
+        return f"{content} {str(self.quantity_range)}"
 
     def implies(self, other: Any) -> bool:
 
@@ -423,15 +497,15 @@ class Comparison(Predicate):
         if not (self.truth is other.truth is True):
             return False
 
-        return self.quantity_range.excludes_other_range(other.quantity_range)
+        return self.quantity_range._excludes_quantity_interval(other.quantity_range)
 
     def negated(self) -> Comparison:
         """Copy ``self``, with the opposite truth value."""
         return Comparison(
             template=self.content,
             truth=not self.truth,
-            sign=self.sign,
-            expression=self.expression,
+            sign=self.quantity_range.sign,
+            expression=self.quantity_range.quantity,
         )
 
     def compare_other_number(
@@ -467,12 +541,7 @@ class Comparison(Predicate):
         interval = self.compare_other_number(other)
         return interval == EmptySet
 
-    def excludes_quantity_interval(self, other: Comparison) -> bool:
-        """Test if quantity ranges in self and other are non-overlapping."""
-        interval = self.compare_other_quantity(other)
-        return interval == EmptySet
-
-    def implies_quantity_interval(self, other: Comparison) -> bool:
+    def _implies_quantity_interval(self, other: Comparison) -> bool:
         """Test if the range of quantities mentioned in self is a subset of other's."""
 
         interval = self.compare_other_quantity(other)

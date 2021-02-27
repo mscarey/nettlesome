@@ -55,15 +55,17 @@ class TestQuantityInterval:
             expression=Q_("20 miles"),
         )
         assert comparison.interval == Interval(20, oo, left_open=True)
-        assert 'expression="20 mile' in repr(comparison)
+        assert 'quantity="20 mile' in repr(comparison)
 
     def test_negated_method(self, make_comparison):
-        assert make_comparison["less"].negated().means(make_comparison["more"])
         as_false = make_comparison["exact"].negated()
         assert (
             str(as_false)
             == "that the distance between $place1 and $place2 was not equal to 25 foot"
         )
+
+    def test_negated_method_same_meaning(self, make_comparison):
+        assert make_comparison["less"].negated().means(make_comparison["more"])
 
     def test_convert_false_statement_about_quantity_to_obverse(self):
         distance = Comparison(
@@ -74,8 +76,8 @@ class TestQuantityInterval:
         )
         assert distance.truth is True
         assert distance.sign == "<="
-        assert isinstance(distance.expression, Quantity)
-        assert str(distance.expression) == "35 foot"
+        assert isinstance(distance.quantity, Quantity)
+        assert str(distance.quantity) == "35 foot"
 
     def test_string_for_date_as_expression(self):
         copyright_date_range = Comparison(
@@ -122,7 +124,9 @@ class TestCompareQuantities:
             sign="<",
             expression=Q_("30 miles"),
         )
-        assert comparison.excludes_quantity_interval(comparison_opposite) is False
+        left = comparison.quantity_range
+        right = comparison_opposite.quantity_range
+        assert left.contradicts(right.interval) is False
 
     def test_convert_quantity_of_Comparison(self):
         comparison = Comparison(
@@ -135,8 +139,10 @@ class TestCompareQuantities:
             sign=">",
             expression=Q_("30 kilometers"),
         )
-        result = comparison.convert_other_quantity(comparison_km.expression)
-        assert Q_("18 miles") < result < Q_("19 miles")
+        result = comparison.quantity_range.get_unit_converted_interval(
+            comparison_km.quantity_range
+        )
+        assert 18 < result.left < 19
 
     def test_cannot_convert_date_to_time_period(self):
         time = Comparison(
@@ -144,17 +150,13 @@ class TestCompareQuantities:
             sign=">",
             expression=Q_("2000 years"),
         )
-        with pytest.raises(TypeError):
-            time.convert_other_quantity(date(2020, 1, 1))
-
-    def test_cannot_convert_time_period_to_date(self):
-        time = Comparison(
-            "the date $buyer bought $object was",
-            sign=">",
+        day = Comparison(
+            "the day was",
+            sign="=",
             expression=date(2020, 1, 1),
         )
         with pytest.raises(TypeError):
-            time.convert_other_quantity(date(2020, 1, 1))
+            time.quantity_range.get_unit_converted_interval(day.quantity_range)
 
     def test_inconsistent_dimensionality_quantity(self):
         number = Comparison(
@@ -167,8 +169,12 @@ class TestCompareQuantities:
             sign=">",
             expression=Q_("20 miles"),
         )
-        assert not number.consistent_dimensionality(distance)
-        assert not distance.consistent_dimensionality(number)
+        assert not number.quantity_range.consistent_dimensionality(
+            distance.quantity_range
+        )
+        assert not distance.quantity_range.consistent_dimensionality(
+            number.quantity_range
+        )
 
     def test_inconsistent_dimensionality_date(self):
         number = Comparison(
@@ -181,8 +187,8 @@ class TestCompareQuantities:
             sign=">",
             expression=date(2000, 1, 1),
         )
-        assert not number.consistent_dimensionality(day)
-        assert not day.consistent_dimensionality(number)
+        assert not number.quantity_range.consistent_dimensionality(day.quantity_range)
+        assert not day.quantity_range.consistent_dimensionality(number.quantity_range)
 
     def test_quantity_comparison_to_predicate(self):
         distance = Comparison(
@@ -191,12 +197,12 @@ class TestCompareQuantities:
             expression="20 miles",
         )
         predicate = Predicate("the distance between $place1 and $place2 was")
-        assert not distance.compare_other_quantity(predicate)
+        assert not distance.quantity_range.implies(predicate)
 
     def test_compare_intervals_different_units(self):
         miles = Comparison("the distance was", sign="<", expression=Q_("30 miles"))
         kilos = Comparison("the distance was", sign="<", expression=Q_("40 kilometers"))
-        assert kilos.implies_quantity_interval(miles)
+        assert kilos.quantity_range.implies(miles.quantity_range)
 
 
 class TestSameMeaning:
