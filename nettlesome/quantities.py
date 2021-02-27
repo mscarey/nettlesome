@@ -286,10 +286,10 @@ class Comparison(Predicate):
     Comparison object must end with the word “was”.
 
     If you phrase a Comparison with an inequality sign using truth=False,
-    AuthoritySpoke will silently modify your statement so it can have
+    Nettlesome will silently modify your statement so it can have
     truth=True with a different sign. In this example, the user’s input
     indicates that it’s false that the weight of marijuana possessed by a defendant
-    was more than 10 grams. AuthoritySpoke interprets this to mean it’s
+    was more than 10 grams. Nettlesome interprets this to mean it’s
     true that the weight was no more than 10 grams.
 
         >>> # example comparing a pint Quantity

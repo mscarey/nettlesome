@@ -20,6 +20,21 @@ Nettlesome itself doesn't depend on any legal concepts or specialized knowledge.
    :maxdepth: 2
    :caption: Contents:
 
+.. toctree::
+    :maxdepth: 1
+    :caption: API Reference
+
+    api/comparable.rst
+    api/terms.rst
+    api/factors.rst
+    api/entities.rst
+    api/predicates.rst
+    api/quantities.rst
+    api/statements.rst
+    api/doctrines.rst
+    api/explanations.rst
+    api/groups.rst
+
 
 Indices and tables
 ==================

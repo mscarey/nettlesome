@@ -19,35 +19,7 @@ from slugify import slugify
 
 class Statement(Factor):
     r"""
-    An assertion accepted as factual by a court.
-
-    Often based on factfinding by a judge or jury.
-
-    Facts may be "alleged" by a pleading, "supported" by evidence, or
-    "found" to be factual by a jury verdict or a judge's finding of fact.
-
-    :param predicate:
-        a natural-language clause with zero or more slots
-        to insert ``terms`` that are typically the
-        subject and objects of the clause.
-
-    :param terms:
-        a series of :class:`Factor` objects that fill in
-        the blank spaces in the ``predicate`` statement.
-
-    :param name:
-        an identifier for this object, often used if the object needs
-        to be referred to multiple times in the process of composing
-        other :class:`Factor` objects.
-
-    :param absent:
-        whether the absence, rather than the presence, of the legal
-        fact described above is being asserted.
-
-    :param generic:
-        whether this object could be replaced by another generic
-        object of the same class without changing the truth of the
-        :class:`Rule` in which it is mentioned.
+    An assertion that can be accepted as factual and compared to other Statements.
     """
 
     def __init__(
@@ -60,6 +32,31 @@ class Statement(Factor):
         absent: bool = False,
         generic: bool = False,
     ):
+        """
+        :param predicate:
+            a natural-language clause with zero or more slots
+            to insert ``terms`` that are typically the
+            subject and objects of the clause.
+
+        :param terms:
+            a series of :class:`~nettlesome.factors.Factor` objects that fill in
+            the blank spaces in the ``predicate`` statement.
+
+        :param name:
+            an identifier for this object, often used if the object needs
+            to be referred to multiple times in the process of composing
+            other :class:`~nettlesome.factors.Factor` objects.
+
+        :param absent:
+            whether the absence, rather than the presence, of the legal
+            fact described above is being asserted.
+
+        :param generic:
+            whether this object could be replaced by another generic
+            object of the same class without changing the truth of a
+            :class:`:class:`~nettlesome.predicates.Predicate`` in
+            which it is mentioned.
+        """
         terms = terms or FactorSequence()
 
         if isinstance(predicate, str):

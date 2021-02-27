@@ -735,11 +735,8 @@ class Comparable(ABC):
         Get a copy of ``self`` except ensure ``generic`` is ``True``.
 
         .. note::
-            The new object created with this method will have all the
+            The new object created with this method will still have all the
             attributes of ``self`` except ``generic=False``.
-            Therefore the method isn't equivalent to creating a new
-            instance of the class with only the ``generic`` attribute
-            specified. To do that, you would use ``Statement(generic=True)``.
 
         :returns: a new object changing ``generic`` to ``True``.
         """

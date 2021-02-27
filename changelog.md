@@ -1,5 +1,9 @@
 Changelog
 =========
+dev
+------------------
+- create UnitRange, DateRange, and NumberRange classes
+
 0.1.2 (2021-02-26)
 ------------------
 - fix bug: Comparable._context_registers could fail when a Factor's terms could be reordered
