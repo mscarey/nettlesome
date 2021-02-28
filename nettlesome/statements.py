@@ -92,24 +92,31 @@ class Statement(Factor):
 
     @property
     def slug(self) -> str:
+        """
+        Get a representation of self without whitespace.
+
+        Intended for use as a sympy :class:`~sympy.core.symbol.Symbol`
+        """
         subject = self.predicate._content_with_terms(self.terms).removesuffix(" was")
         return slugify(subject)
 
     @property
     def terms(self) -> FactorSequence:
+        """Get Terms used to fill placeholder's in ``self``'s StatementTemplate."""
         return self._terms
 
     @property
     def wrapped_string(self):
+        """Wrap text in string representation of ``self``."""
         content = str(self.predicate._content_with_terms(self.terms))
         unwrapped = self.predicate.add_truth_to_content(content)
         text = wrapped(super().__str__().format(unwrapped))
         return text
 
     @property
-    def str_with_concrete_context(self):
+    def str_with_concrete_context(self) -> str:
         """
-        Identify this Fact more verbosely, specifying which text is a concrete context factor.
+        Identify this Statement more verbosely, specifying which text is a concrete context factor.
 
         :returns:
             the same as the __str__ method, but with an added "SPECIFIC CONTEXT" section

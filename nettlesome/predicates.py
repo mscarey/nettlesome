@@ -13,7 +13,7 @@ from itertools import product
 
 from string import Template
 from typing import Any, Dict, Iterable, Mapping
-from typing import List, Optional, Sequence
+from typing import List, Optional, Sequence, Set
 
 from pint import UnitRegistry
 
@@ -34,7 +34,7 @@ class StatementTemplate(Template):
     """
 
     def __init__(self, template: str, make_singular: bool = True) -> None:
-        """
+        r"""
         Identify placeholders in template text, and make verbs singular if needed.
 
             >>> StatementTemplate("$group were at school", make_singular=True)
@@ -236,6 +236,12 @@ class Predicate:
         return self.template.template
 
     def content_without_placeholders(self) -> str:
+        """
+        Get template text with placeholders replaced by identical bracket pairs.
+
+        Produces a string that will evaluate equal for two templates with
+        identical non-placedholder text.
+        """
         changes = {p: "{}" for p in self.template.placeholders}
         return self.template.substitute(**changes)
 
@@ -293,15 +299,14 @@ class Predicate:
         )
 
     def same_term_positions(self, other: Predicate) -> bool:
+        """Test if self and other have same positions for interchangeable Terms."""
 
         return list(self.term_positions().values()) == list(
             other.term_positions().values()
         )
 
     def _same_meaning_as_true_predicate(self, other: Predicate) -> bool:
-        """
-        Test whether ``self`` and ``other`` mean the same if they are both True.
-        """
+        """Test if self and other mean the same if they are both True."""
         if not isinstance(other, Predicate):
             raise TypeError(
                 f"Type {self.__class__.__name__} can't imply, contradict, or "
@@ -314,9 +319,13 @@ class Predicate:
 
     def means(self, other: Any) -> bool:
         """
-        Test whether ``self`` and ``other`` have identical meanings.
+        Test if ``self`` and ``other`` have identical meanings.
 
-        To return ``True``, ``other`` can be neither broader nor narrower.
+        :param other:
+            an object to compare
+        :returns:
+            whether ``other`` is another Predicate that is neither broader
+            nor narrower; that is, whether it has the same text and truth value
         """
 
         if not self._same_meaning_as_true_predicate(other):
@@ -325,18 +334,19 @@ class Predicate:
         return self.truth == other.truth
 
     def __gt__(self, other: Predicate) -> bool:
-        """
-        Test whether ``self`` implies ``other``.
-
-        :returns:
-            whether ``self`` implies ``other``, which is ``True``
-            if their statements about quantity imply it.
-        """
+        r"""Alias for :meth:`~nettlesome.predicates.Predicate.implies`\."""
         return self.implies(other)
 
     def implies(self, other: Any) -> bool:
         """
         Test whether ``self`` implies ``other``.
+
+        :param other:
+            an object to compare for implication.
+
+        :returns:
+            whether ``other`` is another Predicate with the
+            same text, and the same truth value or no truth value.
         """
         if self.truth is None:
             return False
@@ -347,19 +357,32 @@ class Predicate:
         return self.truth == other.truth
 
     def __ge__(self, other: Predicate) -> bool:
+        r"""
+        Test whether ``self`` either implies or has the same meaning as ``other``.
+
+        :param other:
+            an object to compare
+
+        :returns:
+            whether ``other`` is another Predicate that ``self`` either
+            :meth:`~nettlesome.predicates.Predicate.means`
+            or :meth:`~nettlesome.predicates.Predicate.implies`
+        """
+
         if self.means(other):
             return True
         return self.implies(other)
 
     def __len__(self):
-        """
+        r"""
+        Get the number of Terms expected.
+
         Also called the linguistic valency, arity, or adicity.
 
         :returns:
-            the number of entities that can fit in the pairs of brackets
-            in the predicate. ``self.expression`` doesn't count as one of these entities,
-            even though the place where ``self.expression`` goes in represented by brackets
-            in the ``self.content`` string.
+            the number of :class:`~nettlesome.terms.Term`\s that can fit
+            in the placeholders
+            in the :class:`~nettlesome.predicates.StatementTemplate`\.
         """
 
         return len(set(self.template.placeholders))
@@ -371,7 +394,7 @@ class Predicate:
             truth=not self.truth,
         )
 
-    def term_positions(self):
+    def term_positions(self) -> Dict[str, Set[int]]:
         """
         Create list of positions that each term could take without changing Predicate's meaning.
 
@@ -396,6 +419,7 @@ class Predicate:
         return without_duplicates
 
     def add_truth_to_content(self, content: str) -> str:
+        """Get self's content with a prefix indicating the truth value."""
         if self.truth is None:
             truth_prefix = "whether "
         elif self.truth is False:

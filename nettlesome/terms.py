@@ -10,7 +10,8 @@ class Term(Comparable):
     r"""
     Things that can be referenced in a Statement.
 
-    The name of a Term can replace the placeholder in a StatementTemplate
+    The name of a Term can replace the placeholder in
+    a :class:`~nettlesome.predicates.StatementTemplate`\.
     """
 
     def __init__(
@@ -26,14 +27,9 @@ class Term(Comparable):
 
         :param generic:
             Determines whether a change in the ``name`` of the
-            :class:`Entity` would change the meaning of the
-            :class:`.Factor` in which the :class:`Entity` is
+            :class:`Term` would change the meaning of the
+            :class:`.Factor` in which the :class:`Term` is
             embedded.
-
-        :param plural:
-            Specifies whether the :class:`Entity` object refers to
-            more than one thing. In other words, whether it would
-            be represented by a plural noun.
         """
         self.name = name
         self.generic = generic
