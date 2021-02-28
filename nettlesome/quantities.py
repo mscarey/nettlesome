@@ -188,6 +188,7 @@ class UnitRange(QuantityRange):
 
     @property
     def magnitude(self) -> Union[int, float]:
+        super().magnitude  # for the coverage
         return self.quantity.magnitude
 
     def consistent_dimensionality(self, other: QuantityRange) -> bool:
