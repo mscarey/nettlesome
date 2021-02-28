@@ -11,20 +11,6 @@ class Term(Comparable):
     Things that can be referenced in a Statement.
 
     The name of a Term can replace the placeholder in a StatementTemplate
-
-    :param name:
-        An identifier.
-
-    :param generic:
-        Determines whether a change in the ``name`` of the
-        :class:`Entity` would change the meaning of the
-        :class:`.Factor` in which the :class:`Entity` is
-        embedded.
-
-    :param plural:
-        Specifies whether the :class:`Entity` object refers to
-        more than one thing. In other words, whether it would
-        be represented by a plural noun.
     """
 
     def __init__(
@@ -32,6 +18,23 @@ class Term(Comparable):
         name: Optional[str] = None,
         generic: bool = True,
     ) -> None:
+        """
+        Determine self's name and whether it is generic.
+
+        :param name:
+            An identifier.
+
+        :param generic:
+            Determines whether a change in the ``name`` of the
+            :class:`Entity` would change the meaning of the
+            :class:`.Factor` in which the :class:`Entity` is
+            embedded.
+
+        :param plural:
+            Specifies whether the :class:`Entity` object refers to
+            more than one thing. In other words, whether it would
+            be represented by a plural noun.
+        """
         self.name = name
         self.generic = generic
 
@@ -47,6 +50,16 @@ class Term(Comparable):
     def add(
         self, other: Term, context: Optional[ContextRegister] = None
     ) -> Optional[Term]:
+        """
+        Get a term that combines the meaning of self and other, if possible.
+
+        :param other:
+            another Term
+
+        :returns:
+            the Term that implies the other, with self's context.
+            If neither returns the other, returns None.
+        """
         if not isinstance(other, Term):
             raise TypeError
         if self.implies(other, context=context):

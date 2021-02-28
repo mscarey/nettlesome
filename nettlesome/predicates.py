@@ -26,7 +26,35 @@ Q_ = ureg.Quantity
 
 
 class StatementTemplate(Template):
+    r"""
+    A text template for a Predicate.
+
+    Should include placeholders for any replaceable :class:`~nettlesome.terms.Term`\s
+    that can be substituted into the :class:`~nettlesome.predicates.Predicate`\.
+    """
+
     def __init__(self, template: str, make_singular: bool = True) -> None:
+        """
+        Identify placeholders in template text, and make verbs singular if needed.
+
+            >>> StatementTemplate("$group were at school", make_singular=True)
+            >>> str(school_template)
+            'StatementTemplate("$group was at school")'
+
+        The make_singular flag only affects verbs immediately after :class:`~nettlesome.terms.Term`\s.
+
+            >>> text = "$group thought the exams were difficult"
+            >>> exams_template = StatementTemplate(text, make_singular=True)
+            >>> str(exams_template)
+            'StatementTemplate("$group thought the exams were difficult")'
+
+        :param template:
+            text for creating a :py:class:`string.Template`
+
+        :param make_singular:
+            whether "were" after a placeholder should be converted to
+            singular "was"
+        """
         super().__init__(template)
         placeholders = [
             m.group("named") or m.group("braced")
@@ -77,6 +105,7 @@ class StatementTemplate(Template):
 
     @property
     def placeholders(self) -> List[str]:
+        """List substrings of template text marked as placeholders."""
         return self._placeholders
 
     def get_term_sequence_from_mapping(
@@ -203,6 +232,7 @@ class Predicate:
 
     @property
     def content(self) -> str:
+        """Get full template text, with no Terms substituted in."""
         return self.template.template
 
     def content_without_placeholders(self) -> str:
