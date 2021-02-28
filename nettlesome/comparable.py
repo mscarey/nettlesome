@@ -112,14 +112,15 @@ def new_context_helper(func: Callable):
 
 
 def expand_string_from_source(
-    factor: Union[str, Comparable], source: Comparable
+    term: Union[str, Comparable], source: Comparable
 ) -> Comparable:
-    if isinstance(factor, str):
-        result = source.get_factor(factor)
+    """Replace ``term`` with the real term it references, if ``term`` is a string reference."""
+    if isinstance(term, str):
+        result = source.get_factor(term)
     else:
-        return factor
+        return term
     if result is None:
-        raise ValueError(f'Unable to find replacement term for text "{factor}"')
+        raise ValueError(f'Unable to find replacement term for text "{term}"')
     return result
 
 
@@ -129,6 +130,7 @@ def convert_changes_to_register(
     source: Optional[Comparable],
     terms_to_replace: Optional[Sequence[Comparable]] = None,
 ) -> ContextRegister:
+    """Convert changes to ``factor``, expressed as normal Python objects, to a ContextRegister."""
     if isinstance(changes, ContextRegister):
         return changes
     if not isinstance(changes, Iterable):
@@ -954,7 +956,6 @@ class ContextRegister:
     @property
     def reason(self) -> str:
         """Make statement matching analagous context factors of self and other."""
-
         similies = [
             f'{key.short_string} {"are" if (key.plural) else "is"} like {value.short_string}'
             for key, value in self.factor_pairs()
@@ -970,10 +971,12 @@ class ContextRegister:
 
     @property
     def matches(self) -> Dict[str, Comparable]:
+        """Get names of ``self``'s Terms matched to ``other``'s Terms."""
         return self._matches
 
     @property
     def reverse_matches(self) -> Dict[str, Comparable]:
+        """Get names of ``other``'s Terms matched to ``self``'s Terms."""
         return self._reverse_matches
 
     @classmethod
@@ -982,6 +985,7 @@ class ContextRegister:
         keys: Union[FactorSequence, Sequence[Comparable]],
         values: Union[FactorSequence, Sequence[Comparable]],
     ) -> ContextRegister:
+        """Make new ContextRegister from two lists of Comparables."""
         pairs = zip(keys, values)
         new = cls()
         for pair in pairs:
@@ -998,33 +1002,42 @@ class ContextRegister:
         return self_value.compare_keys(other.get_factor(key_factor))
 
     def check_match(self, key: Comparable, value: Comparable) -> bool:
+        """Test if key and value are in ``matches`` as corresponding to one another."""
         if self.get(key.key) is None:
             return False
         return self[key.key].compare_keys(value)
 
     def factor_pairs(self) -> Iterator[Tuple[Comparable, Comparable]]:
+        """Get pairs of corresponding Comparables."""
         for key, value in self.items():
             yield (self.get_reverse_factor(value), value)
 
     def get(self, query: str) -> Optional[Comparable]:
+        """Get value corresponding to the key named ``query``."""
         return self.matches.get(query)
 
     def get_factor(self, query: Comparable) -> Optional[Comparable]:
+        """Get value corresponding to the key ``query``."""
         return self.get(query.short_string)
 
     def get_reverse_factor(self, query: Comparable) -> Comparable:
+        """Get key corresponding to the value ``query``."""
         return self.reverse_matches[query.short_string]
 
     def items(self):
+        """Get items from ``matches`` mapping."""
         return self.matches.items()
 
     def keys(self):
+        """Get keys from ``matches`` mapping."""
         return self.matches.keys()
 
     def values(self):
+        """Get values from ``matches`` mapping."""
         return self.matches.values()
 
     def insert_pair(self, key: Comparable, value: Comparable) -> None:
+        """Add a pair of corresponding Comparables."""
         for comp in (key, value):
             if not isinstance(comp, Comparable):
                 raise TypeError(
@@ -1095,7 +1108,10 @@ class ContextRegister:
 
 
 class FactorSequence(Tuple[Comparable, ...]):
+    """A sequence of Comparables that can be compared in order."""
+
     def __new__(cls, value: Sequence = ()):
+        """Convert Sequence of Comparables to a subclass of Tuple."""
         if isinstance(value, Comparable):
             value = (value,)
         return tuple.__new__(FactorSequence, value)
@@ -1128,7 +1144,7 @@ class FactorSequence(Tuple[Comparable, ...]):
             i: int = 0,
         ):
             """
-            Recursively search through :class:`Factor` pairs trying out context assignments.
+            Recursively search through Factor pairs trying out context assignments.
 
             This has the potential to take a long time to fail if the problem is
             unsatisfiable. It will reduce risk to check that every :class:`Factor` pair

@@ -35,6 +35,7 @@ class Entity(Term):
     def __init__(
         self, name: str = "", generic: bool = True, plural: bool = False
     ) -> None:
+        """Save whether ``self`` is "generic" and "plural"."""
         self.plural = plural
         super().__init__(name=name, generic=generic)
 
@@ -43,6 +44,12 @@ class Entity(Term):
 
     @property
     def short_string(self):
+        """
+        Get a short representation of ``self``.
+
+        In Nettlesome, including angle brackets around the representation
+        of an object is an indication that the object is generic.
+        """
         if self.generic:
             return f"<{self.name}>"
         return self.name
@@ -56,6 +63,12 @@ class Entity(Term):
     def implies(
         self, other: Optional[Comparable], context: Optional[ContextRegister] = None
     ) -> bool:
+        """
+        Test if ``self`` implies ``other``.
+
+        A "generic" Entity implies another Entity even if their names are not
+        the same.
+        """
         if isinstance(other, Entity) and other.generic is False:
             if self.generic or self.name != other.name:
                 return False

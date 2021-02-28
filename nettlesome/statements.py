@@ -1,3 +1,5 @@
+"""Statements, similar to AuthoritySpoke Facts but without a "standard of proof"."""
+
 from copy import deepcopy
 import operator
 
@@ -18,9 +20,7 @@ from slugify import slugify
 
 
 class Statement(Factor):
-    r"""
-    An assertion that can be accepted as factual and compared to other Statements.
-    """
+    r"""An assertion that can be accepted as factual and compared to other Statements."""
 
     def __init__(
         self,
@@ -33,6 +33,8 @@ class Statement(Factor):
         generic: bool = False,
     ):
         """
+        Normalize ``terms`` to initialize Statement.
+
         :param predicate:
             a natural-language clause with zero or more slots
             to insert ``terms`` that are typically the
@@ -88,6 +90,7 @@ class Statement(Factor):
 
     @property
     def short_string(self) -> str:
+        """Represent object without line breaks."""
         return str(self)
 
     @property

@@ -211,18 +211,18 @@ class TestStatements:
 
     def test_expand_string_from_statement(self, make_complex_fact):
         source = make_complex_fact["relevant_murder"]
-        expanded = expand_string_from_source(factor="Alice", source=source)
+        expanded = expand_string_from_source(term="Alice", source=source)
         assert expanded.name == "Alice"
 
     def test_expand_string_from_statement_with_key(self, make_complex_fact):
         source = make_complex_fact["relevant_murder"]
-        expanded = expand_string_from_source(factor="<Alice>", source=source)
+        expanded = expand_string_from_source(term="<Alice>", source=source)
         assert expanded.name == "Alice"
 
     def test_dont_expand_string_from_statement(self, make_complex_fact):
         source = make_complex_fact["relevant_murder"]
         with pytest.raises(ValueError):
-            expand_string_from_source(factor="Jim", source=source)
+            expand_string_from_source(term="Jim", source=source)
 
     def test_concrete_to_abstract(self):
         predicate = Predicate("$person had a farm")
