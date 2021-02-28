@@ -1,3 +1,5 @@
+"""Base classes for Terms and Factors that can be compared."""
+
 from __future__ import annotations
 
 from abc import ABC
@@ -199,6 +201,7 @@ class Comparable(ABC):
 
     @property
     def wrapped_string(self) -> str:
+        """Return string representation with line breaks."""
         return str(self)
 
     @property
@@ -255,7 +258,7 @@ class Comparable(ABC):
             text = "absence of " + text
         return text
 
-    def all_generic_factors_match(
+    def _all_generic_factors_match(
         self, other: Comparable, context: ContextRegister
     ) -> bool:
         if all(

@@ -213,6 +213,15 @@ class TestImplication:
         explanation = left.explain_implication(right)
         assert "implies" in str(explanation).lower()
 
+    def test_explanations_implication_of_factor(self, make_statement):
+        """Explanation shows the statements in `left` narrow down the quantity more than `right` does."""
+        left = FactorGroup(
+            [make_statement["absent_way_more"], make_statement["less_than_20"]]
+        )
+        right = make_statement["less"]
+        explanation = left.explain_implication(right)
+        assert "implies" in str(explanation).lower()
+
     def test_ge_not_gt(self, make_statement):
         left = FactorGroup([make_statement["shooting"], make_statement["murder"]])
         right = FactorGroup(
@@ -491,4 +500,4 @@ class TestConsistent:
         right = FactorGroup(evening)
         context = ContextRegister()
         context.insert_pair(Entity("Morning Star"), Entity("Evening Star"))
-        assert left.all_generic_factors_match(right, context=context)
+        assert left._all_generic_factors_match(right, context=context)

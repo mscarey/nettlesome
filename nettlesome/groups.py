@@ -1,3 +1,5 @@
+"""Groups of comparable Terms."""
+
 from __future__ import annotations
 
 import operator
@@ -23,12 +25,12 @@ from nettlesome.terms import Term
 
 
 class TermGroup(Comparable):
-    r"""
-    Terms to be used together in a comparison.
-    """
+    r"""Terms to be used together in a comparison."""
+
     term_class = Term
 
     def __init__(self, factors: Union[TermGroup, Sequence[Term], Term] = ()):
+        """Normalize ``factors`` as sequence attribute."""
         if isinstance(factors, self.__class__):
             self.sequence: Tuple[Term, ...] = factors.sequence
         elif isinstance(factors, Iterable):
@@ -96,7 +98,9 @@ class TermGroup(Comparable):
     ) -> bool:
         for self_factor in self:
             if self_factor.contradicts(other_factor, context=context):
-                if self_factor.all_generic_factors_match(other_factor, context=context):
+                if self_factor._all_generic_factors_match(
+                    other_factor, context=context
+                ):
                     return True
         return False
 
@@ -147,8 +151,10 @@ class TermGroup(Comparable):
             yield from self_factor.explanations_contradiction(other, context)
 
     def explanations_contradiction(
-        self, other: Comparable, context: Optional[ContextRegister] = None
+        self, other: Union[Term, TermGroup], context: Optional[ContextRegister] = None
     ) -> Iterator[Explanation]:
+        """Find contexts that would cause ``self`` to contradict ``other``."""
+
         if context is None:
             context = ContextRegister()
 
@@ -251,17 +257,21 @@ class TermGroup(Comparable):
                             )
 
     def explanations_union(
-        self, other: TermGroup, context: Optional[ContextRegister] = None
+        self,
+        other: Union[Term, TermGroup],
+        context: Optional[ContextRegister] = None,
     ) -> Iterator[ContextRegister]:
+        """Yield contexts that allow ``self`` and ``other`` to be combined with the union operation."""
+        to_match = TermGroup(other) if isinstance(other, Comparable) else other
         context = context or ContextRegister()
-        for partial in self._explanations_union_partial(other, context):
-            for guess in self.possible_contexts(other, partial):
-                answer = self._union_from_explanation(other, guess)
+        for partial in self._explanations_union_partial(to_match, context):
+            for guess in self.possible_contexts(to_match, partial):
+                answer = self._union_from_explanation(to_match, guess)
                 if answer:
                     yield guess
 
     def _explanations_union_partial(
-        self, other: Comparable, context: ContextRegister
+        self, other: TermGroup, context: ContextRegister
     ) -> Iterator[ContextRegister]:
         for likely in self.likely_contexts(other, context):
             partial = self + other.new_context(likely.reversed())
@@ -328,29 +338,32 @@ class TermGroup(Comparable):
                             )
 
     def explanations_implication(
-        self, other: Comparable, context: Optional[ContextRegister] = None
+        self, other: Union[Term, TermGroup], context: Optional[ContextRegister] = None
     ) -> Iterator[Explanation]:
-
+        """Find contexts that would cause ``self`` to imply ``other``."""
         explanation = Explanation(
             factor_matches=[],
             context=context or ContextRegister(),
             operation=operator.ge,
         )
-
+        to_match = [other] if isinstance(other, Term) else other
         yield from self._verbose_comparison(
             operation=operator.ge,
-            still_need_matches=list(other),
+            still_need_matches=to_match,
             explanation=explanation,
         )
 
     def explanations_has_all_factors_of(
-        self, other: TermGroup, context: Optional[ContextRegister] = None
+        self, other: Union[Term, TermGroup], context: Optional[ContextRegister] = None
     ) -> Iterator[ContextRegister]:
+        """Find contexts that would cause all of ``other``'s Factors to be in ``self``."""
+        to_match = TermGroup([other]) if isinstance(other, Term) else other
         yield from self.comparison(
-            operation=means, still_need_matches=list(other), matches=context
+            operation=means, still_need_matches=to_match, matches=context
         )
 
     def generic_factors_by_str(self) -> Dict[str, Comparable]:
+        """Index Terms that can be replaced without changing ``self``'s meaning."""
         generics: Dict[str, Comparable] = {}
         for factor in self:
             generics.update(factor.generic_factors_by_str())
@@ -359,6 +372,7 @@ class TermGroup(Comparable):
     def has_all_factors_of(
         self, other: TermGroup, context: Optional[ContextRegister] = None
     ) -> bool:
+        """Check if ``self`` has all Factors of ``other``."""
         return any(
             register is not None
             for register in self.explanations_has_all_factors_of(other, context=context)
@@ -367,6 +381,7 @@ class TermGroup(Comparable):
     def explanations_shares_all_factors_with(
         self, other: TermGroup, context: Optional[ContextRegister] = None
     ) -> Iterator[ContextRegister]:
+        """Find context that would cause all of ``self``'s Factors to be in ``other``."""
         context = context or ContextRegister()
         context_for_other = context.reversed()
         yield from (
@@ -381,6 +396,7 @@ class TermGroup(Comparable):
     def shares_all_factors_with(
         self, other: TermGroup, context: Optional[ContextRegister] = None
     ) -> bool:
+        """Find whether all of ``self``'s Factors are in ``other``."""
         return any(
             register is not None
             for register in self.explanations_shares_all_factors_with(
@@ -391,6 +407,7 @@ class TermGroup(Comparable):
     def explanations_same_meaning(
         self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Iterator[ContextRegister]:
+        """Yield explanations for how ``self`` can have the same meaning as ``other``."""
         if isinstance(other, self.__class__):
             for explanation in self.explanations_shares_all_factors_with(
                 other, context
@@ -441,6 +458,7 @@ class TermGroup(Comparable):
         other: Comparable,
         context: Optional[ContextRegister] = None,
     ) -> Iterator[ContextRegister]:
+        """Yield likely contexts based on similar Factor meanings."""
         context = context or ContextRegister()
         if isinstance(other, Iterable):
             yield from self._likely_contexts_for_factorgroup(other, context)
@@ -483,6 +501,7 @@ class TermGroup(Comparable):
         return True
 
     def new_context(self, changes: ContextRegister) -> TermGroup:
+        """Use ContextRegister to choose changes to ``self``'s context."""
         result = [factor.new_context(changes) for factor in self]
         return self.__class__(result)
 
@@ -494,6 +513,7 @@ class TermGroup(Comparable):
         other: Union[TermGroup, Factor],
         context: Optional[ContextRegister] = None,
     ) -> Optional[TermGroup]:
+        """Make new FactorGroup with the set of unique Factors from both ``self`` and ``other``."""
         context = context or ContextRegister()
         if not isinstance(other, self.__class__):
             other = self.__class__(other)
@@ -525,9 +545,8 @@ class TermGroup(Comparable):
 
 
 class FactorGroup(TermGroup):
-    r"""
-    Factors to be used together in a comparison.
-    """
+    r"""Factors to be used together in a comparison."""
+
     term_class = Factor
 
     def __repr__(self) -> str:
