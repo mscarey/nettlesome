@@ -358,7 +358,7 @@ class Comparable(ABC):
         elif self.generic or other.generic:
             self_value = context.get(self.key)
             if self_value is None or (self_value.compare_keys(other)):
-                yield self.generic_register(other)
+                yield self._generic_register(other)
         else:
             for term_permutation in self.term_permutations():
                 for other_permutation in other.term_permutations():
@@ -536,6 +536,7 @@ class Comparable(ABC):
     def explanations_implied_by(
         self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Iterator[ContextRegister]:
+        """Get explanations of why self implies other."""
         context = context or ContextRegister()
         yield from (
             register.reversed()
@@ -554,11 +555,11 @@ class Comparable(ABC):
             and self.absent == other.absent
         ):
             if self.generic:
-                yield self.generic_register(other)
+                yield self._generic_register(other)
             context = context or ContextRegister()
             yield from self._means_if_concrete(other, context)
 
-    def generic_register(self, other: Comparable) -> ContextRegister:
+    def _generic_register(self, other: Comparable) -> ContextRegister:
         register = ContextRegister()
         register.insert_pair(self, other)
         return register
@@ -579,22 +580,22 @@ class Comparable(ABC):
                 if context.get_factor(self) is None or (
                     context.get_factor(self) == other
                 ):
-                    yield self.generic_register(other)
+                    yield self._generic_register(other)
             if not self.generic:
                 yield from self._implies_if_concrete(other, context)
 
     def generic_factors(self) -> List[Comparable]:
+        """Get Terms that can be replaced without changing ``self``'s meaning."""
         return list(self.generic_factors_by_str().values())
 
     def generic_factors_by_str(self) -> Dict[str, Comparable]:
         r"""
-        :class:`.Factor`\s that can be replaced without changing ``self``\s meaning.
+        Index Terms that can be replaced without changing ``self``'s meaning.
 
         :returns:
-            a :class:`list` made from a :class:`dict` with ``self``\'s
-            generic :class:`.Factor`\s as keys and ``None`` as values,
-            so that the keys can be matched to another object's
-            ``generic_factors`` to perform an equality test.
+            a :class:`dict` with the names of ``self``\'s
+            generic :class:`.Factor`\s as keys and the :class:`.Factor`\s
+            themselves as values.
         """
 
         if self.generic:
@@ -608,7 +609,7 @@ class Comparable(ABC):
 
     def get_factor(self, query: str) -> Optional[Comparable]:
         """
-        Search for Comparable with str or name matching query
+        Search for Comparable with str or name matching query.
 
         :param query:
             a string that matches the desired Comparable's ``name`` or the
@@ -688,6 +689,7 @@ class Comparable(ABC):
             yield from self._context_registers(other, operator.ge, context)
 
     def implies_same_context(self, other) -> bool:
+        """Check if self would imply other if their generic terms are matched in order."""
         same_context = ContextRegister()
         for key in self.generic_factors():
             same_context.insert_pair(key, key)
@@ -696,6 +698,20 @@ class Comparable(ABC):
     def likely_contexts(
         self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Iterator[ContextRegister]:
+        r"""
+        Generate contexts that match Terms from Factors with corresponding meanings.
+
+        :param other:
+            an object being compared to ``self``
+
+        :param context:
+            pairs of terms that must remain matched when yielding new contexts
+
+        :yields:
+            :class:`.ContextRegister`\s matching all :class:`.Term`\s of ``self``
+            and ``other``.
+        """
+
         context = context or ContextRegister()
         same_meaning = self._likely_context_from_meaning(other, context)
         if same_meaning:
@@ -938,6 +954,7 @@ class ContextRegister:
     """
 
     def __init__(self):
+        """Index Comparables on each side by names of Comparables on the other side."""
         self._matches = {}
         self._reverse_matches = {}
 

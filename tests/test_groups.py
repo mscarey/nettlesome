@@ -1,3 +1,4 @@
+from nettlesome.factors import Factor
 import operator
 import pytest
 
@@ -358,13 +359,30 @@ class TestUnion:
         assert len(combined) == 2
 
     def test_union_causes_contradiction(self, make_statement):
-        """
-        Test Factors about the same Term contradict so no union is possible.
-        """
+        """Test Factors about the same Term contradict so no union is possible."""
         left = FactorGroup(make_statement["no_shooting"])
         right = FactorGroup(make_statement["shooting"])
         combined = left | right
         assert combined is None
+
+    def test_union_no_factor_redundant(self, make_statement):
+        """Test that Factor is not mistaken as redundant."""
+        alice_had_bullets = Statement(
+            Comparison(
+                "the number of bullets $person had was", sign=">=", expression=5
+            ),
+            terms=Entity("Alice"),
+        )
+        bob_had_bullets = Statement(
+            Comparison(
+                "the number of bullets $person had was", sign=">=", expression=5
+            ),
+            terms=Entity("Bob"),
+        )
+        left = FactorGroup([make_statement["shooting"], alice_had_bullets])
+        right = FactorGroup([make_statement["shooting"], bob_had_bullets])
+        combined = left | right
+        assert len(combined) == 3
 
 
 class TestConsistent:
