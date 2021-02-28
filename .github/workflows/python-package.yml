@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8, 3.9]
+        python-version: [3.9]
 
     steps:
       - uses: actions/checkout@v2
@@ -29,9 +29,9 @@ jobs:
           pip install coveralls
       - name: Test with pytest
         run: |
-          pytest tests/ --cov=. --cov-report=term-missing
+          pytest tests/ --cov=nettlesome --cov-report=term-missing
       - name: Upload coverage data to coveralls.io
         run: coveralls
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}

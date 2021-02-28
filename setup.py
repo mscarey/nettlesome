@@ -27,6 +27,6 @@ setuptools.setup(
         "Operating System :: OS Independent",
         "Natural Language :: English",
     ],
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     include_package_data=True,
 )
