@@ -14,7 +14,6 @@ dist/
 docs/_build/
 html/
 htmlcov/
-notebooks/
 prof/
 tests/__pycache__/
 tests/.pytest_cache/

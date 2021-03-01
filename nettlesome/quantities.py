@@ -53,6 +53,7 @@ def scale_ranges(
 
 
 class QuantityRange(ABC):
+    """Base class for ranges that can be assigned to Predicates."""
 
     opposite_comparisons: ClassVar[Dict[str, str]] = {
         ">=": "<",
@@ -176,33 +177,61 @@ class QuantityRange(ABC):
 
 
 class UnitRange(QuantityRange):
+    """A range defined relative to a pint Quantity."""
+
     def __init__(
         self,
         quantity: Quantity,
         sign: str = "",
         include_negatives: Optional[bool] = None,
     ) -> None:
+        """Set domain as a real number of units."""
         self.quantity = quantity
         self.domain = S.Reals
         super().__init__(sign=sign, include_negatives=include_negatives)
 
     @property
     def magnitude(self) -> Union[int, float]:
+        """Get magnitude of pint Quantity."""
         super().magnitude  # for the coverage
         return self.quantity.magnitude
 
     def consistent_dimensionality(self, other: QuantityRange) -> bool:
+        """
+        Compare dimensionality of Quantities for ``self`` and ``other``.
+
+        For instance, two units representing distance divided by time have
+        the same dimensionality, even if one uses feet while the other uses
+        meters.
+
+        :param other:
+            another QuantityRange with a quantity to compare
+
+        :returns:
+            whether the two dimensionalities are the same
+        """
         if not isinstance(other, self.__class__):
             return False
         return self.quantity.dimensionality == other.quantity.dimensionality
 
     def contradicts(self, other: Any) -> bool:
+        """Check if ``self``'s quantity range has no overlap with ``other``'s."""
         if not self.consistent_dimensionality(other):
             return False
         other_interval = self.get_unit_converted_interval(other)
         return self._excludes_quantity_interval(other_interval)
 
     def implies(self, other: Any) -> bool:
+        """
+        Check if ``self``'s quantity range is a subset of ``other``'s.
+
+        :param other:
+            another QuantityRange to compare
+
+        :returns:
+            whether ``other`` provides no information about the quantity
+            that isn't already provided by ``self``
+        """
         if not self.consistent_dimensionality(other):
             return False
         other_interval = self.get_unit_converted_interval(other)
@@ -211,6 +240,7 @@ class UnitRange(QuantityRange):
     def get_unit_converted_interval(
         self, other: UnitRange
     ) -> Union[Interval, FiniteSet, sympy.Union]:
+        """Get ``other``'s interval if it was denominated in ``self``'s units."""
         if not isinstance(other, UnitRange):
             raise TypeError(
                 f"Unit coversions only available for type UnitRange, not {other.__class__}."
@@ -223,6 +253,7 @@ class UnitRange(QuantityRange):
         return other_interval
 
     def means(self, other: Any) -> bool:
+        """Whether ``self`` and ``other`` represent the same quantity range."""
         if not self.consistent_dimensionality(other):
             return False
         other_interval = self.get_unit_converted_interval(other)
@@ -232,6 +263,8 @@ class UnitRange(QuantityRange):
 
 
 class DateRange(QuantityRange):
+    """A range defined relative to a date."""
+
     def __init__(
         self,
         quantity: date,
@@ -244,10 +277,13 @@ class DateRange(QuantityRange):
 
     @property
     def magnitude(self) -> Union[int, float]:
+        """Map dates to integers while preserving the order of the dates."""
         return int(self.quantity.strftime("%Y%m%d"))
 
 
 class NumberRange(QuantityRange):
+    """A range defined relative to an integer or float."""
+
     def __init__(
         self,
         quantity: Union[int, float],
@@ -268,6 +304,7 @@ class NumberRange(QuantityRange):
 
     @property
     def magnitude(self) -> Union[int, float]:
+        """Return quantity attribute."""
         return self.quantity
 
 
