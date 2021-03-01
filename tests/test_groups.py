@@ -297,6 +297,58 @@ class TestImplication:
         result = next(gen)
         assert result
 
+    def test_interchangeable_terms_in_different_orders(self):
+        more_than_100_yards = Comparison(
+            "the distance between $site1 and $site2 was",
+            sign=">",
+            expression="100 yards",
+        )
+        less_than_1_mile = Comparison(
+            "the distance between $site1 and $site2 was", sign="<", expression="1 mile"
+        )
+
+        protest_facts = FactorGroup(
+            [
+                Statement(
+                    more_than_100_yards,
+                    terms=[
+                        Entity("the political convention"),
+                        Entity("the police cordon"),
+                    ],
+                ),
+                Statement(
+                    less_than_1_mile,
+                    terms=[
+                        Entity("the police cordon"),
+                        Entity("the political convention"),
+                    ],
+                ),
+            ]
+        )
+        assert "between <the political convention> and " in str(protest_facts)
+        more_than_50_meters = Comparison(
+            "the distance between $site1 and $site2 was",
+            sign=">",
+            expression="50 meters",
+        )
+        less_than_2_km = Comparison(
+            "the distance between $site1 and $site2 was", sign="<=", expression="2 km"
+        )
+
+        speech_zone_facts = FactorGroup(
+            [
+                Statement(
+                    more_than_50_meters,
+                    terms=[Entity("the free speech zone"), Entity("the courthouse")],
+                ),
+                Statement(
+                    less_than_2_km,
+                    terms=[Entity("the free speech zone"), Entity("the courthouse")],
+                ),
+            ]
+        )
+        assert protest_facts.implies(speech_zone_facts)
+
 
 class TestContradiction:
     def test_contradiction_of_group(self):
