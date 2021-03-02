@@ -324,6 +324,17 @@ class TestImplication:
         )
         assert meters.means(kilometers)
 
+    def test_same_volume(self):
+        volume_in_liters = Comparison(
+            "the volume of fuel in the tank was", sign="=", expression="10 liters"
+        )
+        volume_in_milliliters = Comparison(
+            "the volume of fuel in the tank was",
+            sign="=",
+            expression="10000 milliliters",
+        )
+        assert volume_in_liters.means(volume_in_milliliters)
+
 
 class TestContradiction:
     def test_not_more_does_not_contradict_less(self, make_comparison):

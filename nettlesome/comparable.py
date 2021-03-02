@@ -664,7 +664,9 @@ class Comparable(ABC):
     def implies(
         self, other: Optional[Comparable], context: Optional[ContextRegister] = None
     ) -> bool:
-        """Test whether ``self`` implies ``other``."""
+        """
+        Test whether ``self`` implies ``other``.
+        """
         if other is None:
             return True
         return any(

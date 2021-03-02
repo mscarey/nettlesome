@@ -478,6 +478,26 @@ class Comparison(Predicate):
         return f"{content} {str(self.quantity_range)}"
 
     def implies(self, other: Any) -> bool:
+        """
+        Check if self implies other.
+
+        May be based on template text, truth values, and :class:`.QuantityRange`\s.
+
+        >>> small_weight=Comparison(
+        >>>     "the amount of gold $person possessed was",
+        >>>     sign=">=",
+        >>>     expression=Q_("1 gram"))
+        >>> large_weight=Comparison(
+        >>>     "the amount of gold $person possessed was",
+        >>>     sign=">=",
+        >>>     expression=Q_("100 kilograms"))
+        >>> str(large_weight)
+        'the statement that the amount of gold <Alice> possessed was at least 100 kilogram'
+        >>> str(small_weight)
+        'the statement that the amount of gold <Alice> possessed was at least 1 gram'
+        >>> large_weight.implies(small_weight)
+        True
+        """
 
         if not super().implies(other):
             return False
@@ -485,7 +505,23 @@ class Comparison(Predicate):
         return self.quantity_range.implies(other.quantity_range)
 
     def means(self, other: Any) -> bool:
+        """
+        Test whether ``self`` and ``other`` have identical meanings.
 
+        This method can convert different units to determine whether self and other
+        refer to the same :class:`~.quantities.QuantityRange`\.
+
+            >>> volume_in_liters = Comparison(
+            >>>     "the volume of fuel in the tank was",
+            >>>     sign="=",
+            >>>     expression="10 liters")
+            >>> volume_in_milliliters = Comparison(
+            >>>     "the volume of fuel in the tank was",
+            >>>     sign="=",
+            >>>     expression="10000 milliliters")
+            >>> volume_in_liters.means(volume_in_milliliters)
+            True
+        """
         if not super().means(other):
             return False
 
@@ -495,10 +531,27 @@ class Comparison(Predicate):
         """
         Test whether ``other`` and ``self`` have contradictory meanings.
 
-        If the checks in the Predicate class find no contradiction, this
-        method looks for a contradiction in the dimensionality detected by the
-        ``pint`` library, or in the possible ranges for each Comparison's
-        numeric ``expression``.
+        If ``self`` and ``other`` have consistent text in the predicate attribute,
+        this method looks for a contradiction based on the dimensionality or
+        numeric range of the :class:`~.QuantityRange`\s for ``self`` and ``other``.
+
+            >>> earlier = Comparison(
+            >>>     "the date $dentist became a licensed dentist was",
+            >>>     sign="<",
+            >>>     expression=date(1990, 1, 1))
+            >>> later = Comparison(
+            >>>     "the date $dentist became a licensed dentist was",
+            >>>     sign=">",
+            >>>     expression=date(2010, 1, 1))
+            >>> str(earlier)
+            'that the date $dentist became a licensed dentist was less than 1990-01-01'
+            >>> str(later)
+            'that the date $dentist became a licensed dentist was greater than 2010-01-01'
+            >>> earlier.contradicts(later)
+            True
+            >>> later.contradicts(earlier)
+            True
+
         """
         if not self._same_meaning_as_true_predicate(other):
             return False
