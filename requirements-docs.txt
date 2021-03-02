@@ -3,4 +3,5 @@ python-slugify
 sphinx>=2.1.2
 sphinx-autodoc-typehints
 sphinx-rtd-theme
+sympy~=1.7
 -e .
