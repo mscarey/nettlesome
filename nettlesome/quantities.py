@@ -377,7 +377,7 @@ class Comparison(Predicate):
         expression: Union[date, int, float, Quantity] = 0,
         truth: Optional[bool] = True,
         include_negatives: Optional[bool] = None,
-        quantity_range: Union[DateRange, NumberRange, UnitRange, None] = None,
+        quantity_range: Optional[Union[DateRange, NumberRange, UnitRange]] = None,
     ):
         """
         Clean up and test validity of attributes.

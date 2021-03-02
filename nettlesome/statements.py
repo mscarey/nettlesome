@@ -25,8 +25,8 @@ class Statement(Factor):
     def __init__(
         self,
         predicate: Union[Predicate, str],
-        terms: Union[
-            FactorSequence, Term, Sequence[Term], Mapping[str, Term], None
+        terms: Optional[
+            Union[FactorSequence, Term, Sequence[Term], Mapping[str, Term]]
         ] = None,
         name: str = "",
         absent: bool = False,
