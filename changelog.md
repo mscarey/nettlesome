@@ -1,6 +1,6 @@
 Changelog
 =========
-dev
+0.2.0 (2021-03-02)
 ------------------
 - create UnitRange, DateRange, and NumberRange classes
 
