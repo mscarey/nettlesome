@@ -41,6 +41,7 @@ extensions = [
 ]
 
 intersphinx_mapping = {
+    "pint": ("https://pint.readthedocs.io/en/stable/", None),
     "python": ("https://docs.python.org/3", None),
     "sympy": ("https://docs.sympy.org/latest/", None),
 }

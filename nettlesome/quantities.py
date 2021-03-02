@@ -113,6 +113,7 @@ class QuantityRange(ABC):
 
     @property
     def interval(self) -> Union[FiniteSet, Interval, sympy.Union]:
+        """Get the range that the Comparison may refer to."""
         if self.sign == "==":
             return FiniteSet(self.magnitude)
         elif ">" in self.sign:
@@ -131,7 +132,7 @@ class QuantityRange(ABC):
 
     @property
     def lower_bound(self):
-        """The lower bound of the range that the Comparison may refer to."""
+        """Get lower bound of the range that the Comparison may refer to."""
         return -oo if self.include_negatives else 0
 
     @abstractproperty
@@ -478,8 +479,8 @@ class Comparison(Predicate):
         return f"{content} {str(self.quantity_range)}"
 
     def implies(self, other: Any) -> bool:
-        """
-        Check if self implies other.
+        r"""
+        Check if ``self`` implies ``other``.
 
         May be based on template text, truth values, and :class:`.QuantityRange`\s.
 
@@ -505,8 +506,8 @@ class Comparison(Predicate):
         return self.quantity_range.implies(other.quantity_range)
 
     def means(self, other: Any) -> bool:
-        """
-        Test whether ``self`` and ``other`` have identical meanings.
+        r"""
+        Check if ``self`` and ``other`` have identical meanings.
 
         This method can convert different units to determine whether self and other
         refer to the same :class:`~.quantities.QuantityRange`\.
@@ -528,8 +529,8 @@ class Comparison(Predicate):
         return self.quantity_range.means(other.quantity_range)
 
     def contradicts(self, other: Any) -> bool:
-        """
-        Test whether ``other`` and ``self`` have contradictory meanings.
+        r"""
+        Check if ``other`` and ``self`` have contradictory meanings.
 
         If ``self`` and ``other`` have consistent text in the predicate attribute,
         this method looks for a contradiction based on the dimensionality or

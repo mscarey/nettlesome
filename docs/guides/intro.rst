@@ -135,15 +135,16 @@ the word “was” after the :class:`~nettlesome.entities.Entity` should be
 replaced with “were”.
 
     >>> not_at_school = Predicate("$group were at school", truth=False)
-    >>> plural_statement = Statement(not_at_school, terms=Entity("the students", plural=True))
+    >>> plural_statement = Statement(not_at_school, terms=[Entity("the students", plural=True)])
     >>> str(plural_statement)
-    'the statement it was false that <the students> were at school'    singular_statement = Statement(not_at_school, terms=Entity("Lee", plural=False))
+    'the statement it was false that <the students> were at school'
+    >>> singular_statement = Statement(not_at_school, terms=[Entity("Lee", plural=False)])
     >>> str(singular_statement)
     'the statement it was false that <Lee> was at school'
 
 
 The ``generic`` attribute is more subtle than the ``plural`` attribute.
-A :class:`~nettlesome.terms.Term` should be marked as ``generic`` if
+An :class:`~nettlesome.entities.Entity` should be marked as ``generic`` if
 it’s really being used as a
 stand-in for a broader category. For instance, in ``singular_statement``
 above, the fact that ``<Lee>`` is generic indicates that
@@ -154,35 +155,23 @@ Nettlesome, when angle brackets appear around the string representation
 of an object, that’s an indication that the object is generic.
 
 If two :class:`~nettlesome.statements.Statement`\s have different
-generic :class:`~nettlesome.terms.Term`\s but they’re otherwise the
+generic Entities but they’re otherwise the
 same, they’re still considered to have the same meaning as one another.
-That’s the case even if one of the :class:`~nettlesome.terms.Term`\s is
+That’s the case even if one of the Entities is
 plural while the other is singular.
 
     >>> plural_statement.means(singular_statement)
     True
 
-
-
-However, sometimes you need to label an Entity as being somehow sui
+However, sometimes you need to label an :class:`~nettlesome.entities.Entity` as being somehow sui
 generis, so that Statements about that Entity aren’t really applicable
 to other, generic Entities. In that case, you can set the Entity’s
 ``generic`` attribute to False and it’ll no longer be found to have the
 same meaning as generic Entities.
 
-.. code:: ipython3
-
-    harry_statement = Statement(not_at_school, terms=Entity("Harry Potter", generic=False))
-    harry_statement.means(singular_statement)
-
-
-
-
-.. parsed-literal::
-
+    >>> harry_statement = Statement(not_at_school, terms=Entity("Harry Potter", generic=False))
+    >>> harry_statement.means(singular_statement)
     False
-
-
 
 By default, Entities are generic and Statements are not generic. Both of
 these defaults can be changed when you create instances of the
@@ -191,167 +180,131 @@ respective classes.
 Comparing quantitative statements
 ---------------------------------
 
-The Comparison class extends the concept of a Predicate. A Comparison
+The :class:`~nettlesome.quantities.Comparison` class extends the concept
+of a :class:`~nettlesome.predicates.Predicate`. A Comparison
 still contains a truth value and a template string, but that template
 should be used to identify a quantity that will be compared to an
-expression using a sign such as an equal sign or a greater-than sign.
+expression using a ``sign`` such as an equal sign or a greater-than sign.
 This expression must be a constant: either an integer, a floating point
-number, or a physical quantity expressed in units that can be parsed
-using the pint library.
+number, or a physical :class:`~pint.Quantity` expressed in units that can be parsed
+using the `pint <https://pint.readthedocs.io/>`_ library.
 
-.. code:: ipython3
-
-    from nettlesome import Comparison
-
-    weight_in_pounds = Comparison("the weight of ${driver}'s vehicle was", sign=">", expression="26000 pounds")
-    pounds_statement = Statement(weight_in_pounds, terms=Entity("Alice"))
-    str(pounds_statement)
-
-
-
-
-.. parsed-literal::
-
+    >>> from nettlesome import Comparison
+    >>> weight_in_pounds = Comparison(
+    >>>     "the weight of ${driver}'s vehicle was",
+    >>>     sign=">",
+    >>>     expression="26000 pounds")
+    >>> pounds_statement = Statement(weight_in_pounds, terms=Entity("Alice"))
+    >>> str(pounds_statement)
     "the statement that the weight of <Alice>'s vehicle was greater than 26000 pound"
 
+:class:`~nettlesome.statements.Statement`\s including :class:`~nettlesome.quantities.Comparison`\s
+will handle unit conversions when
+applying operations like :meth:`~nettlesome.quantities.Comparison.implies`
+or :meth:`~nettlesome.quantities.Comparison.contradicts`\.
 
-
-Statements including Comparisons will handle unit conversions when
-applying operations like ``implies`` or ``contradicts``.
-
-.. code:: ipython3
-
-    weight_in_kilos = Comparison("the weight of ${driver}'s vehicle was", sign="<=", expression="3000 kilograms")
-    kilos_statement = Statement(weight_in_kilos, terms=Entity("Alice"))
-    str(kilos_statement)
-
-
-
-
-.. parsed-literal::
-
+    >>> weight_in_kilos = Comparison(
+    >>>     "the weight of ${driver}'s vehicle was",
+    >>>     sign="<=",
+    >>>     expression="3000 kilograms")
+    >>> kilos_statement = Statement(weight_in_kilos, terms=Entity("Alice"))
+    >>>> str(kilos_statement)
     "the statement that the weight of <Alice>'s vehicle was no more than 3000 kilogram"
-
-
-
-.. code:: ipython3
-
-    pounds_statement.contradicts(kilos_statement)
-
-
-
-
-.. parsed-literal::
-
+    >>> pounds_statement.contradicts(kilos_statement)
     True
-
 
 
 Formatting comparisons
 ~~~~~~~~~~~~~~~~~~~~~~
 
 To encourage consistent phrasing, the template string in every
-Comparison object must end with the word “was”.
+:class:`~nettlesome.quantities.Comparison` object must end with the word “was”.
 
-If you phrase a Comparison with an inequality sign using
+If you phrase a :class:`~nettlesome.quantities.Comparison` with an inequality sign using
 ``truth=False``, Nettlesome will silently modify your statement so it
 can have ``truth=True`` with a different sign. In this example, the
 user’s input indicates that it’s false that the weight of marijuana
 possessed by a defendant was an ounce or more. Nettlesome interprets
 this to mean it’s true that the weight was less than one ounce.
 
-.. code:: ipython3
-
-    drug_comparison_with_upper_bound = Comparison(
-       "the weight of marijuana that $defendant possessed was",
-        sign=">=",
-        expression="1 ounce",
-        truth=False)
-    str(drug_comparison_with_upper_bound)
-
-
-
-
-.. parsed-literal::
-
+    >>> drug_comparison_with_upper_bound = Comparison(
+    >>>    "the weight of marijuana that $defendant possessed was",
+    >>>     sign=">=",
+    >>>     expression="1 ounce",
+    >>>     truth=False)
+    >>> str(drug_comparison_with_upper_bound)
     'that the weight of marijuana that $defendant possessed was less than 1 ounce'
 
+An expression can also be a Python :py:class:`datetime.date`\.
 
+    >>> license_date = Comparison(
+    >>>     "the date $dentist became a licensed dentist was",
+    >>>     sign="<",
+    >>>     expression=date(1990, 1, 1))
+    >>> str(license_date)
+    'that the date $dentist became a licensed dentist was less than 1990-01-01'
 
-When the number needed for a Comparison isn’t a physical quantity that
-can be described with the units in the pint library library, you should
+When the number needed for a :class:`~nettlesome.quantities.Comparison` is neither
+a :py:class:`~datetime.date` nor a physical quantity that
+can be described with physical units like "pounds" or "meters", you should
 phrase the text in the template string to explain what the number
 describes. The template string will still need to end with the word
-“was”. The value of the expression parameter should be an integer or a
+“was”. The value of the ``expression`` parameter should be an integer or a
 floating point number, not a string to be parsed.
 
-.. code:: ipython3
-
-    three_children = Comparison(
-        "the number of children in ${taxpayer}'s household was",
-        sign="=",
-        expression=3)
-    str(three_children)
-
-
-
-
-.. parsed-literal::
-
+    >>> three_children = Comparison(
+    >>>     "the number of children in ${taxpayer}'s household was",
+    >>>     sign="=",
+    >>>     expression=3)
+    >>> str(three_children)
     "that the number of children in ${taxpayer}'s household was exactly equal to 3"
-
-
 
 Comparing groups of statements
 ---------------------------------
 
-You can also check to see whether a set of Statements, taken as a group,
-implies another Statement or group of Statements.
+If you pass a list of :class:`~nettlesome.statements.Statement`\s to
+the :class:`~nettlesome.groups.FactorGroup` constructor, you can then check to see whether
+those Statements, taken as a group, implies another Statement or group of Statements.
 
 Here, the use of placeholders that are identical except for a digit on
-the end indicates to Nettlesome that the positions of those Terms should
+the end indicates to Nettlesome that the positions of the Entities in those places should
 be considered interchangeable. (In this example, if ``site1`` is a
 certain distance away from ``site2``, then ``site2`` must also be the
 same distance away from ``site1``.)
 
-.. code:: ipython3
-
-    from nettlesome import FactorGroup
-
-    more_than_100_yards = Comparison("the distance between $site1 and $site2 was", sign=">", expression="100 yards")
-    less_than_1_mile = Comparison("the distance between $site1 and $site2 was", sign="<", expression="1 mile")
-
-    protest_facts = FactorGroup(
-        [Statement(more_than_100_yards, terms=[Entity("the political convention"), Entity("the police cordon")]),
-         Statement(less_than_1_mile, terms=[Entity("the police cordon"), Entity("the political convention")])]
-    )
-    str(protest_facts)
-
-
-
-
-.. parsed-literal::
-
+    >>> from nettlesome import FactorGroup
+    >>> more_than_100_yards = Comparison(
+    >>>     "the distance between $site1 and $site2 was",
+    >>>     sign=">",
+    >>>     expression="100 yards")
+    >>> less_than_1_mile = Comparison(
+    >>>     "the distance between $site1 and $site2 was",
+    >>>     sign="<",
+    >>>     expression="1 mile")
+    >>> protest_facts = FactorGroup(
+    >>>     [Statement(
+    >>>         more_than_100_yards,
+    >>>         terms=[Entity("the political convention"), Entity("the police cordon")]),
+    >>>      Statement(
+    >>>         less_than_1_mile,
+    >>>         terms=[Entity("the police cordon"), Entity("the political convention")])])
+    >>> str(protest_facts)
     "FactorGroup(['the statement that the distance between <the political convention> and <the police cordon> was greater than 100 yard', 'the statement that the distance between <the police cordon> and <the political convention> was less than 1 mile'])"
 
-
-
-.. code:: ipython3
-
-    more_than_50_meters = Comparison("the distance between $site1 and $site2 was", sign=">", expression="50 meters")
-    less_than_2_km = Comparison("the distance between $site1 and $site2 was", sign="<=", expression="2 km")
-
-    speech_zone_facts = FactorGroup(
-        [Statement(more_than_50_meters, terms=[Entity("the free speech zone"), Entity("the courthouse")]),
-         Statement(less_than_2_km, terms=[Entity("the free speech zone"), Entity("the courthouse")])]
-    )
-    protest_facts.implies(speech_zone_facts)
-
-
-
-
-.. parsed-literal::
-
+    >>> more_than_50_meters = Comparison(
+    >>>     "the distance between $site1 and $site2 was",
+    >>>     sign=">",
+    >>>     expression="50 meters")
+    >>> less_than_2_km = Comparison(
+    >>>     "the distance between $site1 and $site2 was",
+    >>>     sign="<=",
+    >>>     expression="2 km")
+    >>> speech_zone_facts = FactorGroup(
+    >>>     [Statement(
+    >>>         more_than_50_meters,
+    >>>         terms=[Entity("the free speech zone"), Entity("the courthouse")]),
+    >>>      Statement(
+    >>>         less_than_2_km,
+    >>>         terms=[Entity("the free speech zone"), Entity("the courthouse")])])
+    >>> protest_facts.implies(speech_zone_facts)
     True
-
-

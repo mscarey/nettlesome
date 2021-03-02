@@ -664,8 +664,26 @@ class Comparable(ABC):
     def implies(
         self, other: Optional[Comparable], context: Optional[ContextRegister] = None
     ) -> bool:
-        """
+        r"""
         Test whether ``self`` implies ``other``.
+
+        When inherited by :class:`~nettlesome.groups.FactorGroup`\, this method will
+        check whether every :class:`~nettlesome.statements.Statement` in ``other``
+        is implied by some Statement in ``self``.
+
+            >>> over_100y = Comparison("the distance between $site1 and $site2 was", sign=">", expression="100 yards")
+            >>> under_1mi = Comparison("the distance between $site1 and $site2 was", sign="<", expression="1 mile")
+            >>> protest_facts = FactorGroup(
+            >>>     [Statement(over_100y, terms=[Entity("the political convention"), Entity("the police cordon")]),
+            >>>      Statement(under_1mi, terms=[Entity("the police cordon"), Entity("the political convention")])])
+            >>> over_50m = Comparison("the distance between $site1 and $site2 was", sign=">", expression="50 meters")
+            >>> under_2km = Comparison("the distance between $site1 and $site2 was", sign="<=", expression="2 km")
+            >>> speech_zone_facts = FactorGroup(
+            >>>     [Statement(over_50m, terms=[Entity("the free speech zone"), Entity("the courthouse")]),
+            >>>      Statement(under_2km, terms=[Entity("the free speech zone"), Entity("the courthouse")])])
+            >>> protest_facts.implies(speech_zone_facts)
+            True
+
         """
         if other is None:
             return True
