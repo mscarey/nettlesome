@@ -82,7 +82,7 @@ class QuantityRange(ABC):
 
     def __repr__(self):
         return (
-            f'{self.__class__.__name__}(quantity="{self.quantity}", '
+            f'{self.__class__.__name__}(quantity="{self._quantity_string}", '
             f'sign="{self.sign}", include_negatives={self.include_negatives})'
         )
 
@@ -109,7 +109,7 @@ class QuantityRange(ABC):
             ">=": "at least",
             "<=": "no more than",
         }
-        return f"{expand[self.sign]} {self.quantity}"
+        return f"{expand[self.sign]} {self._quantity_string}"
 
     @property
     def interval(self) -> Union[FiniteSet, Interval, sympy.Union]:
@@ -175,6 +175,9 @@ class QuantityRange(ABC):
 
     def opposite_meaning(self) -> None:
         self.sign = self.opposite_comparisons[self.sign]
+
+    def _quantity_string(self) -> str:
+        return ""
 
 
 class UnitRange(QuantityRange):
@@ -262,6 +265,9 @@ class UnitRange(QuantityRange):
             return False
         return other_interval.is_subset(self.interval)
 
+    def _quantity_string(self) -> str:
+        return str(self.quantity)
+
 
 class DateRange(QuantityRange):
     """A range defined relative to a date."""
@@ -280,6 +286,9 @@ class DateRange(QuantityRange):
     def magnitude(self) -> Union[int, float]:
         """Map dates to integers while preserving the order of the dates."""
         return int(self.quantity.strftime("%Y%m%d"))
+
+    def _quantity_string(self) -> str:
+        return str(self.quantity)
 
 
 class NumberRange(QuantityRange):
@@ -307,6 +316,9 @@ class NumberRange(QuantityRange):
     def magnitude(self) -> Union[int, float]:
         """Return quantity attribute."""
         return self.quantity
+
+    def _quantity_string(self) -> str:
+        return str(self.quantity)
 
 
 class Comparison(Predicate):

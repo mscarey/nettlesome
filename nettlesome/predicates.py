@@ -343,7 +343,7 @@ class Predicate:
 
         return self.truth == other.truth
 
-    def __gt__(self, other: Predicate) -> bool:
+    def __gt__(self, other: Any) -> bool:
         r"""Alias for :meth:`~nettlesome.predicates.Predicate.implies`\."""
         return self.implies(other)
 
