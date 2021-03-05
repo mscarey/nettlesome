@@ -8,7 +8,7 @@ from typing import Optional, Sequence, Union
 
 from nettlesome.comparable import (
     Comparable,
-    FactorSequence,
+    TermSequence,
     ContextRegister,
     new_context_helper,
 )
@@ -26,7 +26,7 @@ class Statement(Factor):
         self,
         predicate: Union[Predicate, str],
         terms: Optional[
-            Union[FactorSequence, Term, Sequence[Term], Mapping[str, Term]]
+            Union[TermSequence, Term, Sequence[Term], Mapping[str, Term]]
         ] = None,
         name: str = "",
         absent: bool = False,
@@ -59,7 +59,7 @@ class Statement(Factor):
             :class:`:class:`~nettlesome.predicates.Predicate`` in
             which it is mentioned.
         """
-        terms = terms or FactorSequence()
+        terms = terms or TermSequence()
 
         if isinstance(predicate, str):
             predicate = Predicate(predicate)
@@ -68,8 +68,8 @@ class Statement(Factor):
         if isinstance(terms, Mapping):
             terms = predicate.template.get_term_sequence_from_mapping(terms)
 
-        if not isinstance(terms, FactorSequence):
-            terms = FactorSequence(terms)
+        if not isinstance(terms, TermSequence):
+            terms = TermSequence(terms)
 
         self._terms = terms
 
@@ -104,7 +104,7 @@ class Statement(Factor):
         return slugify(subject)
 
     @property
-    def terms(self) -> FactorSequence:
+    def terms(self) -> TermSequence:
         """Get Terms used to fill placeholder's in ``self``'s StatementTemplate."""
         return self._terms
 
@@ -195,13 +195,13 @@ class Statement(Factor):
             a version of ``self`` with the new context.
         """
         result = deepcopy(self)
-        result._terms = FactorSequence(
+        result._terms = TermSequence(
             [factor.new_context(changes) for factor in self.terms]
         )
         return result
 
-    def term_permutations(self) -> Iterator[FactorSequence]:
+    def term_permutations(self) -> Iterator[TermSequence]:
         """Generate permutations of context factors that preserve same meaning."""
         for pattern in self.predicate.term_index_permutations():
             sorted_terms = [x for _, x in sorted(zip(pattern, self.terms))]
-            yield FactorSequence(sorted_terms)
+            yield TermSequence(sorted_terms)

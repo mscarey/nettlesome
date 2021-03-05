@@ -2,7 +2,7 @@ import operator
 
 import pytest
 
-from nettlesome.comparable import ContextRegister, FactorSequence, means
+from nettlesome.comparable import ContextRegister, TermSequence, means
 from nettlesome.entities import Entity
 
 from nettlesome.predicates import Predicate
@@ -97,7 +97,7 @@ class TestFacts:
         assert "Greg committed a crime" in str(different)
 
     def test_type_of_terms(self, make_statement):
-        assert isinstance(make_statement["crime"].terms, FactorSequence)
+        assert isinstance(make_statement["crime"].terms, TermSequence)
 
     def test_concrete_to_abstract(self, make_statement):
         assert (

@@ -82,7 +82,7 @@ class QuantityRange(ABC):
 
     def __repr__(self):
         return (
-            f'{self.__class__.__name__}(quantity="{self._quantity_string}", '
+            f'{self.__class__.__name__}(quantity="{self._quantity_string()}", '
             f'sign="{self.sign}", include_negatives={self.include_negatives})'
         )
 
@@ -109,7 +109,7 @@ class QuantityRange(ABC):
             ">=": "at least",
             "<=": "no more than",
         }
-        return f"{expand[self.sign]} {self._quantity_string}"
+        return f"{expand[self.sign]} {self._quantity_string()}"
 
     @property
     def interval(self) -> Union[FiniteSet, Interval, sympy.Union]:

@@ -4,7 +4,7 @@ import pytest
 
 from nettlesome.comparable import (
     ContextRegister,
-    FactorSequence,
+    TermSequence,
     means,
     expand_string_from_source,
 )
@@ -202,7 +202,7 @@ class TestStatements:
             [Entity("Darth Vader"), Entity("the Death Star")]
         )
         assert "<Darth Vader> managed" in str(different)
-        assert isinstance(different.terms, FactorSequence)
+        assert isinstance(different.terms, TermSequence)
 
     def test_term_cannot_be_string(self):
         city = Predicate("$place was a city")

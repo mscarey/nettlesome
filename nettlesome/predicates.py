@@ -13,9 +13,9 @@ from itertools import product
 
 from string import Template
 from typing import Any, Dict, Iterable, Mapping
-from typing import List, Optional, Sequence, Set
+from typing import List, Optional, Sequence, Set, Tuple
 
-from nettlesome.comparable import Comparable, FactorSequence
+from nettlesome.comparable import Comparable, TermSequence
 from nettlesome.terms import Term
 
 
@@ -76,7 +76,7 @@ class StatementTemplate(Template):
             )
         return None
 
-    def get_template_with_plurals(self, context: FactorSequence) -> str:
+    def get_template_with_plurals(self, context: TermSequence) -> str:
         """
         Get a version of self with "was" replaced by "were" for any plural terms.
 
@@ -108,10 +108,10 @@ class StatementTemplate(Template):
         """Get an ordered list of terms from a mapping of placeholder names to terms."""
         placeholders = self.placeholders
         result = [term_mapping[placeholder] for placeholder in placeholders]
-        return FactorSequence(result)
+        return TermSequence(result)
 
     def _check_number_of_terms(
-        self, placeholders: List[str], context: FactorSequence
+        self, placeholders: List[str], context: TermSequence
     ) -> None:
         if len(set(placeholders)) != len(context):
             raise ValueError(
@@ -121,7 +121,7 @@ class StatementTemplate(Template):
         return None
 
     def mapping_placeholder_to_term(
-        self, context: FactorSequence
+        self, context: TermSequence
     ) -> Dict[str, Comparable]:
         """
         Get a mapping of template placeholders to context terms.
@@ -133,9 +133,7 @@ class StatementTemplate(Template):
         self._check_number_of_terms(self.placeholders, context)
         return dict(zip(self.placeholders, context))
 
-    def mapping_placeholder_to_term_name(
-        self, context: FactorSequence
-    ) -> Dict[str, str]:
+    def mapping_placeholder_to_term_name(self, context: TermSequence) -> Dict[str, str]:
         """
         Get a mapping of template placeholders to the names of their context terms.
 
@@ -239,7 +237,7 @@ class Predicate:
         changes = {p: "{}" for p in self.template.placeholders}
         return self.template.substitute(**changes)
 
-    def _content_with_terms(self, terms: FactorSequence) -> str:
+    def _content_with_terms(self, terms: TermSequence) -> str:
         r"""
         Make a sentence by filling in placeholders with names of Factors.
 
@@ -432,8 +430,8 @@ class Predicate:
         they've been labeled as interchangeable with one another.
         """
 
-        without_duplicates = self.template.placeholders
-        result = {p: {i} for i, p in enumerate(without_duplicates)}
+        without_duplicates: List[str] = self.template.placeholders
+        result: Dict[str, Set[int]] = {p: {i} for i, p in enumerate(without_duplicates)}
 
         for index, placeholder in enumerate(without_duplicates):
             if placeholder[-1].isdigit:
@@ -442,7 +440,7 @@ class Predicate:
                         result[k].add(index)
         return result
 
-    def term_index_permutations(self) -> List[List[int]]:
+    def term_index_permutations(self) -> List[Tuple[int, ...]]:
         """Get the arrangements of all this Predicate's terms that preserve the same meaning."""
         product_of_positions = product(*self.term_positions().values())
         without_duplicates = [x for x in product_of_positions if len(set(x)) == len(x)]

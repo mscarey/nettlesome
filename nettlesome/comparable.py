@@ -220,7 +220,7 @@ class Comparable(ABC):
         return answers
 
     @property
-    def terms(self) -> FactorSequence:
+    def terms(self) -> TermSequence:
         r"""
         Get :class:`Factor`\s used in comparisons with other :class:`Factor`\s.
 
@@ -233,7 +233,7 @@ class Comparable(ABC):
         for factor_name in self.context_factor_names:
             next_factor: Optional[Comparable] = self.__dict__.get(factor_name)
             context.append(next_factor)
-        return FactorSequence(context)
+        return TermSequence(context)
 
     def __ge__(self, other: Optional[Comparable]) -> bool:
         """
@@ -324,7 +324,7 @@ class Comparable(ABC):
         return False
 
     def compare_ordering_of_terms(
-        self, other: Comparable, relation: Callable, ordering: FactorSequence
+        self, other: Comparable, relation: Callable, ordering: TermSequence
     ) -> bool:
         """
         Determine whether one ordering of self's terms matches other's terms.
@@ -907,7 +907,7 @@ class Comparable(ABC):
                 already_returned.append(changed_registry)
                 yield changed_registry
 
-    def term_permutations(self) -> Iterator[FactorSequence]:
+    def term_permutations(self) -> Iterator[TermSequence]:
         """Generate permutations of context factors that preserve same meaning."""
         yield self.terms
 
@@ -1022,8 +1022,8 @@ class ContextRegister:
     @classmethod
     def from_lists(
         cls,
-        keys: Union[FactorSequence, Sequence[Comparable]],
-        values: Union[FactorSequence, Sequence[Comparable]],
+        keys: Union[TermSequence, Sequence[Comparable]],
+        values: Union[TermSequence, Sequence[Comparable]],
     ) -> ContextRegister:
         """Make new ContextRegister from two lists of Comparables."""
         pairs = zip(keys, values)
@@ -1147,23 +1147,85 @@ class ContextRegister:
         return self_mapping
 
 
-class FactorSequence(Tuple[Comparable, ...]):
-    """A sequence of Comparables that can be compared in order."""
+class Term(Comparable):
+    r"""
+    Things that can be referenced in a Statement.
+
+    The name of a Term can replace the placeholder in
+    a :class:`~nettlesome.predicates.StatementTemplate`\.
+    """
+
+    def __init__(
+        self,
+        name: Optional[str] = None,
+        generic: bool = True,
+    ) -> None:
+        """
+        Determine self's name and whether it is generic.
+
+        :param name:
+            An identifier.
+
+        :param generic:
+            Determines whether a change in the ``name`` of the
+            :class:`Term` would change the meaning of the
+            :class:`.Factor` in which the :class:`Term` is
+            embedded.
+        """
+        self.name = name
+        self.generic = generic
+
+    def _borrow_generic_context(self, other: Term) -> Term:
+        self_factors = list(self.recursive_factors.values())
+        other_factors = list(other.recursive_factors.values())
+        changes = ContextRegister()
+        for i, factor in enumerate(self_factors):
+            if factor.generic:
+                changes.insert_pair(factor, other_factors[i])
+        return self.new_context(changes)
+
+    def add(
+        self, other: Term, context: Optional[ContextRegister] = None
+    ) -> Optional[Term]:
+        """
+        Get a term that combines the meaning of self and other, if possible.
+
+        :param other:
+            another Term
+
+        :returns:
+            the Term that implies the other, with self's context.
+            If neither returns the other, returns None.
+        """
+        if not isinstance(other, Term):
+            raise TypeError
+        if self.implies(other, context=context):
+            return self
+        if other.implies(self, context=context):
+            return other._borrow_generic_context(self)
+        return None
+
+    def __add__(self, other: Term) -> Optional[Comparable]:
+        return self.add(other)
+
+
+class TermSequence(Tuple[Term, ...]):
+    """A sequence of Terms that can be compared in order."""
 
     def __new__(cls, value: Sequence = ()):
-        """Convert Sequence of Comparables to a subclass of Tuple."""
-        if isinstance(value, Comparable):
+        """Convert Sequence of Terms to a subclass of Tuple."""
+        if isinstance(value, Term):
             value = (value,)
-        return tuple.__new__(FactorSequence, value)
+        return tuple.__new__(TermSequence, value)
 
     def ordered_comparison(
         self,
-        other: FactorSequence,
+        other: TermSequence,
         operation: Callable,
         context: Optional[ContextRegister] = None,
     ) -> Iterator[ContextRegister]:
         r"""
-        Find ways for a series of pairs of :class:`.Comparable` terms to satisfy a comparison.
+        Find ways for a series of pairs of :class:`.Terms` terms to satisfy a comparison.
 
         :param context:
             keys representing terms in ``self`` and
@@ -1180,7 +1242,7 @@ class FactorSequence(Tuple[Comparable, ...]):
 
         def update_register(
             register: ContextRegister,
-            factor_pairs: List[Tuple[Optional[Comparable], Optional[Comparable]]],
+            factor_pairs: List[Tuple[Optional[Term], Optional[Term]]],
             i: int = 0,
         ):
             """
