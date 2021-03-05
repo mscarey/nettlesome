@@ -1,14 +1,15 @@
 from datetime import date
 
-from pint import UnitRegistry
-
-from nettlesome.quantities import UnitRange, NumberRange, DateRange
-
-ureg = UnitRegistry()
-Q_ = ureg.Quantity
+from nettlesome import predicates
+from nettlesome.quantities import UnitRange, NumberRange, DateRange, Q_
 
 
 class TestQuantities:
+    def test_unitregistry_imports_do_not_conflict(self, make_comparison):
+        left = UnitRange(quantity=Q_("20 meters"), sign=">")
+        right = make_comparison["meters"].quantity_range
+        assert left.implies(right)
+
     def test_no_contradiction_between_classes(self):
         left = UnitRange(quantity=Q_("2000 days"), sign="<")
         right = NumberRange(quantity=2000, sign=">")

@@ -1,16 +1,13 @@
 from datetime import date
 
-from pint import UnitRegistry, Quantity
+from pint import Quantity
 import pytest
 import sympy
 from sympy import Interval, oo
 
 from nettlesome.predicates import Predicate
-from nettlesome.quantities import Comparison, NumberRange
+from nettlesome.quantities import Comparison, NumberRange, Q_
 from nettlesome.statements import Statement
-
-ureg = UnitRegistry()
-Q_ = ureg.Quantity
 
 
 class TestQuantityInterval:

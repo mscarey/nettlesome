@@ -17,4 +17,4 @@ Although Nettlesome was designed to be used for legal annotations in
 the [AuthoritySpoke](https://github.com/mscarey/AuthoritySpoke) library,
 Nettlesome itself doesn't depend on any legal concepts or specialized knowledge.
 
-Find [Nettlesome's documentation](https://nettlesome.readthedocs.io/) and an [introductory guide](https://nettlesome.readthedocs.io/en/latest/guides/intro.html) on ReadTheDocs.
+Find [Nettlesome's documentation](https://nettlesome.readthedocs.io/) and an [introductory guide with examples](https://nettlesome.readthedocs.io/en/latest/guides/intro.html) on ReadTheDocs.

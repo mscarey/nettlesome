@@ -15,14 +15,8 @@ from string import Template
 from typing import Any, Dict, Iterable, Mapping
 from typing import List, Optional, Sequence, Set
 
-from pint import UnitRegistry
-
-
 from nettlesome.comparable import Comparable, FactorSequence
 from nettlesome.terms import Term
-
-ureg = UnitRegistry()
-Q_ = ureg.Quantity
 
 
 class StatementTemplate(Template):
