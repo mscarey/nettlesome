@@ -378,6 +378,8 @@ class Predicate:
         """
         if self.truth is None:
             return False
+        if not isinstance(other, self.__class__):
+            return False
         if not self._same_meaning_as_true_predicate(other):
             return False
         if other.truth is None:

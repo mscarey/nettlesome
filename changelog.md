@@ -3,6 +3,7 @@ Changelog
 dev
 ------------------
 - fix bug: multiple UnitRegistries conflicted
+- fix bug: Comparison.implies(Predicate) should be False
 
 0.2.0 (2021-03-02)
 ------------------

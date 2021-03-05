@@ -161,8 +161,7 @@ class TestCompare:
         assert self.lived_at > self.whether_lived_at
 
     def test_error_predicate_imply_factor(self):
-        with pytest.raises(TypeError):
-            self.same > Statement("$animal was a cat", terms=Entity("Mittens"))
+        assert not self.same > Statement("$animal was a cat", terms=Entity("Mittens"))
 
     def test_same_does_not_contradict(self):
         again = Predicate("$thing was an apple")
