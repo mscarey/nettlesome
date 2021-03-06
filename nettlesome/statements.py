@@ -109,6 +109,16 @@ class Statement(Factor):
         return self._terms
 
     @property
+    def terms_without_nulls(self) -> Sequence[Term]:
+        """
+        Get Terms that are not None.
+
+        No Terms should be None for the Statement class, so this method is like an
+        assertion for type checking.
+        """
+        return [term for term in self._terms if term is not None]
+
+    @property
     def wrapped_string(self):
         """Wrap text in string representation of ``self``."""
         content = str(self.predicate._content_with_terms(self.terms))
@@ -125,7 +135,9 @@ class Statement(Factor):
             the same as the __str__ method, but with an added "SPECIFIC CONTEXT" section
         """
         text = str(self)
-        concrete_context = [factor for factor in self.terms if not factor.generic]
+        concrete_context = [
+            factor for factor in self.terms_without_nulls if not factor.generic
+        ]
         if any(concrete_context) and not self.generic:
             text += "\n" + indented("SPECIFIC CONTEXT:")
             for factor in concrete_context:
@@ -196,7 +208,7 @@ class Statement(Factor):
         """
         result = deepcopy(self)
         result._terms = TermSequence(
-            [factor.new_context(changes) for factor in self.terms]
+            [factor.new_context(changes) for factor in self.terms_without_nulls]
         )
         return result
 
