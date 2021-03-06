@@ -1010,8 +1010,8 @@ class ContextRegister:
     @classmethod
     def from_lists(
         cls,
-        keys: Union[TermSequence, Sequence[Comparable]],
-        values: Union[TermSequence, Sequence[Comparable]],
+        keys: Union[Sequence[Comparable]],
+        values: Union[Sequence[Comparable]],
     ) -> ContextRegister:
         """Make new ContextRegister from two lists of Comparables."""
         pairs = zip(keys, values)
@@ -1074,16 +1074,17 @@ class ContextRegister:
                 )
             if isinstance(comp, Iterable):
                 raise TypeError("Iterable objects may not be added to ContextRegister")
-
-        if self.get_factor(key) and not self.check_match(key, value):
+        found_value = self.get_factor(key)
+        if found_value and not self.check_match(key, value):
             raise KeyError(
                 f"{key.key} already in mapping with value "
-                + f"{self.get_factor(key).key}, not {value.key}"
+                + f"{found_value.key}, not {value.key}"
             )
-        if self.get_reverse_factor(value) and not self.check_match(key, value):
+        found_key = self.get_reverse_factor(value)
+        if found_key and not self.check_match(key, value):
             raise KeyError(
                 f"{value.key} already in mapping with key "
-                + f"{self.get_reverse_factor(value).key}, not {key.key}"
+                + f"{found_key.key}, not {key.key}"
             )
 
     def insert_pair(self, key: Comparable, value: Comparable) -> None:

@@ -266,7 +266,7 @@ class UnitRange(QuantityRange):
         return other_interval.is_subset(self.interval)
 
     def _quantity_string(self) -> str:
-        return str(self.quantity)
+        return super()._quantity_string() + str(self.quantity)
 
 
 class DateRange(QuantityRange):
