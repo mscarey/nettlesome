@@ -894,18 +894,6 @@ class Comparable(ABC):
             :attr:`terms`.
         """
         yield matches
-        gen = self.term_permutations()
-        _ = next(gen)  # unchanged permutation
-        already_returned: List[ContextRegister] = [matches]
-
-        for term_permutation in gen:
-            changes = ContextRegister.from_lists(self.terms, term_permutation)
-            changed_registry = matches.replace_keys(changes)
-            if not any(
-                changed_registry == returned_dict for returned_dict in already_returned
-            ):
-                already_returned.append(changed_registry)
-                yield changed_registry
 
     def term_permutations(self) -> Iterator[TermSequence]:
         """Generate permutations of context factors that preserve same meaning."""

@@ -3,7 +3,7 @@
 from copy import deepcopy
 import operator
 
-from typing import Dict, Iterator, Mapping
+from typing import Dict, Iterator, List, Mapping
 from typing import Optional, Sequence, Union
 
 from nettlesome.terms import (
@@ -199,6 +199,30 @@ class Statement(Factor):
             [factor.new_context(changes) for factor in self.terms]
         )
         return result
+
+    def _registers_for_interchangeable_context(
+        self, matches: ContextRegister
+    ) -> Iterator[ContextRegister]:
+        r"""
+        Find possible combination of interchangeable :attr:`terms`.
+        :yields:
+            context registers with every possible combination of
+            ``self``\'s and ``other``\'s interchangeable
+            :attr:`terms`.
+        """
+        yield matches
+        gen = self.term_permutations()
+        _ = next(gen)  # unchanged permutation
+        already_returned: List[ContextRegister] = [matches]
+
+        for term_permutation in gen:
+            changes = ContextRegister.from_lists(self._terms, term_permutation)
+            changed_registry = matches.replace_keys(changes)
+            if not any(
+                changed_registry == returned_dict for returned_dict in already_returned
+            ):
+                already_returned.append(changed_registry)
+                yield changed_registry
 
     def term_permutations(self) -> Iterator[TermSequence]:
         """Generate permutations of context factors that preserve same meaning."""
