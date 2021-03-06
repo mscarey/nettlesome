@@ -76,7 +76,7 @@ class StatementTemplate(Template):
             )
         return None
 
-    def get_template_with_plurals(self, context: TermSequence) -> str:
+    def get_template_with_plurals(self, terms: Sequence[Term]) -> str:
         """
         Get a version of self with "was" replaced by "were" for any plural terms.
 
@@ -84,8 +84,8 @@ class StatementTemplate(Template):
         """
         result = self.template[:]
         placeholders = self.placeholders
-        self._check_number_of_terms(placeholders, context)
-        for idx, factor in enumerate(context):
+        self._check_number_of_terms(placeholders, terms)
+        for idx, factor in enumerate(terms):
             if factor.__dict__.get("plural") is True:
                 named_pattern = "$" + placeholders[idx] + " was"
                 braced_pattern = "${" + placeholders[idx] + "} was"
@@ -111,46 +111,46 @@ class StatementTemplate(Template):
         return TermSequence(result)
 
     def _check_number_of_terms(
-        self, placeholders: List[str], context: TermSequence
+        self, placeholders: List[str], terms: Sequence[Term]
     ) -> None:
-        if len(set(placeholders)) != len(context):
+        if len(set(placeholders)) != len(terms):
             raise ValueError(
-                f"The number of terms passed in 'context' ({len(context)}) must be equal to the "
+                f"The number of terms passed in 'terms' ({len(terms)}) must be equal to the "
                 f"number of placeholders in the StatementTemplate ({len(placeholders)})."
             )
         return None
 
     def mapping_placeholder_to_term(
-        self, context: TermSequence
+        self, terms: Sequence[Term]
     ) -> Dict[str, Comparable]:
         """
         Get a mapping of template placeholders to context terms.
 
-        :param context:
+        :param terms:
             a list of context :class:`.factors.Factor`/s, in the same
             order they appear in the template string.
         """
-        self._check_number_of_terms(self.placeholders, context)
-        return dict(zip(self.placeholders, context))
+        self._check_number_of_terms(self.placeholders, terms)
+        return dict(zip(self.placeholders, terms))
 
-    def mapping_placeholder_to_term_name(self, context: TermSequence) -> Dict[str, str]:
+    def mapping_placeholder_to_term_name(self, terms: Sequence[Term]) -> Dict[str, str]:
         """
         Get a mapping of template placeholders to the names of their context terms.
 
-        :param context:
+        :param terms:
             a list of :class:`~authorityspoke.comparable.Comparable`
             context terms in the same
             order they appear in the template string.
         """
-        mapping = self.mapping_placeholder_to_term(context)
+        mapping = self.mapping_placeholder_to_term(terms)
         mapping_to_string = {k: v.short_string for k, v in mapping.items()}
         return mapping_to_string
 
-    def substitute_with_plurals(self, context: Iterable[Term]) -> str:
+    def substitute_with_plurals(self, terms: Sequence[Term]) -> str:
         """
         Update template text with strings representing Comparable terms.
 
-        :param context:
+        :param terms:
             terms with `.short_string()`
             methods to substitute into template, and optionally with `plural`
             attributes to indicate whether to change the word "was" to "were"
@@ -158,8 +158,8 @@ class StatementTemplate(Template):
         :returns:
             updated version of template text
         """
-        new_content = self.get_template_with_plurals(context=context)
-        substitutions = self.mapping_placeholder_to_term_name(context=context)
+        new_content = self.get_template_with_plurals(terms=terms)
+        substitutions = self.mapping_placeholder_to_term_name(terms=terms)
         new_template = self.__class__(new_content, make_singular=False)
         return new_template.substitute(substitutions)
 
@@ -237,7 +237,7 @@ class Predicate:
         changes = {p: "{}" for p in self.template.placeholders}
         return self.template.substitute(**changes)
 
-    def _content_with_terms(self, terms: TermSequence) -> str:
+    def _content_with_terms(self, terms: Sequence[Term]) -> str:
         r"""
         Make a sentence by filling in placeholders with names of Factors.
 

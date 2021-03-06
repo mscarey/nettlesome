@@ -3,7 +3,7 @@
 from copy import deepcopy
 import operator
 
-from typing import Dict, Iterator, Mapping
+from typing import Callable, Dict, Iterator, List, Mapping
 from typing import Optional, Sequence, Union
 
 from nettlesome.terms import (
@@ -72,6 +72,7 @@ class Statement(Factor):
             terms = TermSequence(terms)
 
         self._terms = terms
+        self._terms_without_nulls = [term for term in terms if term is not None]
 
         if len(self.terms) != len(self.predicate):
             message = (
@@ -200,8 +201,72 @@ class Statement(Factor):
         )
         return result
 
-    def term_permutations(self) -> Iterator[TermSequence]:
+    def _registers_for_interchangeable_context(
+        self, matches: ContextRegister
+    ) -> Iterator[ContextRegister]:
+        r"""
+        Find possible combination of interchangeable :attr:`terms`.
+
+        :yields:
+            context registers with every possible combination of
+            ``self``\'s and ``other``\'s interchangeable
+            :attr:`terms`.
+        """
+        yield matches
+        gen = self.term_permutations()
+        _ = next(gen)  # unchanged permutation
+        already_returned: List[ContextRegister] = [matches]
+
+        for term_permutation in gen:
+            changes = ContextRegister.from_lists(
+                self._terms_without_nulls, term_permutation
+            )
+            changed_registry = matches.replace_keys(changes)
+            if not any(
+                changed_registry == returned_dict for returned_dict in already_returned
+            ):
+                already_returned.append(changed_registry)
+                yield changed_registry
+
+    def compare_terms(self, other: Comparable, relation: Callable) -> bool:
+        r"""
+        Test if relation holds for corresponding context factors of self and other.
+
+        This doesn't track a persistent :class:`ContextRegister` as it goes
+        down the sequence of :class:`Factor` pairs. Perhaps(?) this simpler
+        process can weed out :class:`Factor`\s that clearly don't satisfy
+        a comparison before moving on to the more costly :class:`Analogy`
+        process. Or maybe it's useful for testing.
+        """
+        orderings = self.term_permutations()
+        for ordering in orderings:
+            if self.compare_ordering_of_terms(
+                other=other, relation=relation, ordering=ordering
+            ):
+                return True
+        return False
+
+    def compare_ordering_of_terms(
+        self, other: Comparable, relation: Callable, ordering: Sequence[Term]
+    ) -> bool:
+        """
+        Determine whether one ordering of self's terms matches other's terms.
+
+        Multiple term orderings exist where the terms can be rearranged without
+        changing the Fact's meaning.
+
+        For instance, "<Ann> and <Bob> both were members of the same family" has a
+        second ordering "<Bob> and <Ann> both were members of the same family".
+        """
+        for i, self_factor in enumerate(ordering):
+            if not (relation(self_factor, other.terms[i])):
+                return False
+        return True
+
+    def term_permutations(self) -> Iterator[Sequence[Term]]:
         """Generate permutations of context factors that preserve same meaning."""
         for pattern in self.predicate.term_index_permutations():
-            sorted_terms = [x for _, x in sorted(zip(pattern, self.terms))]
-            yield TermSequence(sorted_terms)
+            sorted_terms = [
+                x for _, x in sorted(zip(pattern, self._terms_without_nulls))
+            ]
+            yield sorted_terms

@@ -93,7 +93,7 @@ def new_context_helper(func: Callable):
     def wrapper(
         factor: Comparable,
         changes: Union[Sequence[Comparable], ContextRegister],
-        terms_to_replace: Optional[Sequence[Comparable]] = None,
+        terms_to_replace: Optional[Sequence[Term]] = None,
         source: Optional[Comparable] = None,
     ) -> Comparable:
 
@@ -128,9 +128,9 @@ def expand_string_from_source(
 
 def convert_changes_to_register(
     factor: Comparable,
-    changes: Union[Comparable, ContextRegister, Sequence[Comparable]],
+    changes: Union[Term, ContextRegister, Sequence[Term]],
     source: Optional[Comparable],
-    terms_to_replace: Optional[Sequence[Comparable]] = None,
+    terms_to_replace: Optional[Sequence[Term]] = None,
 ) -> ContextRegister:
     """Convert changes to ``factor``, expressed as normal Python objects, to a ContextRegister."""
     if isinstance(changes, ContextRegister):
@@ -315,27 +315,7 @@ class Comparable(ABC):
         a comparison before moving on to the more costly :class:`Analogy`
         process. Or maybe it's useful for testing.
         """
-        orderings = self.term_permutations()
-        for ordering in orderings:
-            if self.compare_ordering_of_terms(
-                other=other, relation=relation, ordering=ordering
-            ):
-                return True
-        return False
-
-    def compare_ordering_of_terms(
-        self, other: Comparable, relation: Callable, ordering: TermSequence
-    ) -> bool:
-        """
-        Determine whether one ordering of self's terms matches other's terms.
-
-        Multiple term orderings exist where the terms can be rearranged without
-        changing the Fact's meaning.
-
-        For instance, "<Ann> and <Bob> both were members of the same family" has a
-        second ordering "<Bob> and <Ann> both were members of the same family".
-        """
-        for i, self_factor in enumerate(ordering):
+        for i, self_factor in enumerate(self.terms):
             if not (self_factor is other.terms[i] is None):
                 if not (self_factor and relation(self_factor, other.terms[i])):
                     return False
@@ -365,6 +345,7 @@ class Comparable(ABC):
         else:
             for term_permutation in self.term_permutations():
                 for other_permutation in other.term_permutations():
+                    term_permutation = TermSequence(term_permutation)
                     yield from term_permutation.ordered_comparison(
                         other=other_permutation, operation=comparison, context=context
                     )
@@ -601,8 +582,6 @@ class Comparable(ABC):
             themselves as values.
         """
 
-        if self.generic:
-            return {self.short_string: self}
         generics: Dict[str, Comparable] = {}
         for factor in self.terms:
             if factor is not None:
@@ -894,18 +873,6 @@ class Comparable(ABC):
             :attr:`terms`.
         """
         yield matches
-        gen = self.term_permutations()
-        _ = next(gen)  # unchanged permutation
-        already_returned: List[ContextRegister] = [matches]
-
-        for term_permutation in gen:
-            changes = ContextRegister.from_lists(self.terms, term_permutation)
-            changed_registry = matches.replace_keys(changes)
-            if not any(
-                changed_registry == returned_dict for returned_dict in already_returned
-            ):
-                already_returned.append(changed_registry)
-                yield changed_registry
 
     def term_permutations(self) -> Iterator[TermSequence]:
         """Generate permutations of context factors that preserve same meaning."""
@@ -1022,8 +989,8 @@ class ContextRegister:
     @classmethod
     def from_lists(
         cls,
-        keys: Union[TermSequence, Sequence[Comparable]],
-        values: Union[TermSequence, Sequence[Comparable]],
+        keys: Sequence[Term],
+        values: Sequence[Term],
     ) -> ContextRegister:
         """Make new ContextRegister from two lists of Comparables."""
         pairs = zip(keys, values)
@@ -1207,6 +1174,19 @@ class Term(Comparable):
 
     def __add__(self, other: Term) -> Optional[Comparable]:
         return self.add(other)
+
+    def generic_factors_by_str(self) -> Dict[str, Comparable]:
+        r"""
+        Index Terms that can be replaced without changing ``self``'s meaning.
+
+        :returns:
+            a :class:`dict` with the names of ``self``\'s
+            generic :class:`.Factor`\s as keys and the :class:`.Factor`\s
+            themselves as values.
+        """
+        if self.generic:
+            return {self.short_string: self}
+        return super().generic_factors_by_str()
 
 
 class TermSequence(Tuple[Optional[Term], ...]):
