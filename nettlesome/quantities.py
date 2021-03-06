@@ -524,16 +524,16 @@ class Comparison(Predicate):
         This method can convert different units to determine whether self and other
         refer to the same :class:`~.quantities.QuantityRange`\.
 
-            >>> volume_in_liters = Comparison(
-            >>>     "the volume of fuel in the tank was",
-            >>>     sign="=",
-            >>>     expression="10 liters")
-            >>> volume_in_milliliters = Comparison(
-            >>>     "the volume of fuel in the tank was",
-            >>>     sign="=",
-            >>>     expression="10000 milliliters")
-            >>> volume_in_liters.means(volume_in_milliliters)
-            True
+        >>> volume_in_liters = Comparison(
+        >>>     "the volume of fuel in the tank was",
+        >>>     sign="=",
+        >>>     expression="10 liters")
+        >>> volume_in_milliliters = Comparison(
+        >>>     "the volume of fuel in the tank was",
+        >>>     sign="=",
+        >>>     expression="10000 milliliters")
+        >>> volume_in_liters.means(volume_in_milliliters)
+        True
         """
         if not super().means(other):
             return False
@@ -567,9 +567,6 @@ class Comparison(Predicate):
 
         """
         if not self._same_meaning_as_true_predicate(other):
-            return False
-
-        if not isinstance(other, self.__class__):
             return False
 
         if not (self.truth is other.truth is True):
