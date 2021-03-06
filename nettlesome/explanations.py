@@ -5,10 +5,11 @@ import operator
 import textwrap
 from typing import Callable, ClassVar, Dict, List, Optional, Tuple
 
-from nettlesome.comparable import (
+from nettlesome.terms import (
     Comparable,
     ContextRegister,
     means,
+    consistent_with,
     contradicts,
 )
 
@@ -19,6 +20,7 @@ class Explanation:
         operator.ge: "IMPLIES",
         means: "MEANS",
         contradicts: "CONTRADICTS",
+        consistent_with: "IS CONSISTENT WITH",
     }
 
     def __init__(
@@ -47,6 +49,7 @@ class Explanation:
         return f"Explanation(matches={repr(self.factor_matches)}, context={repr(self.context)}), operation={repr(self.operation)})"
 
     def add_match(self, match=Tuple[Comparable, Comparable]) -> Explanation:
+        """Add a pair of compared objects that has been found to satisfy operation, given context."""
         new_matches = self.factor_matches + [match]
         return Explanation(
             factor_matches=new_matches,

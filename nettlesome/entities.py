@@ -3,8 +3,7 @@
 from __future__ import annotations
 from typing import Optional
 
-from nettlesome.comparable import Comparable, ContextRegister
-from nettlesome.terms import Term
+from nettlesome.terms import Comparable, ContextRegister, Term
 
 
 class Entity(Term):

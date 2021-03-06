@@ -2,18 +2,18 @@
 Comparables
 ==============
 
-.. autoclass:: nettlesome.comparable.Comparable
+.. autoclass:: nettlesome.terms.Comparable
     :members:
     :special-members:
 
-.. autoclass:: nettlesome.comparable.FactorSequence
+.. autoclass:: nettlesome.terms.TermSequence
     :members:
     :special-members:
 
-.. autofunction:: nettlesome.comparable.consistent_with
+.. autofunction:: nettlesome.terms.consistent_with
 
-.. autofunction:: nettlesome.comparable.means
+.. autofunction:: nettlesome.terms.means
 
-.. autofunction:: nettlesome.comparable.contradicts
+.. autofunction:: nettlesome.terms.contradicts
 
-.. autodecorator:: nettlesome.comparable.new_context_helper
+.. autodecorator:: nettlesome.terms.new_context_helper

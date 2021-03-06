@@ -15,13 +15,8 @@ from typing import (
 )
 from nettlesome.factors import Factor
 
-from nettlesome.comparable import (
-    Comparable,
-    ContextRegister,
-    means,
-)
+from nettlesome.terms import Comparable, ContextRegister, means, Term
 from nettlesome.explanations import Explanation
-from nettlesome.terms import Term
 
 
 class TermGroup(Comparable):
@@ -154,7 +149,7 @@ class TermGroup(Comparable):
             yield from self_factor.explanations_contradiction(other, context)
 
     def explanations_contradiction(
-        self, other: Union[Term, TermGroup], context: Optional[ContextRegister] = None
+        self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Iterator[Explanation]:
         """Find contexts that would cause ``self`` to contradict ``other``."""
 

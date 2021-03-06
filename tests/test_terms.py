@@ -1,4 +1,4 @@
-from nettlesome.comparable import ContextRegister
+from nettlesome.terms import ContextRegister
 import operator
 
 import pytest

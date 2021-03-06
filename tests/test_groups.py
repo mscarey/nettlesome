@@ -2,7 +2,7 @@ from nettlesome.factors import Factor
 import operator
 import pytest
 
-from nettlesome.comparable import (
+from nettlesome.terms import (
     ContextRegister,
     consistent_with,
     contradicts,

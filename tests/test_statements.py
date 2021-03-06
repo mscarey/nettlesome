@@ -2,7 +2,7 @@ import operator
 
 import pytest
 
-from nettlesome.comparable import (
+from nettlesome.terms import (
     ContextRegister,
     TermSequence,
     means,

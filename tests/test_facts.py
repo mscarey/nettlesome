@@ -2,7 +2,7 @@ import operator
 
 import pytest
 
-from nettlesome.comparable import ContextRegister, TermSequence, means
+from nettlesome.terms import ContextRegister, TermSequence, means
 from nettlesome.entities import Entity
 
 from nettlesome.predicates import Predicate

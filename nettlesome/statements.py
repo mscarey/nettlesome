@@ -6,8 +6,9 @@ import operator
 from typing import Dict, Iterator, Mapping
 from typing import Optional, Sequence, Union
 
-from nettlesome.comparable import (
+from nettlesome.terms import (
     Comparable,
+    Term,
     TermSequence,
     ContextRegister,
     new_context_helper,
@@ -15,7 +16,6 @@ from nettlesome.comparable import (
 from nettlesome.factors import Factor
 from nettlesome.formatting import indented, wrapped
 from nettlesome.predicates import Predicate
-from nettlesome.terms import Term
 from slugify import slugify
 
 

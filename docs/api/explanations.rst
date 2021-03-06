@@ -9,6 +9,6 @@ Explanations
 Context Registers
 ===================
 
-.. autoclass:: nettlesome.comparable.ContextRegister
+.. autoclass:: nettlesome.terms.ContextRegister
     :members:
     :special-members:

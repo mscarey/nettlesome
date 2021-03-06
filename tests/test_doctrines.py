@@ -1,6 +1,6 @@
 import pytest
 
-from nettlesome.comparable import ContextRegister
+from nettlesome.terms import ContextRegister
 from nettlesome.doctrines import Doctrine
 from nettlesome.entities import Entity
 from nettlesome.statements import Statement
@@ -67,9 +67,12 @@ class TestDoctrine:
 
     def test_new_context(self):
         context = ContextRegister()
-        context.insert_pair(Entity("Twitter user"), Entity("Python Software Foundation", generic=False))
+        context.insert_pair(
+            Entity("Twitter user"), Entity("Python Software Foundation", generic=False)
+        )
         new = self.generic_authority.new_context(context)
         assert "according to the entity Python" in str(new)
+
 
 class TestInterchangeable:
     identical = Statement(
@@ -81,7 +84,6 @@ class TestInterchangeable:
         statement=identical, authority=Entity("Herodotus", generic=False)
     )
     no_authority = Doctrine(statement=identical, authority=None)
-
 
     def test_means_self(self):
         assert self.generic_authority.means(self.generic_authority)
@@ -129,46 +131,96 @@ class TestInterchangeable:
         assert not self.no_authority.implies(self.generic_authority)
 
     def test_same_because_interchangeable(self, make_doctrine):
-        assert make_doctrine["plotted_per_alice"].means(make_doctrine["plotted_per_craig"])
-        assert make_doctrine["plotted_per_craig"].means(make_doctrine["plotted_per_alice"])
+        assert make_doctrine["plotted_per_alice"].means(
+            make_doctrine["plotted_per_craig"]
+        )
+        assert make_doctrine["plotted_per_craig"].means(
+            make_doctrine["plotted_per_alice"]
+        )
 
     def test_different_because_not_interchangeable(self, make_doctrine):
-        assert not make_doctrine["plotted_per_alice"].means(make_doctrine["plotted_per_bob"])
-        assert not make_doctrine["plotted_per_bob"].means(make_doctrine["plotted_per_alice"])
+        assert not make_doctrine["plotted_per_alice"].means(
+            make_doctrine["plotted_per_bob"]
+        )
+        assert not make_doctrine["plotted_per_bob"].means(
+            make_doctrine["plotted_per_alice"]
+        )
+
 
 class TestComplex:
-
     @pytest.mark.parametrize(
         "left, right, expected",
-        [("generic", "generic", True),
-        ("no", "no", True),
-        ("specific", "specific", True),
-        ("generic", "specific", False),
-        ("specific", "generic", False),
-        ("specific", "no", False),
-        ]
+        [
+            ("generic", "generic", True),
+            ("no", "no", True),
+            ("specific", "specific", True),
+            ("generic", "specific", False),
+            ("specific", "generic", False),
+            ("specific", "no", False),
+        ],
     )
     def test_doctrines_same_meaning(self, make_doctrine, left, right, expected):
-        assert make_doctrine[f"{left}_authority"].means(make_doctrine[f"{right}_authority"]) is expected
-        assert make_doctrine[f"{left}_authority_reversed"].means(make_doctrine[f"{right}_authority"]) is expected
-        assert make_doctrine[f"{left}_authority"].means(make_doctrine[f"{right}_authority_reversed"]) is expected
-        assert make_doctrine[f"{left}_authority_reversed"].means(make_doctrine[f"{right}_authority_reversed"]) is expected
+        assert (
+            make_doctrine[f"{left}_authority"].means(
+                make_doctrine[f"{right}_authority"]
+            )
+            is expected
+        )
+        assert (
+            make_doctrine[f"{left}_authority_reversed"].means(
+                make_doctrine[f"{right}_authority"]
+            )
+            is expected
+        )
+        assert (
+            make_doctrine[f"{left}_authority"].means(
+                make_doctrine[f"{right}_authority_reversed"]
+            )
+            is expected
+        )
+        assert (
+            make_doctrine[f"{left}_authority_reversed"].means(
+                make_doctrine[f"{right}_authority_reversed"]
+            )
+            is expected
+        )
 
     @pytest.mark.parametrize(
         "left, right, expected",
-        [("no", "no", True),
-        ("no", "generic", False),
-        ("no", "specific", False),
-        ("generic", "generic", True),
-        ("generic", "no", True),
-        ("generic", "specific", False),
-        ("specific", "specific", True),
-        ("specific", "generic", True),
-        ("specific", "no", True),
-        ]
+        [
+            ("no", "no", True),
+            ("no", "generic", False),
+            ("no", "specific", False),
+            ("generic", "generic", True),
+            ("generic", "no", True),
+            ("generic", "specific", False),
+            ("specific", "specific", True),
+            ("specific", "generic", True),
+            ("specific", "no", True),
+        ],
     )
     def test_doctrines_imply(self, make_doctrine, left, right, expected):
-        assert make_doctrine[f"{left}_authority"].implies(make_doctrine[f"{right}_authority"]) is expected
-        assert make_doctrine[f"{left}_authority_reversed"].implies(make_doctrine[f"{right}_authority"]) is expected
-        assert make_doctrine[f"{left}_authority"].implies(make_doctrine[f"{right}_authority_reversed"]) is expected
-        assert make_doctrine[f"{left}_authority_reversed"].implies(make_doctrine[f"{right}_authority_reversed"]) is expected
+        assert (
+            make_doctrine[f"{left}_authority"].implies(
+                make_doctrine[f"{right}_authority"]
+            )
+            is expected
+        )
+        assert (
+            make_doctrine[f"{left}_authority_reversed"].implies(
+                make_doctrine[f"{right}_authority"]
+            )
+            is expected
+        )
+        assert (
+            make_doctrine[f"{left}_authority"].implies(
+                make_doctrine[f"{right}_authority_reversed"]
+            )
+            is expected
+        )
+        assert (
+            make_doctrine[f"{left}_authority_reversed"].implies(
+                make_doctrine[f"{right}_authority_reversed"]
+            )
+            is expected
+        )

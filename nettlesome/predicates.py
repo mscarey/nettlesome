@@ -15,7 +15,7 @@ from string import Template
 from typing import Any, Dict, Iterable, Mapping
 from typing import List, Optional, Sequence, Set, Tuple
 
-from nettlesome.comparable import Comparable, TermSequence
+from nettlesome.terms import Comparable, TermSequence
 from nettlesome.terms import Term
 
 
