@@ -302,6 +302,9 @@ class Predicate:
                 f"have same meaning as type {other.__class__.__name__}"
             )
 
+        if not isinstance(other, self.__class__):
+            return False
+
         if not self.same_content_meaning(other):
             return False
 

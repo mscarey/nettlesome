@@ -228,6 +228,15 @@ class TestImplication:
         predicate = Predicate("the distance between $place1 and $place2 was")
         assert not distance.implies(predicate)
 
+    def test_comparison_gte_predicate_false(self):
+        distance = Comparison(
+            "the distance between $place1 and $place2 was",
+            sign=">",
+            expression="20 miles",
+        )
+        predicate = Predicate("the distance between $place1 and $place2 was")
+        assert not distance >= predicate
+
     def test_predicate_not_same_with_interchangeable_terms(self):
         interchangeable = Comparison(
             "the distance between $place1 and $place2 was",
