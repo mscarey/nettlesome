@@ -1048,9 +1048,9 @@ class ContextRegister:
         """Get value corresponding to the key ``query``."""
         return self.get(query.short_string)
 
-    def get_reverse_factor(self, query: Comparable) -> Comparable:
+    def get_reverse_factor(self, query: Comparable) -> Optional[Comparable]:
         """Get key corresponding to the value ``query``."""
-        return self.reverse_matches[query.short_string]
+        return self.reverse_matches.get(query.short_string)
 
     def items(self):
         """Get items from ``matches`` mapping."""
@@ -1064,8 +1064,8 @@ class ContextRegister:
         """Get values from ``matches`` mapping."""
         return self.matches.values()
 
-    def insert_pair(self, key: Comparable, value: Comparable) -> None:
-        """Add a pair of corresponding Comparables."""
+    def check_insert_pair(self, key: Comparable, value: Comparable) -> None:
+        """Raise exception if a pair of corresponding Comparables can't be added to register."""
         for comp in (key, value):
             if not isinstance(comp, Comparable):
                 raise TypeError(
@@ -1074,6 +1074,22 @@ class ContextRegister:
                 )
             if isinstance(comp, Iterable):
                 raise TypeError("Iterable objects may not be added to ContextRegister")
+
+        if self.get_factor(key) and not self.check_match(key, value):
+            raise KeyError(
+                f"{key.key} already in mapping with value "
+                + f"{self.get_factor(key).key}, not {value.key}"
+            )
+        if self.get_reverse_factor(value) and not self.check_match(key, value):
+            raise KeyError(
+                f"{value.key} already in mapping with key "
+                + f"{self.get_reverse_factor(value).key}, not {key.key}"
+            )
+
+    def insert_pair(self, key: Comparable, value: Comparable) -> None:
+        """Add a pair of corresponding Comparables."""
+        self.check_insert_pair(key=key, value=value)
+
         self._matches[key.short_string] = value
         self._reverse_matches[value.short_string] = key
 
@@ -1115,23 +1131,12 @@ class ContextRegister:
             Otherwise returns an updated :class:`ContextRegister` of matches.
         """
         self_mapping = deepcopy(self)
-        for in_key, in_value in incoming_mapping.matches.items():
+        for in_key, in_value in incoming_mapping.factor_pairs():
+            try:
+                self_mapping.insert_pair(key=in_key, value=in_value)
+            except KeyError:
+                return None
 
-            if in_value:
-                if self_mapping.get(in_key) and not self_mapping[
-                    in_key
-                ].short_string == (in_value.short_string):
-                    logger.debug(
-                        f"{in_key} already in mapping with value "
-                        + f"{self_mapping.matches[in_key]}, not {in_value}"
-                    )
-                    return None
-                key_as_factor = incoming_mapping.get_reverse_factor(in_value)
-                self_mapping.insert_pair(key_as_factor, in_value)
-                values_as_keys = [v.short_string for v in self_mapping.values()]
-                if values_as_keys.count(in_value.short_string) > 1:
-                    logger.debug("%s assigned to two different keys", in_value)
-                    return None
         return self_mapping
 
 
