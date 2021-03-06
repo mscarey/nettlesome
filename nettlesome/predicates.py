@@ -103,8 +103,8 @@ class StatementTemplate(Template):
         return self._placeholders
 
     def get_term_sequence_from_mapping(
-        self, term_mapping: Mapping[str, Comparable]
-    ) -> Sequence[Comparable]:
+        self, term_mapping: Mapping[str, Term]
+    ) -> TermSequence:
         """Get an ordered list of terms from a mapping of placeholder names to terms."""
         placeholders = self.placeholders
         result = [term_mapping[placeholder] for placeholder in placeholders]

@@ -229,9 +229,9 @@ class Comparable(ABC):
             for whichever subclass of :class:`Factor` calls this method. These
             can be used for comparing objects using :meth:`consistent_with`
         """
-        context: List[Optional[Comparable]] = []
+        context: List[Optional[Term]] = []
         for factor_name in self.context_factor_names:
-            next_factor: Optional[Comparable] = self.__dict__.get(factor_name)
+            next_factor: Optional[Term] = self.__dict__.get(factor_name)
             context.append(next_factor)
         return TermSequence(context)
 
@@ -1209,10 +1209,10 @@ class Term(Comparable):
         return self.add(other)
 
 
-class TermSequence(Tuple[Term, ...]):
+class TermSequence(Tuple[Optional[Term], ...]):
     """A sequence of Terms that can be compared in order."""
 
-    def __new__(cls, value: Sequence = ()):
+    def __new__(cls, value: Union[Term, Sequence[Optional[Term]]] = ()):
         """Convert Sequence of Terms to a subclass of Tuple."""
         if isinstance(value, Term):
             value = (value,)
