@@ -18,7 +18,7 @@ the `National Information Exchange Model <https://github.com/NIEM/NIEM-Releases/
 
 Although Nettlesome was designed to be used for legal annotations in
 the `AuthoritySpoke <https://github.com/mscarey/AuthoritySpoke>`_ library,
-Nettlesome itself doesn't depend on any legal concepts or specialized knowledge.
+Nettlesome itself doesn't depend on any legal concepts or legal knowledge.
 
 
 .. toctree::
@@ -46,6 +46,12 @@ Nettlesome itself doesn't depend on any legal concepts or specialized knowledge.
     api/doctrines.rst
     api/explanations.rst
     api/groups.rst
+
+.. toctree::
+    :maxdepth: 1
+    :caption: Development Updates
+
+    history/releases.rst
 
 
 Indices and tables
