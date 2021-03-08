@@ -72,3 +72,19 @@ class Entity(Term):
             if self.generic or self.name != other.name:
                 return False
         return super().implies(other=other, context=context)
+
+    def means(
+        self, other: Optional[Comparable], context: Optional[ContextRegister] = None
+    ) -> bool:
+        """
+        Test if ``self`` has the same meaning as ``other``.
+
+        A "generic" Entity has the same meaning as another Entity even if their
+        names are not the same.
+        """
+        if isinstance(other, Entity):
+            if self.generic is True:
+                return other.generic is True
+            return other.generic is False and self.name == other.name
+
+        return super().means(other=other, context=context)

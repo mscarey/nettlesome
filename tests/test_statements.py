@@ -421,6 +421,14 @@ class TestSameMeaning:
             Statement(Predicate("good morning"))
         )
 
+    def test_changing_order_of_concrete_terms_changes_meaning(self):
+        ann = Entity("Ann", generic=False)
+        bob = Entity("Bob", generic=False)
+        parent_sentence = Predicate("$mother was ${child}'s parent")
+        ann_parent = Statement(parent_sentence, terms=(ann, bob))
+        bob_parent = Statement(parent_sentence, terms=(bob, ann))
+        assert not ann_parent.means(bob_parent)
+
 
 class TestImplication:
     def test_statement_implies_none(self):

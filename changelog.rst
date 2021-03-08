@@ -1,5 +1,9 @@
 Changelog
 =========
+0.2.2 (2021-03-08)
+------------------
+- fix: non-generic Entities with different names don't have same meaning
+
 0.2.1 (2021-03-07)
 ------------------
 - fix bug: multiple UnitRegistries conflicted
