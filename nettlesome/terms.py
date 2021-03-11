@@ -421,7 +421,7 @@ class Comparable(ABC):
 
     def explain_contradiction(
         self, other: Comparable, context: Optional[ContextRegister] = None
-    ) -> Optional[ContextRegister]:
+    ) -> Optional[Explanation]:
         """Get one explanation of why self and other contradict."""
         explanations = self.explanations_contradiction(other, context=context)
         try:
@@ -471,19 +471,9 @@ class Comparable(ABC):
             if not self.contradicts(other, context=possible):
                 yield possible
 
-    def explanations_contradiction(
+    def _contexts_for_contradiction(
         self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Iterator[ContextRegister]:
-        """
-        Test whether ``self`` :meth:`implies` the absence of ``other``.
-
-        This should only be called after confirming that ``other``
-        is not ``None``.
-
-        :returns:
-            ``True`` if self and other can't both be true at
-            the same time. Otherwise returns ``False``.
-        """
         context = context or ContextRegister()
         if not isinstance(other, Comparable):
             raise TypeError(
@@ -505,6 +495,25 @@ class Comparable(ABC):
             yield from other.explanations_contradiction(
                 self, context=context.reversed()
             )
+
+    def explanations_contradiction(
+        self, other: Comparable, context: Optional[ContextRegister] = None
+    ) -> Iterator[Explanation]:
+        """
+        Test whether ``self`` :meth:`implies` the absence of ``other``.
+
+        This should only be called after confirming that ``other``
+        is not ``None``.
+
+        :returns:
+            ``True`` if self and other can't both be true at
+            the same time. Otherwise returns ``False``.
+        """
+        for context in self._contexts_for_contradiction(other=other, context=context):
+            explanation = Explanation(
+                factor_matches=[(self, other)], context=context, operation=contradicts
+            )
+            yield explanation
 
     def _contexts_for_implication(
         self, other: Comparable, context: Optional[ContextRegister] = None
