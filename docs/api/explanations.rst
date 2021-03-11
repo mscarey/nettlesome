@@ -2,7 +2,7 @@
 Explanations
 ==============
 
-.. autoclass:: nettlesome.explanations.Explanation
+.. autoclass:: nettlesome.terms.Explanation
     :members:
     :special-members:
 

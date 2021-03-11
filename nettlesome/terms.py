@@ -443,7 +443,7 @@ class Comparable(ABC):
 
     def explain_implied_by(
         self, other: Comparable, context: Optional[ContextRegister] = None
-    ) -> Optional[ContextRegister]:
+    ) -> Optional[Explanation]:
         """Get one explanation of why self implies other."""
         explanations = self.explanations_implied_by(other, context=context)
         try:
@@ -503,7 +503,7 @@ class Comparable(ABC):
                     test = other._implies_if_present(self, context.reversed())
                     yield from (register.reversed() for register in test)
         elif isinstance(other, Iterable):
-            yield from other.explanations_contradiction(
+            yield from other._contexts_for_contradiction(
                 self, context=context.reversed()
             )
 

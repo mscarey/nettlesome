@@ -336,7 +336,7 @@ class TermGroup(Comparable):
                             )
 
     def explanations_implication(
-        self, other: Union[Term, TermGroup], context: Optional[ContextRegister] = None
+        self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Iterator[Explanation]:
         """Find contexts that would cause ``self`` to imply ``other``."""
         explanation = Explanation(
@@ -351,7 +351,7 @@ class TermGroup(Comparable):
             explanation=explanation,
         )
 
-    def explanations_has_all_factors_of(
+    def _contexts_has_all_factors_of(
         self, other: Union[Term, TermGroup], context: Optional[ContextRegister] = None
     ) -> Iterator[ContextRegister]:
         """Find contexts that would cause all of ``other``'s Factors to be in ``self``."""
@@ -373,15 +373,16 @@ class TermGroup(Comparable):
         """Check if ``self`` has all Factors of ``other``."""
         return any(
             register is not None
-            for register in self.explanations_has_all_factors_of(other, context=context)
+            for register in self._contexts_has_all_factors_of(other, context=context)
         )
 
-    def explanations_shares_all_factors_with(
+    def _contexts_shares_all_factors_with(
         self, other: TermGroup, context: Optional[ContextRegister] = None
     ) -> Iterator[ContextRegister]:
         """Find context that would cause all of ``self``'s Factors to be in ``other``."""
         context = context or ContextRegister()
         context_for_other = context.reversed()
+
         yield from (
             context.reversed()
             for context in other.comparison(
@@ -397,20 +398,39 @@ class TermGroup(Comparable):
         """Find whether all of ``self``'s Factors are in ``other``."""
         return any(
             register is not None
-            for register in self.explanations_shares_all_factors_with(
+            for register in self._contexts_shares_all_factors_with(
                 other, context=context
             )
         )
 
+    def from_comparable(
+        self, value: Union[Comparable, Sequence[Term]]
+    ) -> Optional[TermGroup]:
+        if isinstance(value, TermGroup):
+            return value
+        if isinstance(value, Term):
+            return TermGroup([value])
+        elif isinstance(value, Sequence):
+            return TermGroup(value)
+        return None
+
     def explanations_same_meaning(
         self, other: Comparable, context: Optional[ContextRegister] = None
-    ) -> Iterator[ContextRegister]:
+    ) -> Iterator[Explanation]:
         """Yield explanations for how ``self`` can have the same meaning as ``other``."""
-        if isinstance(other, self.__class__):
-            for explanation in self.explanations_shares_all_factors_with(
-                other, context
-            ):
-                yield from self.explanations_has_all_factors_of(other, explanation)
+        to_match = self.from_comparable(other)
+        if to_match:
+            for context in self._contexts_shares_all_factors_with(to_match, context):
+                explanation = Explanation(
+                    factor_matches=[],
+                    context=context or ContextRegister(),
+                    operation=means,
+                )
+                yield from self._verbose_comparison(
+                    operation=means,
+                    still_need_matches=to_match,
+                    explanation=explanation,
+                )
 
     def _context_registers(
         self,

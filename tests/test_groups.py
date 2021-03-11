@@ -191,6 +191,36 @@ class TestSameFactors:
         register = next(gen)
         assert register.get("<Alice>") == craig
 
+    def test_term_outside_of_group(self):
+        speed = "${person}'s speed was"
+        comparison = Comparison(speed, sign=">", expression="36 kilometers per hour")
+        other = Comparison(speed, sign=">", expression="10 meters per second")
+        left = FactorGroup(Statement(comparison, terms=Entity("Ann")))
+        right = Statement(other, terms=Entity("Bob"))
+        assert left.means(right)
+
+    def test_list_instead_of_group(self):
+        comparison = Comparison(
+            "${person}'s speed was", sign=">", expression="36 kilometers per hour"
+        )
+        other_comparison = Comparison(
+            "${person}'s speed was", sign=">", expression="10 meters per second"
+        )
+        left = FactorGroup(Statement(comparison, terms=Entity("Ann")))
+        right = [Statement(other_comparison, terms=Entity("Bob"))]
+        assert left.means(right)
+        assert "Because <Ann> is like <Bob>" in str(left.explain_same_meaning(right))
+
+    def test_no_comparison_with_comparison(self):
+        comparison = Comparison(
+            "${person}'s speed was", sign=">", expression="36 kilometers per hour"
+        )
+        other_comparison = Comparison(
+            "${person}'s speed was", sign=">", expression="10 meters per second"
+        )
+        left = FactorGroup(Statement(comparison, terms=Entity("Ann")))
+        assert not left.means(other_comparison)
+
 
 class TestImplication:
     def test_factorgroup_implies_none(self, make_statement):
