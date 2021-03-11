@@ -1,6 +1,5 @@
 from nettlesome.terms import ContextRegister, means
 
-from nettlesome.explanations import Explanation
 from nettlesome.predicates import Predicate
 from nettlesome.statements import Statement
 from nettlesome.entities import Entity

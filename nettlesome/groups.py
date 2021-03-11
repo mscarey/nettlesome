@@ -16,7 +16,7 @@ from typing import (
 from nettlesome.factors import Factor
 
 from nettlesome.terms import Comparable, ContextRegister, means, Term
-from nettlesome.explanations import Explanation
+from nettlesome.terms import Explanation
 
 
 class TermGroup(Comparable):
