@@ -455,8 +455,7 @@ class Comparable(ABC):
     def _contexts_consistent_with(
         self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Iterator[ContextRegister]:
-        if context is None:
-            context = ContextRegister()
+        context = context or ContextRegister()
         for possible in self.possible_contexts(other, context):
             if not self.contradicts(other, context=possible):
                 yield possible
@@ -1291,6 +1290,17 @@ class Term(Comparable):
 
     def __add__(self, other: Term) -> Optional[Comparable]:
         return self.add(other)
+
+    def explanations_consistent_with(
+        self, other: Comparable, context: Optional[ContextRegister] = None
+    ) -> Iterator[Explanation]:
+        context = context or ContextRegister()
+        if not isinstance(other, Term):
+            yield from other.explanations_consistent_with(self, context.reversed())
+        else:
+            yield from super().explanations_consistent_with(
+                other=other, context=context
+            )
 
 
 class TermSequence(Tuple[Optional[Term], ...]):
