@@ -381,7 +381,7 @@ class TestSameMeaning:
 
         assert relevant_fact.means(new_fact)
         explanation = relevant_fact.explain_same_meaning(new_fact)
-        assert explanation["<Alice>"].name == "Deb"
+        assert explanation.context["<Alice>"].name == "Deb"
 
     def test_interchangeable_concrete_terms(self):
         """
@@ -405,7 +405,7 @@ class TestSameMeaning:
         explanation = ann_and_bob_were_family.explain_same_meaning(
             bob_and_ann_were_family
         )
-        assert len(explanation) == 0
+        assert len(explanation.context) == 0
 
     def test_means_despite_plural(self):
         directory = Entity("the telephone directory", plural=False)
@@ -665,7 +665,7 @@ class TestImplication:
 
     def test_explanation_implied_by(self):
         explanation = self.relevant_whether.explain_implied_by(self.relevant_fact)
-        assert explanation["<Alice>"].name == "Alice"
+        assert explanation.context["<Alice>"].name == "Alice"
 
 
 class TestContradiction:
@@ -1009,12 +1009,12 @@ class TestConsistent:
     def test_explain_consistent(self):
         gen = self.small.explanations_consistent_with(self.smallish)
         explanation = next(gen)
-        assert explanation["<Bob>"].compare_keys(Entity("Karen"))
+        assert explanation.context["<Bob>"].compare_keys(Entity("Karen"))
 
     def test_explain_consistent_if_implied(self):
         gen = self.smallish.explanations_consistent_with(self.small)
         explanation = next(gen)
-        assert explanation["<Karen>"].compare_keys(Entity("Bob"))
+        assert explanation.context["<Karen>"].compare_keys(Entity("Bob"))
 
     def test_no_explanation_consistent(self):
         assert self.small.explain_contradiction(self.smallish) is None

@@ -28,9 +28,7 @@ class TestContext:
     def test_explain_consistency(self):
         register = ContextRegister()
         register.insert_pair(Entity("Al"), Entity("Alice"))
-        answers = self.fact_al.explain_consistent_with(self.fact_alice, register)
-        explanation = Explanation(
-            factor_matches=[(self.fact_al, self.fact_alice)], context=answers
-        )
+        explanation = self.fact_al.explain_consistent_with(self.fact_alice, register)
+
         assert "<the bull> is like <the cow>" in explanation.context.reason
         assert "terms=(Entity(name='Al'" in repr(explanation)

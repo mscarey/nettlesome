@@ -399,7 +399,7 @@ class Comparable(ABC):
 
     def explain_same_meaning(
         self, other: Comparable, context: Optional[ContextRegister] = None
-    ) -> Optional[ContextRegister]:
+    ) -> Optional[Explanation]:
         """Get one explanation of why self and other have the same meaning."""
         explanations = self.explanations_same_meaning(other, context=context)
         try:
@@ -410,7 +410,7 @@ class Comparable(ABC):
 
     def explain_consistent_with(
         self, other: Comparable, context: Optional[ContextRegister] = None
-    ) -> Optional[ContextRegister]:
+    ) -> Optional[Explanation]:
         """Get one explanation of why self and other need not contradict."""
         explanations = self.explanations_consistent_with(other, context=context)
         try:
@@ -452,9 +452,18 @@ class Comparable(ABC):
             return None
         return explanation
 
-    def explanations_consistent_with(
+    def _contexts_consistent_with(
         self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Iterator[ContextRegister]:
+        if context is None:
+            context = ContextRegister()
+        for possible in self.possible_contexts(other, context):
+            if not self.contradicts(other, context=possible):
+                yield possible
+
+    def explanations_consistent_with(
+        self, other: Comparable, context: Optional[ContextRegister] = None
+    ) -> Iterator[Explanation]:
         """
         Test whether ``self`` does not contradict ``other``.
 
@@ -465,11 +474,13 @@ class Comparable(ABC):
             ``True`` if self and other can't both be true at
             the same time. Otherwise returns ``False``.
         """
-        if context is None:
-            context = ContextRegister()
-        for possible in self.possible_contexts(other, context):
-            if not self.contradicts(other, context=possible):
-                yield possible
+        for context in self._contexts_consistent_with(other=other, context=context):
+            explanation = Explanation(
+                factor_matches=[(self, other)],
+                context=context,
+                operation=consistent_with,
+            )
+            yield explanation
 
     def _contexts_for_contradiction(
         self, other: Comparable, context: Optional[ContextRegister] = None
@@ -554,10 +565,9 @@ class Comparable(ABC):
             )
             yield explanation
 
-    def explanations_implied_by(
+    def _contexts_implied_by(
         self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Iterator[ContextRegister]:
-        """Get explanations of why self implies other."""
         context = context or ContextRegister()
         yield from (
             register.reversed()
@@ -566,10 +576,18 @@ class Comparable(ABC):
             )
         )
 
-    def explanations_same_meaning(
+    def explanations_implied_by(
+        self, other: Comparable, context: Optional[ContextRegister] = None
+    ) -> Iterator[Explanation]:
+        for context in self._contexts_implied_by(other=other, context=context):
+            explanation = Explanation(
+                factor_matches=[(other, self)], context=context, operation=operator.ge
+            )
+            yield explanation
+
+    def _contexts_same_meaning(
         self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Iterator[ContextRegister]:
-        """Generate ways to match contexts of self and other so they mean the same."""
         if (
             self.__class__ == other.__class__
             and self.generic == other.generic
@@ -579,6 +597,16 @@ class Comparable(ABC):
                 yield self._generic_register(other)
             context = context or ContextRegister()
             yield from self._means_if_concrete(other, context)
+
+    def explanations_same_meaning(
+        self, other: Comparable, context: Optional[ContextRegister] = None
+    ) -> Iterator[Explanation]:
+        """Generate ways to match contexts of self and other so they mean the same."""
+        for context in self._contexts_same_meaning(other=other, context=context):
+            explanation = Explanation(
+                factor_matches=[(self, other)], context=context, operation=means
+            )
+            yield explanation
 
     def _generic_register(self, other: Comparable) -> ContextRegister:
         register = ContextRegister()
