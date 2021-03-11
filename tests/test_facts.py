@@ -241,7 +241,10 @@ class TestImplication:
         answer = make_statement["crime"].explain_implication(
             make_statement["crime_generic"]
         )
-        assert answer[str(make_statement["crime"])] == make_statement["crime_generic"]
+        assert (
+            answer.context[str(make_statement["crime"])]
+            == make_statement["crime_generic"]
+        )
 
     def test_specific_implies_generic_form_of_another_fact(self, make_statement):
         assert make_statement["murder"] > make_statement["crime_generic"]
@@ -330,8 +333,8 @@ class TestImplication:
         new = complex_whether.new_context(make_context_register)
         explanations = list(complex_true.explanations_implication(new))
         explanation = explanations.pop()
-        assert "<Craig>" not in explanation.keys()
-        assert explanation["<Alice>"].name == "Craig"
+        assert "<Craig>" not in explanation.context.keys()
+        assert explanation.context["<Alice>"].name == "Craig"
 
     def test_context_registers_for_complex_comparison(self, make_complex_fact):
         gen = make_complex_fact["relevant_murder_nested_swap"]._context_registers(

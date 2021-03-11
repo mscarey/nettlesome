@@ -450,7 +450,7 @@ class TestImplication:
         )
 
         answer = concrete.explain_implication(generic)
-        assert (str(concrete), generic) in answer.items()
+        assert (str(concrete), generic) in answer.context.items()
 
     def test_specific_implies_generic_form_of_another_fact(self):
         concrete = Statement(Predicate("$person was a person"), terms=Entity("Alice"))
@@ -636,12 +636,9 @@ class TestImplication:
 
         complex_whether = self.relevant_whether.new_context(context_names)
         explanation = self.relevant_fact.explain_implication(complex_whether)
-        assert explanation[Entity("Alice").key].compare_keys(Entity("Craig"))
-        assert (
-            str(explanation)
-            == "ContextRegister(<Alice> is like <Craig>, and <Bob> is like <Dan>)"
-        )
-        assert explanation.get(Entity("Craig").key) is None
+        assert explanation.context[Entity("Alice").key].compare_keys(Entity("Craig"))
+        assert "<Alice> is like <Craig>, and <Bob> is like <Dan>" in str(explanation)
+        assert explanation.context.get(Entity("Craig").key) is None
 
     def test_context_registers_for_complex_comparison(self):
         context_names = ContextRegister()

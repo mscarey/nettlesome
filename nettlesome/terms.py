@@ -432,7 +432,7 @@ class Comparable(ABC):
 
     def explain_implication(
         self, other: Comparable, context: Optional[ContextRegister] = None
-    ) -> Optional[ContextRegister]:
+    ) -> Optional[Explanation]:
         """Get one explanation of why self implies other."""
         explanations = self.explanations_implication(other, context=context)
         try:
@@ -506,15 +506,9 @@ class Comparable(ABC):
                 self, context=context.reversed()
             )
 
-    def explanations_implication(
+    def _contexts_for_implication(
         self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Iterator[ContextRegister]:
-        r"""
-        Generate :class:`.ContextRegister`\s that cause `self` to imply `other`.
-
-        If self is `absent`, then generate a ContextRegister from other's point
-        of view and then swap the keys and values.
-        """
         if context is None:
             context = ContextRegister()
         if not isinstance(other, Comparable):
@@ -536,6 +530,21 @@ class Comparable(ABC):
                     test = other._contradicts_if_present(self, context.reversed())
                 yield from (register.reversed() for register in test)
 
+    def explanations_implication(
+        self, other: Comparable, context: Optional[ContextRegister] = None
+    ) -> Iterator[Explanation]:
+        r"""
+        Generate :class:`.ContextRegister`\s that cause `self` to imply `other`.
+
+        If self is `absent`, then generate a ContextRegister from other's point
+        of view and then swap the keys and values.
+        """
+        for context in self._contexts_for_implication(other=other, context=context):
+            explanation = Explanation(
+                factor_matches=[(self, other)], context=context, operation=operator.ge
+            )
+            yield explanation
+
     def explanations_implied_by(
         self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Iterator[ContextRegister]:
@@ -543,7 +552,7 @@ class Comparable(ABC):
         context = context or ContextRegister()
         yield from (
             register.reversed()
-            for register in other.explanations_implication(
+            for register in other._contexts_for_implication(
                 self, context=context.reversed()
             )
         )
@@ -1139,6 +1148,50 @@ class ContextRegister:
                 return None
 
         return self_mapping
+
+
+class Explanation:
+
+    operation_names: ClassVar[Dict[Callable, str]] = {
+        operator.ge: "IMPLIES",
+        means: "MEANS",
+        contradicts: "CONTRADICTS",
+        consistent_with: "IS CONSISTENT WITH",
+    }
+
+    def __init__(
+        self,
+        factor_matches: List[Tuple[Comparable, Comparable]],
+        context: Optional[ContextRegister] = None,
+        operation: Callable = operator.ge,
+    ):
+        self.factor_matches = factor_matches
+        self.context = context or ContextRegister()
+        self.operation = operation
+
+    def __str__(self):
+        indent = "  "
+        relation = self.operation_names[self.operation]
+        context_text = f" Because {self.context.reason},\n" if self.context else "\n"
+        text = f"EXPLANATION:{context_text}"
+        for match in self.factor_matches:
+            left = textwrap.indent(str(match[0]), prefix=indent)
+            right = textwrap.indent(str(match[1]), prefix=indent)
+            match_text = f"{left}\n" f"{relation}\n" f"{right}\n"
+            text += match_text
+        return text.rstrip("\n")
+
+    def __repr__(self) -> str:
+        return f"Explanation(matches={repr(self.factor_matches)}, context={repr(self.context)}), operation={repr(self.operation)})"
+
+    def add_match(self, match=Tuple[Comparable, Comparable]) -> Explanation:
+        """Add a pair of compared objects that has been found to satisfy operation, given context."""
+        new_matches = self.factor_matches + [match]
+        return Explanation(
+            factor_matches=new_matches,
+            context=self.context,
+            operation=self.operation,
+        )
 
 
 class Term(Comparable):
