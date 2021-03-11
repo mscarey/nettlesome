@@ -19,8 +19,13 @@ class TestQuantityInterval:
                 expression=Q_("160 centimeters"),
             )
 
-    def test_comparison_with_string_for_int(self):
-        scones = Comparison(
+    def test_comparison_with_int(self):
+        value = NumberRange(sign="<", quantity=5)
+        scones = Predicate("the number of scones $diner ate was", value=value)
+        assert scones.interval == sympy.Interval(0, 5, right_open=True)
+
+    def test_make_predicate_with_string_for_int(self):
+        scones = Predicate(
             "the number of scones $diner ate was", sign="<", expression="5"
         )
         assert scones.interval == sympy.Interval(0, 5, right_open=True)

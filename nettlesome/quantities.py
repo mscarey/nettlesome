@@ -505,9 +505,9 @@ class Comparison(Predicate):
         >>>     sign=">=",
         >>>     expression=Q_("100 kilograms"))
         >>> str(large_weight)
-        'the statement that the amount of gold <Alice> possessed was at least 100 kilogram'
+        'that the amount of gold $person possessed was at least 100 kilogram'
         >>> str(small_weight)
-        'the statement that the amount of gold <Alice> possessed was at least 1 gram'
+        'that the amount of gold $person possessed was at least 1 gram'
         >>> large_weight.implies(small_weight)
         True
         """
