@@ -197,6 +197,10 @@ class TestSameFactors:
         left = FactorGroup(Statement(comparison, terms=Entity("Ann")))
         assert not left.means(other_comparison)
 
+    def test_empty_factorgroup_is_falsy(self):
+        group = FactorGroup()
+        assert bool(group) is False
+
 
 class TestImplication:
     def test_factorgroup_implies_none(self, make_statement):

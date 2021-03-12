@@ -3,19 +3,12 @@
 from __future__ import annotations
 
 import operator
-from typing import (
-    Callable,
-    Dict,
-    Iterable,
-    Iterator,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-)
+from typing import Callable, Dict, Iterable, Iterator, List
+from typing import Optional, Sequence, Tuple, Union
+
 from nettlesome.factors import Factor
 
-from nettlesome.terms import Comparable, ContextRegister, means, Term
+from nettlesome.terms import Comparable, ContextRegister, means
 from nettlesome.terms import Explanation
 
 
@@ -281,7 +274,7 @@ class FactorGroup(Comparable):
     def _verbose_comparison(
         self,
         operation: Callable,
-        still_need_matches: Sequence[Comparable],
+        still_need_matches: List[Factor],
         explanation: Explanation,
     ) -> Iterator[Explanation]:
         r"""
@@ -311,8 +304,6 @@ class FactorGroup(Comparable):
             with some :class:`.Factor` in ``available_for_matching``,
             with matching context.
         """
-        still_need_matches = list(still_need_matches)
-
         if not still_need_matches:
             yield explanation
         else:
@@ -346,22 +337,34 @@ class FactorGroup(Comparable):
             context=context or ContextRegister(),
             operation=operator.ge,
         )
-        to_match = [other] if isinstance(other, Term) else other
-        yield from self._verbose_comparison(
-            operation=operator.ge,
-            still_need_matches=to_match,
-            explanation=explanation,
-        )
+        if isinstance(other, FactorGroup):
+            yield from self._verbose_comparison(
+                operation=operator.ge,
+                still_need_matches=list(other.sequence),
+                explanation=explanation,
+            )
+        elif isinstance(other, Factor):
+            yield from self._verbose_comparison(
+                operation=operator.ge,
+                still_need_matches=[other],
+                explanation=explanation,
+            )
 
     def _contexts_has_all_factors_of(
         self,
-        other: Union[Factor, FactorGroup],
+        other: FactorGroup,
         context: Optional[ContextRegister] = None,
-    ) -> Iterator[ContextRegister]:
+    ) -> Iterator[Explanation]:
         """Find contexts that would cause all of ``other``'s Factors to be in ``self``."""
-        to_match = FactorGroup([other]) if isinstance(other, Term) else other
-        yield from self.comparison(
-            operation=means, still_need_matches=to_match, matches=context
+        explanation = Explanation(
+            factor_matches=[],
+            context=context or ContextRegister(),
+            operation=means,
+        )
+        yield from self._verbose_comparison(
+            operation=means,
+            still_need_matches=list(other.sequence),
+            explanation=explanation,
         )
 
     def generic_factors_by_str(self) -> Dict[str, Comparable]:
@@ -376,8 +379,8 @@ class FactorGroup(Comparable):
     ) -> bool:
         """Check if ``self`` has all Factors of ``other``."""
         return any(
-            register is not None
-            for register in self._contexts_has_all_factors_of(other, context=context)
+            explanation is not None
+            for explanation in self._contexts_has_all_factors_of(other, context=context)
         )
 
     def _contexts_shares_all_factors_with(
@@ -432,7 +435,7 @@ class FactorGroup(Comparable):
                 )
                 yield from self._verbose_comparison(
                     operation=means,
-                    still_need_matches=to_match,
+                    still_need_matches=list(to_match.sequence),
                     explanation=explanation,
                 )
 
