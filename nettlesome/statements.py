@@ -100,12 +100,13 @@ class Statement(Factor):
 
         Intended for use as a sympy :class:`~sympy.core.symbol.Symbol`
         """
-        subject = self.predicate._content_with_terms(self.terms).removesuffix(" was")
+        terms = [term for term in self.terms if term is not None]
+        subject = self.predicate._content_with_terms(terms).removesuffix(" was")
         return slugify(subject)
 
     @property
     def terms(self) -> TermSequence:
-        """Get Terms used to fill placeholder's in ``self``'s StatementTemplate."""
+        """Get Terms used to fill placeholders in ``self``'s StatementTemplate."""
         return self._terms
 
     @property
@@ -228,7 +229,9 @@ class Statement(Factor):
         already_returned: List[ContextRegister] = [matches]
 
         for term_permutation in gen:
-            changes = ContextRegister.from_lists(self._terms, term_permutation)
+            left = [term for term in self._terms if term is not None]
+            right = [term for term in term_permutation if term is not None]
+            changes = ContextRegister.from_lists(left, right)
             changed_registry = matches.replace_keys(changes)
             if not any(
                 changed_registry == returned_dict for returned_dict in already_returned
