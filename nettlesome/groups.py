@@ -319,6 +319,7 @@ class FactorGroup(Comparable):
                     new_explanation = explanation.add_match((self_factor, other_factor))
                     for new_matches in updated_mappings:
                         if new_matches is not None:
+                            new_explanation.context = new_matches
                             yield from iter(
                                 self._verbose_comparison(
                                     still_need_matches=still_need_matches,
@@ -385,12 +386,16 @@ class FactorGroup(Comparable):
         context = context or ContextRegister()
         context_for_other = context.reversed()
 
+        blank = Explanation(
+            factor_matches=[],
+            context=context_for_other,
+            operation=means,
+        )
         yield from (
-            context.reversed()
-            for context in other.comparison(
-                operation=means,
+            explanation.context.reversed()
+            for explanation in other._verbose_comparison(
                 still_need_matches=list(self),
-                matches=context_for_other,
+                explanation=blank,
             )
         )
 
