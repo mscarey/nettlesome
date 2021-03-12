@@ -76,7 +76,7 @@ class StatementTemplate(Template):
             )
         return None
 
-    def get_template_with_plurals(self, context: TermSequence) -> str:
+    def get_template_with_plurals(self, context: Sequence[Term]) -> str:
         """
         Get a version of self with "was" replaced by "were" for any plural terms.
 
@@ -111,7 +111,7 @@ class StatementTemplate(Template):
         return TermSequence(result)
 
     def _check_number_of_terms(
-        self, placeholders: List[str], context: TermSequence
+        self, placeholders: List[str], context: Sequence[Term]
     ) -> None:
         if len(set(placeholders)) != len(context):
             raise ValueError(

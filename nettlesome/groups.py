@@ -26,9 +26,9 @@ class TermGroup(Comparable):
 
     def __init__(self, factors: Union[TermGroup, Sequence[Term], Term] = ()):
         """Normalize ``factors`` as sequence attribute."""
-        if isinstance(factors, self.__class__):
+        if isinstance(factors, TermGroup):
             self.sequence: Tuple[Term, ...] = factors.sequence
-        elif isinstance(factors, Iterable):
+        elif isinstance(factors, Sequence):
             self.sequence = tuple(factors)
         else:
             self.sequence = (factors,)
