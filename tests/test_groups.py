@@ -1,5 +1,3 @@
-from nettlesome.factors import Factor
-import operator
 import pytest
 
 from nettlesome.terms import (
@@ -9,7 +7,6 @@ from nettlesome.terms import (
     means,
 )
 from nettlesome.entities import Entity
-from nettlesome.terms import Explanation
 from nettlesome.groups import FactorGroup
 from nettlesome.predicates import Predicate
 from nettlesome.quantities import Comparison

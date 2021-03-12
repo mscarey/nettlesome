@@ -402,9 +402,9 @@ class FactorGroup(Comparable):
     ) -> Iterator[ContextRegister]:
         """Yield likely contexts based on similar Factor meanings."""
         context = context or ContextRegister()
-        if isinstance(other, Iterable):
+        if isinstance(other, FactorGroup):
             yield from self._likely_contexts_for_factorgroup(other, context)
-        else:
+        elif isinstance(other, Factor):
             yield from self._likely_contexts_for_factor(other, context)
 
     def drop_implied_factors(self) -> FactorGroup:

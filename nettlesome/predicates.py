@@ -12,7 +12,7 @@ from __future__ import annotations
 from itertools import product
 
 from string import Template
-from typing import Any, Dict, Iterable, Mapping
+from typing import Any, Dict, Mapping
 from typing import List, Optional, Sequence, Set, Tuple
 
 from nettlesome.terms import Comparable, TermSequence
@@ -121,7 +121,7 @@ class StatementTemplate(Template):
         return None
 
     def mapping_placeholder_to_term(
-        self, context: TermSequence
+        self, context: Sequence[Term]
     ) -> Dict[str, Comparable]:
         """
         Get a mapping of template placeholders to context terms.
@@ -133,7 +133,9 @@ class StatementTemplate(Template):
         self._check_number_of_terms(self.placeholders, context)
         return dict(zip(self.placeholders, context))
 
-    def mapping_placeholder_to_term_name(self, context: TermSequence) -> Dict[str, str]:
+    def mapping_placeholder_to_term_name(
+        self, context: Sequence[Term]
+    ) -> Dict[str, str]:
         """
         Get a mapping of template placeholders to the names of their context terms.
 
@@ -146,7 +148,7 @@ class StatementTemplate(Template):
         mapping_to_string = {k: v.short_string for k, v in mapping.items()}
         return mapping_to_string
 
-    def substitute_with_plurals(self, context: Iterable[Term]) -> str:
+    def substitute_with_plurals(self, terms: Sequence[Term]) -> str:
         """
         Update template text with strings representing Comparable terms.
 
@@ -158,8 +160,8 @@ class StatementTemplate(Template):
         :returns:
             updated version of template text
         """
-        new_content = self.get_template_with_plurals(context=context)
-        substitutions = self.mapping_placeholder_to_term_name(context=context)
+        new_content = self.get_template_with_plurals(context=terms)
+        substitutions = self.mapping_placeholder_to_term_name(context=terms)
         new_template = self.__class__(new_content, make_singular=False)
         return new_template.substitute(substitutions)
 
@@ -237,7 +239,7 @@ class Predicate:
         changes = {p: "{}" for p in self.template.placeholders}
         return self.template.substitute(**changes)
 
-    def _content_with_terms(self, terms: TermSequence) -> str:
+    def _content_with_terms(self, terms: Sequence[Term]) -> str:
         r"""
         Make a sentence by filling in placeholders with names of Factors.
 
