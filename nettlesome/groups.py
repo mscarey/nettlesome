@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import operator
-from typing import Callable, Dict, Iterable, Iterator, List
+from typing import Dict, Iterable, Iterator, List
 from typing import Optional, Sequence, Tuple, Union
 
 from nettlesome.factors import Factor
@@ -183,71 +183,6 @@ class FactorGroup(Comparable):
         if other is None:
             return False
         return any(self.explanations_contradiction(other, context=context))
-
-    def comparison(
-        self,
-        operation: Callable,
-        still_need_matches: Sequence[Comparable],
-        matches: ContextRegister = None,
-    ) -> Iterator[ContextRegister]:
-        r"""
-        Find ways for two unordered sets of :class:`.Factor`\s to satisfy a comparison.
-
-        All of the elements of `other` need to fit the comparison. The elements of
-        `self` don't all need to be used.
-
-        :param context:
-            a mapping of :class:`.Factor`\s that have already been matched
-            to each other in the recursive search for a complete group of
-            matches. Usually starts empty when the method is first called.
-
-        :param still_need_matches:
-            :class:`.Factor`\s that need to satisfy the comparison
-            :attr:`comparison` with some :class:`.Factor` of :attr:`available`
-            for the relation to hold, and have not yet been matched.
-
-        :param matches:
-            a :class:`.ContextRegister` matching generic :class:`.Factor`\s
-
-        :yields:
-            context registers showing how each :class:`.Factor` in
-            ``need_matches`` can have the relation ``comparison``
-            with some :class:`.Factor` in ``available_for_matching``,
-            with matching context.
-        """
-        still_need_matches = list(still_need_matches)
-
-        if matches is None:
-            matches = ContextRegister()
-
-        if not still_need_matches:
-            yield matches
-        else:
-            other_factor = still_need_matches.pop()
-            for self_factor in self:
-
-                # BUG: doesn't consider context, may be false positive
-                # should be self_factor.comparison(other_factor, operation=operation, context=context)
-                # or
-                # yield from self_factor.explain_comparison(other_factor, operation=operation, context=context)
-
-                # there must be an issue involving interchangeable terms
-                if operation(self_factor, other_factor):
-
-                    updated_mappings = iter(
-                        self_factor.update_context_register(
-                            other=other_factor, context=matches, comparison=operation
-                        )
-                    )
-                    for new_matches in updated_mappings:
-                        if new_matches is not None:
-                            yield from iter(
-                                self.comparison(
-                                    still_need_matches=still_need_matches,
-                                    operation=operation,
-                                    matches=new_matches,
-                                )
-                            )
 
     def explanations_union(
         self,

@@ -303,7 +303,7 @@ class TestImplication:
                 ),
             ]
         )
-        gen = left.comparison(operation=operator.ge, still_need_matches=right)
+        gen = left.explanations_implication(right)
         result = next(gen)
         assert result
 
