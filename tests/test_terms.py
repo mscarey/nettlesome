@@ -6,6 +6,7 @@ import pytest
 from nettlesome.predicates import Predicate
 from nettlesome.entities import Entity
 from nettlesome.statements import Statement
+from nettlesome.terms import means
 
 
 class TestMakeEntities:
@@ -36,6 +37,16 @@ class TestMakeEntities:
         )
         place = Entity("Death Star 3")
         assert place.new_context(changes) == changes.get_factor(place)
+
+    def test_register_for_matching_entities(self):
+        known = ContextRegister()
+        alice = Entity("Alice")
+        craig = Entity("Craig")
+        known.insert_pair(alice, craig)
+
+        gen = alice._context_registers(other=craig, comparison=means, context=known)
+        register = next(gen)
+        assert register.get("<Alice>") == craig
 
 
 class TestSameMeaning:

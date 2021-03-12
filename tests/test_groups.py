@@ -81,20 +81,6 @@ class TestMakeGroup:
         shorter = group.drop_implied_factors()
         assert len(shorter) == 2
 
-    def test_make_context_register(self, make_statement):
-
-        left = FactorGroup([make_statement["shooting"], make_statement["murder"]])
-        right = FactorGroup(
-            [make_statement["shooting_craig"], make_statement["murder_craig"]]
-        )
-
-        register = ContextRegister()
-        register.insert_pair(Entity("Alice"), Entity("Craig"))
-
-        gen = left._context_registers(right, comparison=means, context=register)
-        answer = next(gen)
-        assert answer.get("<Alice>").compare_keys(Entity("Craig"))
-
     def test_get_factor_by_index(self, make_statement):
         group = FactorGroup([make_statement["friends"], make_statement["less"]])
         assert group[1].key.endswith("was less than 35 foot")
@@ -180,16 +166,6 @@ class TestSameFactors:
         second_group = FactorGroup([make_statement["crime"], make_statement["murder"]])
         assert not first_group.means(second_group)
         assert not second_group.means(first_group)
-
-    def test_register_for_matching_entities(self):
-        known = ContextRegister()
-        alice = Entity("Alice")
-        craig = Entity("Craig")
-        known.insert_pair(alice, craig)
-
-        gen = alice._context_registers(other=craig, comparison=means, context=known)
-        register = next(gen)
-        assert register.get("<Alice>") == craig
 
     def test_term_outside_of_group(self):
         speed = "${person}'s speed was"
