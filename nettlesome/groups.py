@@ -273,7 +273,6 @@ class FactorGroup(Comparable):
 
     def _verbose_comparison(
         self,
-        operation: Callable,
         still_need_matches: List[Factor],
         explanation: Explanation,
     ) -> Iterator[Explanation]:
@@ -309,12 +308,12 @@ class FactorGroup(Comparable):
         else:
             other_factor = still_need_matches.pop()
             for self_factor in self:
-                if operation(self_factor, other_factor):
+                if explanation.operation(self_factor, other_factor):
                     updated_mappings = iter(
                         self_factor.update_context_register(
                             other=other_factor,
                             context=explanation.context,
-                            comparison=operation,
+                            comparison=explanation.operation,
                         )
                     )
                     new_explanation = explanation.add_match((self_factor, other_factor))
@@ -323,7 +322,6 @@ class FactorGroup(Comparable):
                             yield from iter(
                                 self._verbose_comparison(
                                     still_need_matches=still_need_matches,
-                                    operation=operation,
                                     explanation=new_explanation,
                                 )
                             )
@@ -339,13 +337,11 @@ class FactorGroup(Comparable):
         )
         if isinstance(other, FactorGroup):
             yield from self._verbose_comparison(
-                operation=operator.ge,
                 still_need_matches=list(other.sequence),
                 explanation=explanation,
             )
         elif isinstance(other, Factor):
             yield from self._verbose_comparison(
-                operation=operator.ge,
                 still_need_matches=[other],
                 explanation=explanation,
             )
@@ -362,7 +358,6 @@ class FactorGroup(Comparable):
             operation=means,
         )
         yield from self._verbose_comparison(
-            operation=means,
             still_need_matches=list(other.sequence),
             explanation=explanation,
         )
@@ -434,7 +429,6 @@ class FactorGroup(Comparable):
                     operation=means,
                 )
                 yield from self._verbose_comparison(
-                    operation=means,
                     still_need_matches=list(to_match.sequence),
                     explanation=explanation,
                 )
