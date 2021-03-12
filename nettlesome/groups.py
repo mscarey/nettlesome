@@ -436,23 +436,6 @@ class FactorGroup(Comparable):
                     explanation=explanation,
                 )
 
-    def _context_registers(
-        self,
-        other: Optional[Comparable],
-        comparison: Callable,
-        context: Optional[ContextRegister] = None,
-    ) -> Iterator[ContextRegister]:
-        r"""
-        Search for ways to match :attr:`terms` of ``self`` and ``other``.
-
-        :yields:
-            all valid ways to make matches between
-            corresponding :class:`Factor`\s.
-        """
-        yield from self.comparison(
-            operation=comparison, still_need_matches=list(other), matches=context
-        )
-
     def _likely_contexts_for_factor(
         self, other: Comparable, context: ContextRegister, i: int = 0
     ) -> Iterator[ContextRegister]:
