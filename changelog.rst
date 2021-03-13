@@ -1,5 +1,11 @@
 Changelog
 =========
+dev
+------------------
+- add FactorMatch NamedTuples to be listed in Explanation
+- remove FactorGroup.comparison method. Instead use implies, contradicts, etc.
+- Factor "explanations" methods yield Explanation, not ContextRegister
+
 0.2.2 (2021-03-08)
 ------------------
 - fix: non-generic Entities with different names don't have same meaning

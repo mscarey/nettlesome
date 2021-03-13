@@ -8,6 +8,7 @@ from typing import Optional, Sequence, Union
 
 from nettlesome.terms import (
     Comparable,
+    Explanation,
     Term,
     TermSequence,
     ContextRegister,
@@ -185,7 +186,7 @@ class Statement(Factor):
             yield from super()._implies_if_concrete(other, context)
 
     def _contradicts_if_present(
-        self, other: Comparable, context: ContextRegister
+        self, other: Comparable, explanation: Explanation
     ) -> Iterator[ContextRegister]:
         """
         Test if ``self`` contradicts :class:`Fact` ``other`` if neither is ``absent``.
@@ -197,7 +198,10 @@ class Statement(Factor):
         if isinstance(other, self.__class__) and self.predicate.contradicts(
             other.predicate
         ):
-            yield from self._context_registers(other, operator.ge, context)
+            for context in self._context_registers(
+                other, operator.ge, explanation.context
+            ):
+                yield explanation.with_context(context)
 
     @new_context_helper
     def new_context(self, changes: Dict[Comparable, Comparable]) -> Comparable:

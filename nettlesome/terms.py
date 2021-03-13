@@ -10,7 +10,7 @@ import logging
 import operator
 import textwrap
 from typing import Any, Callable, ClassVar, Dict, Iterable, Iterator
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import List, NamedTuple, Optional, Sequence, Tuple, Union
 
 logger = logging.getLogger(__name__)
 
@@ -507,7 +507,9 @@ class Comparable(ABC):
             )
 
     def explanations_contradiction(
-        self, other: Comparable, context: Optional[ContextRegister] = None
+        self,
+        other: Comparable,
+        context: Optional[Union[Explanation, ContextRegister]] = None,
     ) -> Iterator[Explanation]:
         """
         Test whether ``self`` :meth:`implies` the absence of ``other``.
@@ -519,11 +521,15 @@ class Comparable(ABC):
             ``True`` if self and other can't both be true at
             the same time. Otherwise returns ``False``.
         """
-        for context in self._contexts_for_contradiction(other=other, context=context):
-            explanation = Explanation(
-                factor_matches=[(self, other)], context=context, operation=contradicts
+        if not isinstance(context, Explanation):
+            context = Explanation.from_context(context)
+        for new_context in self._contexts_for_contradiction(
+            other=other, context=context
+        ):
+            explanation = context.with_context(new_context)
+            yield explanation.with_match(
+                FactorMatch(left=self, operation=contradicts, right=other)
             )
-            yield explanation
 
     def _contexts_for_implication(
         self, other: Comparable, context: Optional[ContextRegister] = None
@@ -1186,7 +1192,10 @@ class ContextRegister:
         return self_mapping
 
 
-class Explanation:
+class FactorMatch(NamedTuple):
+    left: Term
+    operation: Callable
+    right: Term
 
     operation_names: ClassVar[Dict[Callable, str]] = {
         operator.ge: "IMPLIES",
@@ -1195,37 +1204,61 @@ class Explanation:
         consistent_with: "IS CONSISTENT WITH",
     }
 
+    def short_string(self) -> str:
+        return f"{self.left.short_string} {self.relation} {self.right.short_string}"
+
+    def __str__(self):
+        relation = self.operation_names[self.operation]
+        indent = "  "
+        left = textwrap.indent(str(self.left), prefix=indent)
+        right = textwrap.indent(str(self.right), prefix=indent)
+        match_text = f"{left}\n" f"{relation}\n" f"{right}\n"
+        return match_text
+
+
+class Explanation:
     def __init__(
         self,
-        factor_matches: List[Tuple[Comparable, Comparable]],
+        factor_matches: List[FactorMatch],
         context: Optional[ContextRegister] = None,
         operation: Callable = operator.ge,
     ):
         self.factor_matches = factor_matches
         self.context = context or ContextRegister()
+        if not isinstance(self.context, ContextRegister):
+            raise TypeError(
+                f"Explanation context must be type ContextRegister, not {type(self.context)}"
+            )
         self.operation = operation
 
     def __str__(self):
-        indent = "  "
-        relation = self.operation_names[self.operation]
+
         context_text = f" Because {self.context.reason},\n" if self.context else "\n"
         text = f"EXPLANATION:{context_text}"
         for match in self.factor_matches:
-            left = textwrap.indent(str(match[0]), prefix=indent)
-            right = textwrap.indent(str(match[1]), prefix=indent)
-            match_text = f"{left}\n" f"{relation}\n" f"{right}\n"
-            text += match_text
+            text += str(match)
         return text.rstrip("\n")
 
     def __repr__(self) -> str:
         return f"Explanation(matches={repr(self.factor_matches)}, context={repr(self.context)}), operation={repr(self.operation)})"
 
-    def add_match(self, match=Tuple[Comparable, Comparable]) -> Explanation:
+    @classmethod
+    def from_context(cls, context: Optional[ContextRegister] = None) -> Explanation:
+        return Explanation(factor_matches=[], context=context or ContextRegister())
+
+    def with_match(self, match: FactorMatch) -> Explanation:
         """Add a pair of compared objects that has been found to satisfy operation, given context."""
         new_matches = self.factor_matches + [match]
         return Explanation(
             factor_matches=new_matches,
             context=self.context,
+            operation=self.operation,
+        )
+
+    def with_context(self, context: ContextRegister) -> Explanation:
+        return Explanation(
+            factor_matches=self.factor_matches,
+            context=context,
             operation=self.operation,
         )
 

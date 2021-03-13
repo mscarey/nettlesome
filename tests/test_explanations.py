@@ -1,8 +1,11 @@
-from nettlesome.terms import ContextRegister, means
+import operator
 
+from nettlesome.terms import ContextRegister, means
 from nettlesome.predicates import Predicate
+from nettlesome.quantities import Comparison
 from nettlesome.statements import Statement
 from nettlesome.entities import Entity
+from nettlesome.groups import FactorGroup
 
 
 class TestContext:
@@ -31,3 +34,39 @@ class TestContext:
 
         assert "<the bull> is like <the cow>" in explanation.context.reason
         assert "terms=(Entity(name='Al'" in repr(explanation)
+
+
+class TestContinuedExplanation:
+    def test_implication_and_contradiction(self):
+        lived_at = Predicate("$person lived at $residence")
+        bob_lived = Statement(lived_at, terms=[Entity("Bob"), Entity("Bob's house")])
+        carl_lived = Statement(lived_at, terms=[Entity("Carl"), Entity("Carl's house")])
+        explanation = bob_lived.explain_implication(carl_lived)
+
+        distance_long = Comparison(
+            "the distance from the center of $city to $residence was",
+            sign=">=",
+            expression="50 miles",
+        )
+        statement_long = Statement(
+            distance_long, terms=[Entity("Houston"), Entity("Bob's house")]
+        )
+
+        distance_short = Comparison(
+            "the distance from the center of $city to $residence was",
+            sign="<=",
+            expression="10 kilometers",
+        )
+        statement_short = Statement(
+            distance_short, terms=[Entity("El Paso"), Entity("Carl's house")]
+        )
+
+        left = FactorGroup(statement_long)
+        right = FactorGroup(statement_short)
+        new_explanation = left.explain_contradiction(right, context=explanation)
+
+        assert new_explanation.factor_matches[0].left.compare_keys(Entity("Bob"))
+        assert new_explanation.factor_matches[0].operation == operator.ge
+
+    def test_implication_unrelated_groups(self):
+        pass

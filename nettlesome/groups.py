@@ -251,7 +251,9 @@ class FactorGroup(Comparable):
                             comparison=explanation.operation,
                         )
                     )
-                    new_explanation = explanation.add_match((self_factor, other_factor))
+                    new_explanation = explanation.with_match(
+                        (self_factor, other_factor)
+                    )
                     for new_matches in updated_mappings:
                         if new_matches is not None:
                             new_explanation.context = new_matches
