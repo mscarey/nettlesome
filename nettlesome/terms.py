@@ -498,11 +498,18 @@ class Comparable(ABC):
             elif self.__dict__.get("absent"):
                 # No contradiction between absences of any two Comparables
                 if not other.__dict__.get("absent"):
-                    test = other._implies_if_present(self, context.reversed())
-                    yield from (register.reversed() for register in test)
+                    explanation_reversed = context.with_context(
+                        context.context.reversed()
+                    )
+                    test = other._implies_if_present(self, explanation_reversed)
+                    for new_explanation in test:
+                        yield new_explanation.with_context(
+                            new_explanation.context.reversed()
+                        )
         elif isinstance(other, Iterable):
-            yield from other._contexts_for_contradiction(
-                self, context=context.reversed()
+            explanation_reversed = context.with_context(context.context.reversed())
+            yield from other._explanations_contradiction(
+                self, context=explanation_reversed
             )
 
     def explanations_contradiction(
@@ -571,25 +578,21 @@ class Comparable(ABC):
         explanation = Explanation.from_context(context)
         yield from self._explanations_implication(other=other, explanation=explanation)
 
-    def _contexts_implied_by(
-        self, other: Comparable, context: Optional[ContextRegister] = None
-    ) -> Iterator[ContextRegister]:
-        context = context or ContextRegister()
-        yield from (
-            register.reversed()
-            for register in other._explanations_implication(
-                self, context=context.reversed()
-            )
-        )
+    def _explanations_implied_by(
+        self, other: Comparable, explanation: Explanation
+    ) -> Iterator[Explanation]:
+        reversed_explanation = explanation.with_context(explanation.context.reversed())
+        for new in other._explanations_implication(
+            self, explanation=reversed_explanation
+        ):
+            yield new.with_context(new.context.reversed())
 
     def explanations_implied_by(
         self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Iterator[Explanation]:
-        for context in self._contexts_implied_by(other=other, context=context):
-            explanation = Explanation(
-                factor_matches=[(other, self)], context=context, operation=operator.ge
-            )
-            yield explanation
+        explanation = Explanation.from_context(context)
+        for new in self._explanations_implied_by(other=other, explanation=explanation):
+            yield new.with_match(FactorMatch(other, operator.ge, self))
 
     def _contexts_same_meaning(
         self, other: Comparable, context: Optional[ContextRegister] = None

@@ -5,6 +5,7 @@ import pytest
 from nettlesome.terms import (
     ContextRegister,
     TermSequence,
+    Explanation,
     means,
     expand_string_from_source,
 )
@@ -845,8 +846,12 @@ class TestContradiction:
             Predicate("$shooter shot $victim", truth=False),
             terms=[Entity("Alice"), Entity("Bob")],
         )
-        assert shot_fact._contradicts_if_present(shot_false, context=ContextRegister())
-        assert shot_false._contradicts_if_present(shot_fact, context=ContextRegister())
+        assert shot_fact._contradicts_if_present(
+            shot_false, explanation=Explanation.from_context()
+        )
+        assert shot_false._contradicts_if_present(
+            shot_fact, explanation=Explanation.from_context()
+        )
 
     def test_contradicts_if_present_one_absent(self):
         shot_fact = Statement(
@@ -857,8 +862,12 @@ class TestContradiction:
             terms=[Entity("Alice"), Entity("Bob")],
             absent=True,
         )
-        assert shot_fact._contradicts_if_present(shot_false, context=ContextRegister())
-        assert shot_false._contradicts_if_present(shot_fact, context=ContextRegister())
+        assert shot_fact._contradicts_if_present(
+            shot_false, explanation=Explanation.from_context()
+        )
+        assert shot_false._contradicts_if_present(
+            shot_fact, explanation=Explanation.from_context()
+        )
 
     def test_false_does_not_contradict_absent(self):
         absent_fact = Statement(
