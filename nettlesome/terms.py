@@ -388,8 +388,8 @@ class Comparable(ABC):
         )
 
     def _contradicts_if_present(
-        self, other: Comparable, context: ContextRegister
-    ) -> Iterator[ContextRegister]:
+        self, other: Comparable, context: Explanation
+    ) -> Iterator[Explanation]:
         """
         Test if ``self`` would contradict ``other`` if neither was ``absent``.
 
@@ -481,10 +481,9 @@ class Comparable(ABC):
             )
             yield explanation
 
-    def _contexts_for_contradiction(
-        self, other: Comparable, context: Optional[ContextRegister] = None
-    ) -> Iterator[ContextRegister]:
-        context = context or ContextRegister()
+    def _explanations_contradiction(
+        self, other: Comparable, context: Explanation
+    ) -> Iterator[Explanation]:
         if not isinstance(other, Comparable):
             raise TypeError(
                 f"{self.__class__} objects may only be compared for "
@@ -523,19 +522,18 @@ class Comparable(ABC):
         """
         if not isinstance(context, Explanation):
             context = Explanation.from_context(context)
-        for new_context in self._contexts_for_contradiction(
+        for new_explanation in self._explanations_contradiction(
             other=other, context=context
         ):
-            explanation = context.with_context(new_context)
-            yield explanation.with_match(
+            yield new_explanation.with_match(
                 FactorMatch(left=self, operation=contradicts, right=other)
             )
 
-    def _contexts_for_implication(
-        self, other: Comparable, context: Optional[ContextRegister] = None
-    ) -> Iterator[ContextRegister]:
-        if context is None:
-            context = ContextRegister()
+    def _explanations_implication(
+        self, other: Comparable, explanation: Explanation
+    ) -> Iterator[Explanation]:
+        if not isinstance(explanation, Explanation):
+            raise TypeError("explanation should be type Explanation")
         if not isinstance(other, Comparable):
             raise TypeError(
                 f"{self.__class__} objects may only be compared for "
@@ -544,16 +542,22 @@ class Comparable(ABC):
         if isinstance(other, self.__class__):
             if not self.__dict__.get("absent"):
                 if not other.__dict__.get("absent"):
-                    yield from self._implies_if_present(other, context)
+                    yield from self._implies_if_present(other, explanation)
                 else:
-                    yield from self._contradicts_if_present(other, context)
+                    yield from self._contradicts_if_present(other, explanation)
 
             else:
+                reversed_explanation = explanation.with_context(
+                    explanation.context.reversed()
+                )
                 if other.__dict__.get("absent"):
-                    test = other._implies_if_present(self, context.reversed())
+                    test = other._implies_if_present(self, reversed_explanation)
                 else:
-                    test = other._contradicts_if_present(self, context.reversed())
-                yield from (register.reversed() for register in test)
+                    test = other._contradicts_if_present(self, reversed_explanation)
+                yield from (
+                    register.with_context(register.context.reversed())
+                    for register in test
+                )
 
     def explanations_implication(
         self, other: Comparable, context: Optional[ContextRegister] = None
@@ -564,11 +568,8 @@ class Comparable(ABC):
         If self is `absent`, then generate a ContextRegister from other's point
         of view and then swap the keys and values.
         """
-        for context in self._contexts_for_implication(other=other, context=context):
-            explanation = Explanation(
-                factor_matches=[(self, other)], context=context, operation=operator.ge
-            )
-            yield explanation
+        explanation = Explanation.from_context(context)
+        yield from self._explanations_implication(other=other, explanation=explanation)
 
     def _contexts_implied_by(
         self, other: Comparable, context: Optional[ContextRegister] = None
@@ -576,7 +577,7 @@ class Comparable(ABC):
         context = context or ContextRegister()
         yield from (
             register.reversed()
-            for register in other._contexts_for_implication(
+            for register in other._explanations_implication(
                 self, context=context.reversed()
             )
         )
@@ -619,8 +620,8 @@ class Comparable(ABC):
         return register
 
     def _implies_if_present(
-        self, other: Comparable, context: ContextRegister
-    ) -> Iterator[ContextRegister]:
+        self, other: Comparable, explanation: Explanation
+    ) -> Iterator[Explanation]:
         """
         Find if ``self`` would imply ``other`` if they aren't absent.
 
@@ -631,12 +632,13 @@ class Comparable(ABC):
         """
         if isinstance(other, self.__class__):
             if other.generic:
-                if context.get_factor(self) is None or (
-                    context.get_factor(self) == other
+                if explanation.context.get_factor(self) is None or (
+                    explanation.context.get_factor(self) == other
                 ):
-                    yield self._generic_register(other)
+                    new_context = self._generic_register(other)
+                    yield explanation.with_context(new_context)
             if not self.generic:
-                yield from self._implies_if_concrete(other, context)
+                yield from self._implies_if_concrete(other, explanation)
 
     def generic_factors(self) -> List[Comparable]:
         """Get Terms that can be replaced without changing ``self``'s meaning."""
@@ -744,8 +746,8 @@ class Comparable(ABC):
         )
 
     def _implies_if_concrete(
-        self, other: Comparable, context: Optional[ContextRegister] = None
-    ) -> Iterator[ContextRegister]:
+        self, other: Comparable, explanation: Explanation
+    ) -> Iterator[Explanation]:
         """
         Find if ``self`` would imply ``other`` if they aren't absent or generic.
 
@@ -760,7 +762,10 @@ class Comparable(ABC):
             ``other`` is an instance of ``self``'s class.
         """
         if self.compare_terms(other, operator.ge):
-            yield from self._context_registers(other, operator.ge, context)
+            for new_context in self._context_registers(
+                other, operator.ge, explanation.context
+            ):
+                yield explanation.with_context(new_context)
 
     def implies_same_context(self, other) -> bool:
         """Check if self would imply other if their generic terms are matched in order."""

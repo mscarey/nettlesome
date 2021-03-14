@@ -3,7 +3,7 @@
 from copy import deepcopy
 import operator
 
-from typing import Dict, Iterator, List, Mapping
+from typing import Dict, Iterator, List, Mapping, Type
 from typing import Optional, Sequence, Union
 
 from nettlesome.terms import (
@@ -187,7 +187,7 @@ class Statement(Factor):
 
     def _contradicts_if_present(
         self, other: Comparable, explanation: Explanation
-    ) -> Iterator[ContextRegister]:
+    ) -> Iterator[Explanation]:
         """
         Test if ``self`` contradicts :class:`Fact` ``other`` if neither is ``absent``.
 
@@ -195,6 +195,10 @@ class Statement(Factor):
             whether ``self`` and ``other`` can't both be true at
             the same time under the given assumption.
         """
+        if not isinstance(explanation, Explanation):
+            raise TypeError(
+                f"explanation must be type Explanation, not {type(explanation)}"
+            )
         if isinstance(other, self.__class__) and self.predicate.contradicts(
             other.predicate
         ):
