@@ -475,7 +475,7 @@ class Comparable(ABC):
         """
         for context in self._contexts_consistent_with(other=other, context=context):
             explanation = Explanation(
-                factor_matches=[(self, other)],
+                factor_matches=[FactorMatch(self, consistent_with, other)],
                 context=context,
                 operation=consistent_with,
             )
@@ -613,7 +613,9 @@ class Comparable(ABC):
         """Generate ways to match contexts of self and other so they mean the same."""
         for context in self._contexts_same_meaning(other=other, context=context):
             explanation = Explanation(
-                factor_matches=[(self, other)], context=context, operation=means
+                factor_matches=[FactorMatch(self, means, other)],
+                context=context,
+                operation=means,
             )
             yield explanation
 
@@ -1240,7 +1242,6 @@ class Explanation:
         self.operation = operation
 
     def __str__(self):
-
         context_text = f" Because {self.context.reason},\n" if self.context else "\n"
         text = f"EXPLANATION:{context_text}"
         for match in self.factor_matches:

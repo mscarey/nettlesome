@@ -2,7 +2,7 @@ import operator
 
 import pytest
 
-from nettlesome.terms import ContextRegister, TermSequence, means
+from nettlesome.terms import ContextRegister, Explanation, TermSequence, means
 from nettlesome.entities import Entity
 
 from nettlesome.predicates import Predicate
@@ -427,12 +427,12 @@ class TestContradiction:
         be a contradiction if neither Factor was "absent".
         """
         assert make_statement["crime"]._contradicts_if_present(
-            make_statement["absent_no_crime"], context=ContextRegister()
+            make_statement["absent_no_crime"], explanation=Explanation.from_context()
         )
 
     def test_contradicts_if_present_one_absent(self, make_statement):
         assert make_statement["crime"]._contradicts_if_present(
-            make_statement["no_crime"], context=ContextRegister()
+            make_statement["no_crime"], explanation=Explanation.from_context()
         )
 
     def test_false_does_not_contradict_absent(self):

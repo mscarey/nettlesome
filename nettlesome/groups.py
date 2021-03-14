@@ -8,7 +8,7 @@ from typing import Optional, Sequence, Tuple, Union
 
 from nettlesome.factors import Factor
 
-from nettlesome.terms import Comparable, ContextRegister, means
+from nettlesome.terms import Comparable, ContextRegister, FactorMatch, means
 from nettlesome.terms import Explanation
 
 
@@ -252,7 +252,11 @@ class FactorGroup(Comparable):
                         )
                     )
                     new_explanation = explanation.with_match(
-                        (self_factor, other_factor)
+                        FactorMatch(
+                            left=self_factor,
+                            operation=explanation.operation,
+                            right=other_factor,
+                        )
                     )
                     for new_matches in updated_mappings:
                         if new_matches is not None:

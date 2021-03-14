@@ -1,6 +1,6 @@
 import operator
 
-from nettlesome.terms import ContextRegister, means
+from nettlesome.terms import ContextRegister, contradicts, means
 from nettlesome.predicates import Predicate
 from nettlesome.quantities import Comparison
 from nettlesome.statements import Statement
@@ -65,8 +65,13 @@ class TestContinuedExplanation:
         right = FactorGroup(statement_short)
         new_explanation = left.explain_contradiction(right, context=explanation)
 
-        assert new_explanation.factor_matches[0].left.compare_keys(Entity("Bob"))
+        expected = "the statement that <bob> lived at <bob's house>"
+        assert new_explanation.factor_matches[0].left.key.lower() == expected
         assert new_explanation.factor_matches[0].operation == operator.ge
+
+        part = "from the center of <Houston> to <Bob's house> was at least 50 mile"
+        assert part in new_explanation.factor_matches[1].left.key.lower()
+        assert new_explanation.factor_matches[1].operation == contradicts
 
     def test_implication_unrelated_groups(self):
         pass
