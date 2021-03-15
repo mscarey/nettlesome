@@ -567,7 +567,9 @@ class Comparable(ABC):
                 )
 
     def explanations_implication(
-        self, other: Comparable, context: Optional[ContextRegister] = None
+        self,
+        other: Comparable,
+        context: Optional[Union[Explanation, ContextRegister]] = None,
     ) -> Iterator[Explanation]:
         r"""
         Generate :class:`.ContextRegister`\s that cause `self` to imply `other`.
@@ -575,8 +577,14 @@ class Comparable(ABC):
         If self is `absent`, then generate a ContextRegister from other's point
         of view and then swap the keys and values.
         """
-        explanation = Explanation.from_context(context)
-        yield from self._explanations_implication(other=other, explanation=explanation)
+        if not isinstance(context, Explanation):
+            context = Explanation.from_context(context)
+        for new_explanation in self._explanations_implication(
+            other=other, explanation=context
+        ):
+            yield new_explanation.with_match(
+                FactorMatch(left=self, operation=operator.ge, right=other)
+            )
 
     def _explanations_implied_by(
         self, other: Comparable, explanation: Explanation

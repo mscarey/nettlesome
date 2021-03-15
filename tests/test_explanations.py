@@ -69,7 +69,7 @@ class TestContinuedExplanation:
         assert new_explanation.factor_matches[0].left.key.lower() == expected
         assert new_explanation.factor_matches[0].operation == operator.ge
 
-        part = "from the center of <Houston> to <Bob's house> was at least 50 mile"
+        part = "from the center of <houston> to <bob's house> was at least 50 mile"
         assert part in new_explanation.factor_matches[1].left.key.lower()
         assert new_explanation.factor_matches[1].operation == contradicts
 
