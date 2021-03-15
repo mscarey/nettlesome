@@ -412,7 +412,7 @@ class Comparable(ABC):
         self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Optional[Explanation]:
         """Get one explanation of why self and other need not contradict."""
-        explanations = self.explanations_consistent_with(other, context=context)
+        explanations = self.explanations_consistent_with(other, explanation=context)
         try:
             explanation = next(explanations)
         except StopIteration:
@@ -461,7 +461,9 @@ class Comparable(ABC):
                 yield possible
 
     def explanations_consistent_with(
-        self, other: Comparable, context: Optional[ContextRegister] = None
+        self,
+        other: Comparable,
+        explanation: Optional[Union[Explanation, ContextRegister]] = None,
     ) -> Iterator[Explanation]:
         """
         Test whether ``self`` does not contradict ``other``.
@@ -473,13 +475,13 @@ class Comparable(ABC):
             ``True`` if self and other can't both be true at
             the same time. Otherwise returns ``False``.
         """
-        for context in self._contexts_consistent_with(other=other, context=context):
-            explanation = Explanation(
-                factor_matches=[FactorMatch(self, consistent_with, other)],
-                context=context,
-                operation=consistent_with,
-            )
-            yield explanation
+        if not isinstance(explanation, Explanation):
+            explanation = Explanation.from_context(explanation)
+        for new_context in self._contexts_consistent_with(
+            other=other, context=explanation.context
+        ):
+            result = explanation.with_context(new_context)
+            yield result.with_match(FactorMatch(self, consistent_with, other))
 
     def _explanations_contradiction(
         self, other: Comparable, context: Explanation
@@ -1267,6 +1269,9 @@ class Explanation:
     def from_context(cls, context: Optional[ContextRegister] = None) -> Explanation:
         return Explanation(factor_matches=[], context=context or ContextRegister())
 
+    def reversed_context(self) -> Explanation:
+        return self.with_context(self.context.reversed())
+
     def with_match(self, match: FactorMatch) -> Explanation:
         """Add a pair of compared objects that has been found to satisfy operation, given context."""
         new_matches = self.factor_matches + [match]
@@ -1346,14 +1351,19 @@ class Term(Comparable):
         return self.add(other)
 
     def explanations_consistent_with(
-        self, other: Comparable, context: Optional[ContextRegister] = None
+        self,
+        other: Comparable,
+        explanation: Optional[Union[ContextRegister, Explanation]] = None,
     ) -> Iterator[Explanation]:
-        context = context or ContextRegister()
+        if not isinstance(explanation, Explanation):
+            explanation = Explanation.from_context(explanation)
         if not isinstance(other, Term):
-            yield from other.explanations_consistent_with(self, context.reversed())
+            yield from other.explanations_consistent_with(
+                self, explanation.reversed_context()
+            )
         else:
             yield from super().explanations_consistent_with(
-                other=other, context=context
+                other=other, explanation=explanation
             )
 
 

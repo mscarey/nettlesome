@@ -575,7 +575,9 @@ class TestConsistent:
         right = make_statement["more_meters"]
         register = ContextRegister()
         register.insert_pair(left.generic_factors()[0], right.generic_factors()[0])
-        explanations = list(left.explanations_consistent_with(right, context=register))
+        explanations = list(
+            left.explanations_consistent_with(right, explanation=register)
+        )
         assert not explanations
 
     def test_inconsistent(self, make_statement):
