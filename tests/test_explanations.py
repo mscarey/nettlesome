@@ -1,3 +1,4 @@
+from nettlesome.factors import Factor
 import operator
 
 from nettlesome.terms import ContextRegister, contradicts, means
@@ -73,5 +74,12 @@ class TestContinuedExplanation:
         assert part in new_explanation.factor_matches[1].left.key.lower()
         assert new_explanation.factor_matches[1].operation == contradicts
 
-    def test_implication_unrelated_groups(self):
-        pass
+    def test_consistent_and_same_meaning(self, make_statement):
+        left_weight = FactorGroup(make_statement["small_weight_bob"])
+        right_weight = FactorGroup(make_statement["large_weight"])
+        explanation = left_weight.explain_consistent_with(right_weight)
+        new_explanation = make_statement["crime_bob"].explain_same_meaning(
+            make_statement["crime"], context=explanation
+        )
+        assert "Because <Bob> is like <Alice>" in str(new_explanation)
+        assert "FactorGroup([" not in str(new_explanation)

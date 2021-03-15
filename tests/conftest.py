@@ -158,6 +158,7 @@ def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
             p["irrelevant_3"], [Entity("Craig"), Entity("Alice")]
         ),
         "crime": Statement(p["crime"], Entity("Alice")),
+        "crime_bob": Statement(p["crime"], Entity("Bob")),
         "crime_generic": Statement(p["crime"], Entity("Alice"), generic=True),
         "crime_specific_person": Statement(p["crime"], Entity("Alice", generic=False)),
         "absent_no_crime": Statement(p["no_crime"], Entity("Alice"), absent=True),

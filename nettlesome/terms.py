@@ -602,30 +602,31 @@ class Comparable(ABC):
         for new in self._explanations_implied_by(other=other, explanation=explanation):
             yield new.with_match(FactorMatch(other, operator.ge, self))
 
-    def _contexts_same_meaning(
-        self, other: Comparable, context: Optional[ContextRegister] = None
-    ) -> Iterator[ContextRegister]:
+    def _explanations_same_meaning(
+        self, other: Comparable, explanation: Explanation
+    ) -> Iterator[Explanation]:
         if (
             self.__class__ == other.__class__
             and self.generic == other.generic
             and self.absent == other.absent
         ):
             if self.generic:
-                yield self._generic_register(other)
-            context = context or ContextRegister()
-            yield from self._means_if_concrete(other, context)
+                generic_context = self._generic_register(other)
+                new_context = explanation.context.merged_with(generic_context)
+                if new_context:
+                    yield explanation.with_context(new_context)
+            yield from self._means_if_concrete(other, explanation)
 
     def explanations_same_meaning(
-        self, other: Comparable, context: Optional[ContextRegister] = None
+        self,
+        other: Comparable,
+        context: Optional[Union[Explanation, ContextRegister]] = None,
     ) -> Iterator[Explanation]:
         """Generate ways to match contexts of self and other so they mean the same."""
-        for context in self._contexts_same_meaning(other=other, context=context):
-            explanation = Explanation(
-                factor_matches=[FactorMatch(self, means, other)],
-                context=context,
-                operation=means,
-            )
-            yield explanation
+        if not isinstance(context, Explanation):
+            context = Explanation.from_context(context)
+        for new in self._explanations_same_meaning(other=other, explanation=context):
+            yield new.with_match(FactorMatch(self, means, other))
 
     def _generic_register(self, other: Comparable) -> ContextRegister:
         register = ContextRegister()
@@ -875,8 +876,8 @@ class Comparable(ABC):
         )
 
     def _means_if_concrete(
-        self, other: Comparable, context: Optional[ContextRegister]
-    ) -> Iterator[ContextRegister]:
+        self, other: Comparable, explanation: Explanation
+    ) -> Iterator[Explanation]:
         """
         Test equality based on :attr:`terms`.
 
@@ -890,7 +891,10 @@ class Comparable(ABC):
             ``other`` is an instance of ``self``'s class.
         """
         if self.compare_terms(other, means):
-            yield from self._context_registers(other, comparison=means, context=context)
+            for new_context in self._context_registers(
+                other, comparison=means, context=explanation.context
+            ):
+                yield explanation.with_context(new_context)
 
     @new_context_helper
     def new_context(self, changes: ContextRegister) -> Comparable:
