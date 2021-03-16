@@ -93,3 +93,14 @@ class TestContinuedExplanation:
         )
         assert "Because <Bob> is like <Alice>" in str(new_explanation)
         assert new_explanation.factor_matches[1].operation == means
+        assert "at least 100 kilogram, and" in str(new_explanation)
+
+    def test_means_to_contradicts(self, make_statement):
+        explanation = make_statement["crime"].explain_same_meaning(
+            make_statement["crime_bob"]
+        )
+        left = FactorGroup([make_statement["shooting_craig"], make_statement["less"]])
+        right = FactorGroup([make_statement["murder_craig"], make_statement["more"]])
+        new = left.explain_contradiction(right, context=explanation)
+        assert len(new.factor_matches) == 2
+        assert new.factor_matches[1].operation == contradicts

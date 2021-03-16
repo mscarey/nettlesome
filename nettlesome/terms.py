@@ -1264,8 +1264,11 @@ class Explanation:
 
     def __str__(self):
         context_text = f"Because {self.context.reason},\n" if self.context else "\n"
-        for match in self.factor_matches:
-            context_text += str(match)
+        match_texts = [str(match) for match in self.factor_matches]
+        if len(match_texts) > 1:
+            match_texts[-2] = match_texts[-2].rstrip("\n") + ", and\n"
+        for line in match_texts:
+            context_text += line
         return context_text.rstrip("\n")
 
     def __repr__(self) -> str:
