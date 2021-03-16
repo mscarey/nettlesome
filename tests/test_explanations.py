@@ -92,4 +92,4 @@ class TestContinuedExplanation:
             FactorGroup(make_statement["crime"]), context=explanation
         )
         assert "Because <Bob> is like <Alice>" in str(new_explanation)
-        assert "FactorGroup([" not in str(new_explanation)
+        assert new_explanation.factor_matches[1].operation == means

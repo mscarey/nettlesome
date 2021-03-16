@@ -368,20 +368,22 @@ class FactorGroup(Comparable):
         return None
 
     def explanations_same_meaning(
-        self, other: Comparable, context: Optional[ContextRegister] = None
+        self,
+        other: Comparable,
+        context: Optional[Union[ContextRegister, Explanation]] = None,
     ) -> Iterator[Explanation]:
         """Yield explanations for how ``self`` can have the same meaning as ``other``."""
+        if not isinstance(context, Explanation):
+            context = Explanation.from_context(context)
+        context.operation = means
         to_match = self.from_comparable(other)
         if to_match:
-            for context in self._contexts_shares_all_factors_with(to_match, context):
-                explanation = Explanation(
-                    factor_matches=[],
-                    context=context or ContextRegister(),
-                    operation=means,
-                )
+            for new_context in self._contexts_shares_all_factors_with(
+                to_match, context.context
+            ):
                 yield from self._verbose_comparison(
                     still_need_matches=list(to_match.sequence),
-                    explanation=explanation,
+                    explanation=context.with_context(new_context),
                 )
 
     def _likely_contexts_for_factor(
