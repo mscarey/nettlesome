@@ -381,7 +381,7 @@ class FactorGroup(Comparable):
             context = Explanation.from_context(context)
         context.operation = means
         to_match = self.from_comparable(other)
-        if to_match:
+        if to_match is not None:
             for new_context in self._contexts_shares_all_factors_with(
                 to_match, context.context
             ):

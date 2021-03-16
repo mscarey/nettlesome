@@ -1,3 +1,4 @@
+from nettlesome.factors import Factor
 import pytest
 
 from nettlesome.terms import (
@@ -99,6 +100,11 @@ class TestMakeGroup:
 
 
 class TestSameFactors:
+    def test_empty_groups_same_meaning(self):
+        left = FactorGroup()
+        right = FactorGroup()
+        assert left.means(right)
+
     def test_group_has_same_factors_as_identical_group(self, make_statement):
         first_group = FactorGroup([make_statement["crime"], make_statement["shooting"]])
         second_group = FactorGroup(
