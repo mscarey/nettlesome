@@ -74,6 +74,17 @@ class TestContinuedExplanation:
         assert part in new_explanation.factor_matches[1].left.key.lower()
         assert new_explanation.factor_matches[1].operation == contradicts
 
+    def test_two_implying_groups(self, make_statement):
+        left_weight = FactorGroup(make_statement["large_weight"])
+        right_weight = FactorGroup(make_statement["small_weight"])
+        explanation = left_weight.explain_implication(right_weight)
+        left_more = FactorGroup(make_statement["way_more"])
+        right_more = FactorGroup(make_statement["more"])
+        new = left_more.explain_implication(right_more, context=explanation)
+        assert len(new.factor_matches) == 2
+        assert new.factor_matches[0].operation == operator.ge
+        assert new.factor_matches[1].operation == operator.ge
+
     def test_consistent_and_same_meaning(self, make_statement):
         left_weight = FactorGroup(make_statement["small_weight_bob"])
         right_weight = FactorGroup(make_statement["large_weight"])

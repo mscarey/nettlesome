@@ -9,8 +9,8 @@ from typing import Optional, Sequence, Tuple, Union
 
 from nettlesome.factors import Factor
 
-from nettlesome.terms import Comparable, ContextRegister, FactorMatch, means
-from nettlesome.terms import Explanation
+from nettlesome.terms import Comparable, ContextRegister, FactorMatch
+from nettlesome.terms import Explanation, contradicts, means
 
 
 class FactorGroup(Comparable):
@@ -142,19 +142,22 @@ class FactorGroup(Comparable):
         return not self._must_contradict_one_factor(other, context=context)
 
     def _explain_contradicts_factor(
-        self, other: Comparable, context: ContextRegister
+        self, other: Comparable, context: Explanation
     ) -> Iterator[Explanation]:
 
         for self_factor in self:
             yield from self_factor.explanations_contradiction(other, context)
 
     def explanations_contradiction(
-        self, other: Comparable, context: Optional[ContextRegister] = None
+        self,
+        other: Comparable,
+        context: Optional[Union[ContextRegister, Explanation]] = None,
     ) -> Iterator[Explanation]:
         """Find contexts that would cause ``self`` to contradict ``other``."""
 
-        if context is None:
-            context = ContextRegister()
+        if not isinstance(context, Explanation):
+            context = Explanation.from_context(context)
+        context.operation = contradicts
 
         if isinstance(other, Iterable):
             for other_factor in other:
@@ -274,23 +277,24 @@ class FactorGroup(Comparable):
                             )
 
     def explanations_implication(
-        self, other: Comparable, context: Optional[ContextRegister] = None
+        self,
+        other: Comparable,
+        context: Optional[Union[ContextRegister, Explanation]] = None,
     ) -> Iterator[Explanation]:
         """Find contexts that would cause ``self`` to imply ``other``."""
-        explanation = Explanation(
-            factor_matches=[],
-            context=context or ContextRegister(),
-            operation=operator.ge,
-        )
+        if not isinstance(context, Explanation):
+            context = Explanation.from_context(context)
+        context.operation = operator.ge
+
         if isinstance(other, FactorGroup):
             yield from self._verbose_comparison(
                 still_need_matches=list(other.sequence),
-                explanation=explanation,
+                explanation=context,
             )
         elif isinstance(other, Factor):
             yield from self._verbose_comparison(
                 still_need_matches=[other],
-                explanation=explanation,
+                explanation=context,
             )
 
     def _contexts_has_all_factors_of(
