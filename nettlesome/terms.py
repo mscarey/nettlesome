@@ -460,6 +460,18 @@ class Comparable(ABC):
             if not self.contradicts(other, context=possible):
                 yield possible
 
+    def _explanations_consistent_with(
+        self,
+        other: Comparable,
+        explanation: Optional[Union[Explanation, ContextRegister]] = None,
+    ) -> Iterator[Explanation]:
+        if not isinstance(explanation, Explanation):
+            explanation = Explanation.from_context(explanation)
+        for new_context in self._contexts_consistent_with(
+            other=other, context=explanation.context
+        ):
+            yield explanation.with_context(new_context)
+
     def explanations_consistent_with(
         self,
         other: Comparable,
@@ -475,13 +487,8 @@ class Comparable(ABC):
             ``True`` if self and other can't both be true at
             the same time. Otherwise returns ``False``.
         """
-        if not isinstance(explanation, Explanation):
-            explanation = Explanation.from_context(explanation)
-        for new_context in self._contexts_consistent_with(
-            other=other, context=explanation.context
-        ):
-            result = explanation.with_context(new_context)
-            yield result.with_match(FactorMatch(self, consistent_with, other))
+        for new in self._explanations_consistent_with(other, explanation=explanation):
+            yield new.with_match(FactorMatch(self, consistent_with, other))
 
     def _explanations_contradiction(
         self, other: Comparable, context: Explanation
@@ -1256,11 +1263,10 @@ class Explanation:
         self.operation = operation
 
     def __str__(self):
-        context_text = f" Because {self.context.reason},\n" if self.context else "\n"
-        text = f"EXPLANATION:{context_text}"
+        context_text = f"Because {self.context.reason},\n" if self.context else "\n"
         for match in self.factor_matches:
-            text += str(match)
-        return text.rstrip("\n")
+            context_text += str(match)
+        return context_text.rstrip("\n")
 
     def __repr__(self) -> str:
         return f"Explanation(matches={repr(self.factor_matches)}, context={repr(self.context)}), operation={repr(self.operation)})"

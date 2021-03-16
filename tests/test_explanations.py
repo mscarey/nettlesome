@@ -83,3 +83,13 @@ class TestContinuedExplanation:
         )
         assert "Because <Bob> is like <Alice>" in str(new_explanation)
         assert "FactorGroup([" not in str(new_explanation)
+
+    def test_same_meaning_factors_not_grouped(self, make_statement):
+        left_weight = make_statement["small_weight_bob"]
+        right_weight = make_statement["large_weight"]
+        explanation = left_weight.explain_consistent_with(right_weight)
+        new_explanation = FactorGroup(make_statement["crime_bob"]).explain_same_meaning(
+            FactorGroup(make_statement["crime"]), context=explanation
+        )
+        assert "Because <Bob> is like <Alice>" in str(new_explanation)
+        assert "FactorGroup([" not in str(new_explanation)

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import operator
+import textwrap
 from typing import Dict, Iterable, Iterator, List
 from typing import Optional, Sequence, Tuple, Union
 
@@ -52,7 +53,11 @@ class FactorGroup(Comparable):
         return f"{self.__class__.__name__}({repr(list(self.sequence))})"
 
     def __str__(self):
-        return f"{self.__class__.__name__}({[item.short_string for item in self.sequence]})"
+        result = "the group of Factors:"
+        indent = "  "
+        for factor in self.sequence:
+            result += f"\n{textwrap.indent(str(factor), prefix=indent)}"
+        return result
 
     def _add_group(self, other: FactorGroup) -> FactorGroup:
         combined = self.sequence[:] + other.sequence[:]
