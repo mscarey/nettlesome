@@ -1222,9 +1222,9 @@ class ContextRegister:
 
 
 class FactorMatch(NamedTuple):
-    left: Term
+    left: Comparable
     operation: Callable
-    right: Term
+    right: Comparable
 
     operation_names: ClassVar[Dict[Callable, str]] = {
         operator.ge: "IMPLIES",

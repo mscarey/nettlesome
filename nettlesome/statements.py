@@ -3,7 +3,7 @@
 from copy import deepcopy
 import operator
 
-from typing import Dict, Iterator, List, Mapping, Type
+from typing import Dict, Iterator, List, Mapping
 from typing import Optional, Sequence, Union
 
 from nettlesome.terms import (
@@ -165,8 +165,8 @@ class Statement(Factor):
         return self.predicate.truth
 
     def _means_if_concrete(
-        self, other: Comparable, context: Optional[ContextRegister] = None
-    ) -> Iterator[ContextRegister]:
+        self, other: Comparable, context: Explanation
+    ) -> Iterator[Explanation]:
         if isinstance(other, Statement) and self.predicate.means(other.predicate):
             yield from super()._means_if_concrete(other, context)
 
@@ -174,8 +174,8 @@ class Statement(Factor):
         return len(self.generic_factors())
 
     def _implies_if_concrete(
-        self, other: Comparable, context: Optional[ContextRegister] = None
-    ) -> Iterator[ContextRegister]:
+        self, other: Comparable, context: Explanation
+    ) -> Iterator[Explanation]:
         """
         Test if ``self`` impliess ``other``, assuming they are not ``generic``.
 

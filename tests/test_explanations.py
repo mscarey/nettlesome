@@ -1,4 +1,3 @@
-from nettlesome.factors import Factor
 import operator
 
 from nettlesome.terms import ContextRegister, contradicts, means
