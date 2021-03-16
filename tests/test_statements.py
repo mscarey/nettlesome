@@ -1008,7 +1008,7 @@ class TestConsistent:
         register.insert_pair(Entity("Alice"), Entity("Bob"))
         assert not self.small.consistent_with(self.big, register)
         explanations = list(
-            self.small.explanations_consistent_with(self.big, explanation=register)
+            self.small.explanations_consistent_with(self.big, context=register)
         )
         assert not explanations
 

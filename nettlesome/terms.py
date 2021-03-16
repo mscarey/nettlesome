@@ -412,7 +412,7 @@ class Comparable(ABC):
         self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Optional[Explanation]:
         """Get one explanation of why self and other need not contradict."""
-        explanations = self.explanations_consistent_with(other, explanation=context)
+        explanations = self.explanations_consistent_with(other, context=context)
         try:
             explanation = next(explanations)
         except StopIteration:
@@ -475,7 +475,7 @@ class Comparable(ABC):
     def explanations_consistent_with(
         self,
         other: Comparable,
-        explanation: Optional[Union[Explanation, ContextRegister]] = None,
+        context: Optional[Union[Explanation, ContextRegister]] = None,
     ) -> Iterator[Explanation]:
         """
         Test whether ``self`` does not contradict ``other``.
@@ -487,7 +487,7 @@ class Comparable(ABC):
             ``True`` if self and other can't both be true at
             the same time. Otherwise returns ``False``.
         """
-        for new in self._explanations_consistent_with(other, explanation=explanation):
+        for new in self._explanations_consistent_with(other, explanation=context):
             yield new.with_match(FactorMatch(self, consistent_with, other))
 
     def _explanations_contradiction(
@@ -1367,17 +1367,17 @@ class Term(Comparable):
     def explanations_consistent_with(
         self,
         other: Comparable,
-        explanation: Optional[Union[ContextRegister, Explanation]] = None,
+        context: Optional[Union[ContextRegister, Explanation]] = None,
     ) -> Iterator[Explanation]:
-        if not isinstance(explanation, Explanation):
-            explanation = Explanation.from_context(explanation)
+        if not isinstance(context, Explanation):
+            context = Explanation.from_context(context)
         if not isinstance(other, Term):
             yield from other.explanations_consistent_with(
-                self, explanation.reversed_context()
+                self, context.reversed_context()
             )
         else:
             yield from super().explanations_consistent_with(
-                other=other, explanation=explanation
+                other=other, context=context
             )
 
 
