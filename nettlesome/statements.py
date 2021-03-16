@@ -195,10 +195,6 @@ class Statement(Factor):
             whether ``self`` and ``other`` can't both be true at
             the same time under the given assumption.
         """
-        if not isinstance(explanation, Explanation):
-            raise TypeError(
-                f"explanation must be type Explanation, not {type(explanation)}"
-            )
         if isinstance(other, self.__class__) and self.predicate.contradicts(
             other.predicate
         ):

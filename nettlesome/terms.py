@@ -548,8 +548,6 @@ class Comparable(ABC):
     def _explanations_implication(
         self, other: Comparable, explanation: Explanation
     ) -> Iterator[Explanation]:
-        if not isinstance(explanation, Explanation):
-            raise TypeError("explanation should be type Explanation")
         if not isinstance(other, Comparable):
             raise TypeError(
                 f"{self.__class__} objects may only be compared for "
@@ -1235,8 +1233,10 @@ class FactorMatch(NamedTuple):
         consistent_with: "IS CONSISTENT WITH",
     }
 
+    @property
     def short_string(self) -> str:
-        return f"{self.left.short_string} {self.relation} {self.right.short_string}"
+        relation = self.operation_names[self.operation]
+        return f"{self.left.short_string} {relation} {self.right.short_string}"
 
     def __str__(self):
         relation = self.operation_names[self.operation]
@@ -1256,10 +1256,6 @@ class Explanation:
     ):
         self.factor_matches = factor_matches
         self.context = context or ContextRegister()
-        if not isinstance(self.context, ContextRegister):
-            raise TypeError(
-                f"Explanation context must be type ContextRegister, not {type(self.context)}"
-            )
         self.operation = operation
 
     def __str__(self):
@@ -1273,6 +1269,15 @@ class Explanation:
 
     def __repr__(self) -> str:
         return f"Explanation(matches={repr(self.factor_matches)}, context={repr(self.context)}), operation={repr(self.operation)})"
+
+    @property
+    def short_string(self) -> str:
+        context_text = f"Because {self.context.reason}, " if self.context else ""
+        match_texts = [match.short_string for match in self.factor_matches]
+        if len(match_texts) > 1:
+            match_texts[-2:] = [f"{match_texts[-2]}, and {match_texts[-1]}"]
+        context_text += ", ".join(match_texts)
+        return context_text
 
     @classmethod
     def from_context(cls, context: Optional[ContextRegister] = None) -> Explanation:

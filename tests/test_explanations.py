@@ -88,12 +88,12 @@ class TestContinuedExplanation:
         left_weight = make_statement["small_weight_bob"]
         right_weight = make_statement["large_weight"]
         explanation = left_weight.explain_consistent_with(right_weight)
-        new_explanation = FactorGroup(make_statement["crime_bob"]).explain_same_meaning(
+        new = FactorGroup(make_statement["crime_bob"]).explain_same_meaning(
             FactorGroup(make_statement["crime"]), context=explanation
         )
-        assert "Because <Bob> is like <Alice>" in str(new_explanation)
-        assert new_explanation.factor_matches[1].operation == means
-        assert "at least 100 kilogram, and" in str(new_explanation)
+        assert "Because <Bob> is like <Alice>" in str(new)
+        assert new.factor_matches[1].operation == means
+        assert "was at least 100 kilogram, and the statement" in new.short_string
 
     def test_means_to_contradicts(self, make_statement):
         explanation = make_statement["crime"].explain_same_meaning(
