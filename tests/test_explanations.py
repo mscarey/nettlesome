@@ -196,6 +196,16 @@ class TestApplyOperation:
         assert new.factor_matches[1].operation == consistent_with
         assert isinstance(new.factor_matches[1].left, FactorGroup)
 
+    def test_means_to_implied_by(self, make_statement):
+        explanation = make_statement["crime_bob"].explain_same_meaning(
+            make_statement["crime"]
+        )
+        left = FactorGroup([make_statement["small_weight_bob"]])
+        right = FactorGroup([make_statement["large_weight"]])
+        new = left.explain_implied_by(right, explanation)
+        assert len(new.factor_matches) == 2
+        assert new.factor_matches[1].operation == operator.ge
+
     def test_cannot_apply_lt(self, make_statement):
         explanation = make_statement["crime"].explain_same_meaning(
             make_statement["crime_bob"]

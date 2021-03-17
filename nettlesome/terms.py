@@ -603,10 +603,13 @@ class Comparable(ABC):
             yield new.with_context(new.context.reversed())
 
     def explanations_implied_by(
-        self, other: Comparable, context: Optional[ContextRegister] = None
+        self,
+        other: Comparable,
+        context: Optional[Union[ContextRegister, Explanation]] = None,
     ) -> Iterator[Explanation]:
-        explanation = Explanation.from_context(context)
-        for new in self._explanations_implied_by(other=other, explanation=explanation):
+        if not isinstance(context, Explanation):
+            context = Explanation.from_context(context)
+        for new in self._explanations_implied_by(other=other, explanation=context):
             yield new.with_match(FactorMatch(other, operator.ge, self))
 
     def _explanations_same_meaning(

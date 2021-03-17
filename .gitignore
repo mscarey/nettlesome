@@ -20,3 +20,5 @@ tests/.pytest_cache/
 tests/prof/
 venv/
 venvn/
+procedures.py
+tests/test_procedures.py
