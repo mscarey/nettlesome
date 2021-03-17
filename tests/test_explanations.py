@@ -4,6 +4,7 @@ import pytest
 
 from nettlesome.terms import (
     ContextRegister,
+    Explanation,
     FactorMatch,
     consistent_with,
     contradicts,
@@ -42,6 +43,15 @@ class TestContext:
 
         assert "<the bull> is like <the cow>" in explanation.context.reason
         assert "terms=(Entity(name='Al'" in repr(explanation)
+
+
+class TestMakeExplanation:
+    def test_context_type(self, make_statement):
+        explanation = make_statement["large_weight"].explain_implication(
+            make_statement["small_weight"]
+        )
+        with pytest.raises(TypeError):
+            Explanation(factor_matches=[], context=explanation)
 
 
 class TestContinuedExplanation:

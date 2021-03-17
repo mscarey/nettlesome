@@ -1259,6 +1259,10 @@ class Explanation:
     ):
         self.factor_matches = factor_matches
         self.context = context or ContextRegister()
+        if not isinstance(self.context, ContextRegister):
+            raise TypeError(
+                f"context attribute of Explanation must be type ContextRegister, not {type(self.context)}"
+            )
         self.operation = operation
 
     def __str__(self):
