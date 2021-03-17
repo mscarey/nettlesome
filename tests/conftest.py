@@ -159,6 +159,7 @@ def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
         ),
         "crime": Statement(p["crime"], Entity("Alice")),
         "crime_bob": Statement(p["crime"], Entity("Bob")),
+        "crime_craig": Statement(p["crime"], Entity("Craig")),
         "crime_generic": Statement(p["crime"], Entity("Alice"), generic=True),
         "crime_specific_person": Statement(p["crime"], Entity("Alice", generic=False)),
         "absent_no_crime": Statement(p["no_crime"], Entity("Alice"), absent=True),
@@ -199,6 +200,10 @@ def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
         "large_weight": Statement(
             p["large_weight"],
             Entity("Alice"),
+        ),
+        "large_weight_craig": Statement(
+            p["large_weight"],
+            Entity("Craig"),
         ),
         "small_weight": Statement(
             p["small_weight"],

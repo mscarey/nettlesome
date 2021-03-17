@@ -1,6 +1,14 @@
 import operator
 
-from nettlesome.terms import ContextRegister, contradicts, means
+import pytest
+
+from nettlesome.terms import (
+    ContextRegister,
+    FactorMatch,
+    consistent_with,
+    contradicts,
+    means,
+)
 from nettlesome.predicates import Predicate
 from nettlesome.quantities import Comparison
 from nettlesome.statements import Statement
@@ -114,3 +122,87 @@ class TestContinuedExplanation:
         new = left.explain_contradiction(right, context=explanation)
         assert len(new.factor_matches) == 2
         assert new.factor_matches[1].operation == contradicts
+
+    def test_same_meaning_long_group(self, make_statement):
+        explanation = make_statement["crime"].explain_same_meaning(
+            make_statement["crime_craig"]
+        )
+        left = FactorGroup(
+            [
+                make_statement["large_weight"],
+                make_statement["murder"],
+                make_statement["no_context"],
+                make_statement["shooting"],
+            ]
+        )
+        right = FactorGroup(
+            [
+                make_statement["large_weight_craig"],
+                make_statement["murder_craig"],
+                make_statement["shooting_craig"],
+                make_statement["no_context"],
+            ]
+        )
+        new = left.explain_same_meaning(right, explanation)
+        assert len(new.factor_matches) == 5
+
+    def test_not_same_meaning_no_factor_match(self, make_statement):
+        explanation = make_statement["crime_craig"].explain_same_meaning(
+            make_statement["crime"]
+        )
+        left = FactorGroup(
+            [
+                make_statement["large_weight"],
+                make_statement["murder_entity_order"],
+                make_statement["no_context"],
+                make_statement["shooting"],
+            ]
+        )
+        right = FactorGroup(
+            [
+                make_statement["large_weight_craig"],
+                make_statement["murder_craig"],
+                make_statement["shooting_craig"],
+                make_statement["no_context"],
+            ]
+        )
+        new = right.explain_same_meaning(left, explanation)
+        assert new is None
+
+
+class TestApplyOperation:
+    def test_means_to_contradicts_from_explanation(self, make_statement):
+        explanation = make_statement["crime"].explain_same_meaning(
+            make_statement["crime_bob"]
+        )
+        left = FactorGroup([make_statement["shooting_craig"], make_statement["less"]])
+        right = FactorGroup([make_statement["murder_craig"], make_statement["more"]])
+        explanation.operation = contradicts
+        gen = explanation.operate(left, right)
+        new = next(gen)
+        assert len(new.factor_matches) == 2
+        assert new.factor_matches[1].operation == contradicts
+
+    def test_means_to_consistent_from_explanation(self, make_statement):
+        explanation = make_statement["crime"].explain_same_meaning(
+            make_statement["crime_bob"]
+        )
+        left = FactorGroup([make_statement["shooting_craig"], make_statement["less"]])
+        right = FactorGroup([make_statement["murder_craig"], make_statement["more"]])
+        explanation.operation = consistent_with
+        gen = explanation.operate(left, right)
+        new = next(gen)
+        assert len(new.factor_matches) == 2
+        assert new.factor_matches[1].operation == consistent_with
+        assert isinstance(new.factor_matches[1].left, FactorGroup)
+
+    def test_cannot_apply_lt(self, make_statement):
+        explanation = make_statement["crime"].explain_same_meaning(
+            make_statement["crime_bob"]
+        )
+        left = FactorGroup([make_statement["shooting_craig"], make_statement["less"]])
+        right = FactorGroup([make_statement["murder_craig"], make_statement["more"]])
+        explanation.operation = operator.lt
+        gen = explanation.operate(left, right)
+        with pytest.raises(ValueError):
+            next(gen)

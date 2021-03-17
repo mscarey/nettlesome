@@ -1283,6 +1283,21 @@ class Explanation:
     def from_context(cls, context: Optional[ContextRegister] = None) -> Explanation:
         return Explanation(factor_matches=[], context=context or ContextRegister())
 
+    def operate(self, left: Comparable, right: Comparable) -> Iterator[Explanation]:
+        """Generate further explanations for applying self.operation to a new Factor pair."""
+        if self.operation == operator.ge:
+            yield from left.explanations_implication(right, self)
+        elif self.operation == means:
+            yield from left.explanations_same_meaning(right, self)
+        elif self.operation == contradicts:
+            yield from left.explanations_contradiction(right, self)
+        elif self.operation == consistent_with:
+            yield from left.explanations_consistent_with(right, self)
+        else:
+            raise ValueError(
+                f"Can't apply self.operation '{self.operation}' as function."
+            )
+
     def reversed_context(self) -> Explanation:
         return self.with_context(self.context.reversed())
 

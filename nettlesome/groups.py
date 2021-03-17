@@ -251,30 +251,13 @@ class FactorGroup(Comparable):
         else:
             other_factor = still_need_matches.pop()
             for self_factor in self:
-                if explanation.operation(self_factor, other_factor):
-                    updated_mappings = iter(
-                        self_factor.update_context_register(
-                            other=other_factor,
-                            context=explanation.context,
-                            comparison=explanation.operation,
+                for new_explanation in explanation.operate(self_factor, other_factor):
+                    yield from iter(
+                        self._verbose_comparison(
+                            still_need_matches=still_need_matches,
+                            explanation=new_explanation,
                         )
                     )
-                    new_explanation = explanation.with_match(
-                        FactorMatch(
-                            left=self_factor,
-                            operation=explanation.operation,
-                            right=other_factor,
-                        )
-                    )
-                    for new_matches in updated_mappings:
-                        if new_matches is not None:
-                            new_explanation.context = new_matches
-                            yield from iter(
-                                self._verbose_comparison(
-                                    still_need_matches=still_need_matches,
-                                    explanation=new_explanation,
-                                )
-                            )
 
     def explanations_implication(
         self,
