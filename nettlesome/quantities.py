@@ -185,11 +185,13 @@ class UnitRange(QuantityRange):
 
     def __init__(
         self,
-        quantity: Quantity,
+        quantity: Union[Quantity, str],
         sign: str = "",
         include_negatives: Optional[bool] = None,
     ) -> None:
         """Set domain as a real number of units."""
+        if isinstance(quantity, str):
+            quantity = Q_(quantity)
         self.quantity = quantity
         self.domain = S.Reals
         super().__init__(sign=sign, include_negatives=include_negatives)

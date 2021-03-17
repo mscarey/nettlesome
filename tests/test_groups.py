@@ -10,7 +10,7 @@ from nettlesome.terms import (
 from nettlesome.entities import Entity
 from nettlesome.groups import FactorGroup
 from nettlesome.predicates import Predicate
-from nettlesome.quantities import Comparison
+from nettlesome.quantities import Comparison, UnitRange
 from nettlesome.statements import Statement
 
 
@@ -203,6 +203,64 @@ class TestSameFactors:
     def test_empty_factorgroup_is_falsy(self):
         group = FactorGroup()
         assert bool(group) is False
+
+    def test_does_not_share_all_factors(self, make_statement):
+        left = FactorGroup(
+            [
+                Statement(
+                    Predicate(template="$suburb was a suburb of $city"),
+                    terms=(
+                        Entity(name="Oakland"),
+                        Entity(name="San Francisco"),
+                    ),
+                ),
+                make_statement["more"],
+                Statement("$city was sunny", terms=Entity("Oakland")),
+            ]
+        )
+        right = FactorGroup(
+            [
+                Statement(
+                    Predicate(template="$suburb was a suburb of $city"),
+                    terms=(
+                        Entity(name="San Francisco"),
+                        Entity(name="Oakland"),
+                    ),
+                ),
+                make_statement["more"],
+                Statement("$city was sunny", terms=Entity("Oakland")),
+            ]
+        )
+        assert not left.shares_all_factors_with(right)
+
+    def test_not_same_nonmatching_terms(self, make_statement):
+        left = FactorGroup(
+            [
+                Statement(
+                    Predicate(template="$suburb was a suburb of $city"),
+                    terms=(
+                        Entity(name="Oakland"),
+                        Entity(name="San Francisco"),
+                    ),
+                ),
+                make_statement["more"],
+                Statement("$city was sunny", terms=Entity("Oakland")),
+            ]
+        )
+        right = FactorGroup(
+            [
+                Statement(
+                    Predicate(template="$suburb was a suburb of $city"),
+                    terms=(
+                        Entity(name="San Francisco"),
+                        Entity(name="Oakland"),
+                    ),
+                ),
+                make_statement["more"],
+                Statement("$city was sunny", terms=Entity("Oakland")),
+            ]
+        )
+        assert not left.means(right)
 
 
 class TestImplication:

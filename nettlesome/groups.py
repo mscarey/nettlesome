@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 import operator
 import textwrap
 from typing import Dict, Iterable, Iterator, List
@@ -254,7 +255,7 @@ class FactorGroup(Comparable):
                 for new_explanation in explanation.operate(self_factor, other_factor):
                     yield from iter(
                         self._verbose_comparison(
-                            still_need_matches=still_need_matches,
+                            still_need_matches=deepcopy(still_need_matches),
                             explanation=new_explanation,
                         )
                     )

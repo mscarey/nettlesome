@@ -625,7 +625,8 @@ class Comparable(ABC):
                 new_context = explanation.context.merged_with(generic_context)
                 if new_context:
                     yield explanation.with_context(new_context)
-            yield from self._means_if_concrete(other, explanation)
+            for result in self._means_if_concrete(other, explanation):
+                yield result
 
     def explanations_same_meaning(
         self,
@@ -636,7 +637,8 @@ class Comparable(ABC):
         if not isinstance(context, Explanation):
             context = Explanation.from_context(context)
         for new in self._explanations_same_meaning(other=other, explanation=context):
-            yield new.with_match(FactorMatch(self, means, other))
+            result = new.with_match(FactorMatch(self, means, other))
+            yield result
 
     def _generic_register(self, other: Comparable) -> ContextRegister:
         register = ContextRegister()
@@ -891,7 +893,7 @@ class Comparable(ABC):
         """
         Test equality based on :attr:`terms`.
 
-        Usually called after a subclasses has injected its own tests
+        Usually called after a subclass has injected its own tests
         based on other attributes.
 
         :returns:

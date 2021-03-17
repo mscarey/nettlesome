@@ -10,6 +10,10 @@ class TestQuantities:
         right = make_comparison["meters"].quantity_range
         assert left.implies(right)
 
+    def test_quantity_from_string(self):
+        left = UnitRange(quantity="2000 days", sign="<")
+        assert left.magnitude == 2000
+
     def test_no_contradiction_between_classes(self):
         left = UnitRange(quantity=Q_("2000 days"), sign="<")
         right = NumberRange(quantity=2000, sign=">")
