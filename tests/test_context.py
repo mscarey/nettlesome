@@ -62,7 +62,7 @@ class TestContextRegisters:
         contexts = list(statement.possible_contexts(statement, context=context))
         assert len(contexts) == 1
         assert contexts[0].check_match(Entity("Al"), Entity("Xu"))
-        assert "Entity(name='Xu', generic=True" in repr(contexts)
+        assert 'Entity(name="Xu", generic=True' in repr(contexts)
 
     def test_context_register_empty(self, make_complex_fact):
         """

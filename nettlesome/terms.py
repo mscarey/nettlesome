@@ -732,13 +732,21 @@ class Comparable(ABC):
     def implied_by(
         self, other: Optional[Comparable], context: Optional[ContextRegister] = None
     ):
-        """Test whether ``other`` implies ``self``."""
+        r"""
+        Find whether other implies self.
+
+        :param other:
+            a second Comparable to compare with self
+
+        :param context:
+            correspondences between :class:`Term`\s in self and other
+
+        :returns:
+            whether other implies self.
+        """
         if other is None:
             return False
-        return any(
-            register is not None
-            for register in self.explanations_implied_by(other, context=context)
-        )
+        return any(self.explanations_implied_by(other, context=context))
 
     def implies(
         self, other: Optional[Comparable], context: Optional[ContextRegister] = None

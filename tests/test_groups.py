@@ -421,6 +421,34 @@ class TestImplication:
         assert protest_facts.implies(speech_zone_facts)
 
 
+class TestImpliedBy:
+    def test_implied_by(self):
+        left = FactorGroup(
+            [
+                Statement(
+                    Predicate(
+                        template="${rural_s_telephone_directory} was a compilation of facts"
+                    ),
+                    terms=(Entity(name="Rural's telephone directory"),),
+                )
+            ]
+        )
+        right = FactorGroup(
+            [
+                Statement(
+                    Predicate(template="${rural_s_telephone_directory} was an idea"),
+                    terms=(Entity(name="Rural's telephone directory"),),
+                )
+            ]
+        )
+        assert "'Rural's" not in repr(left)
+        assert not left.implied_by(right)
+
+    def test_group_implied_by_factor(self, make_statement):
+        left = FactorGroup(make_statement["more"])
+        assert left.implied_by(make_statement["way_more"])
+
+
 class TestContradiction:
     def test_contradiction_of_group(self):
         lived_at = Predicate("$person lived at $residence")

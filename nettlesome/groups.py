@@ -193,6 +193,20 @@ class FactorGroup(Comparable):
             return False
         return any(self.explanations_contradiction(other, context=context))
 
+    def explanations_implied_by(
+        self,
+        other: Comparable,
+        context: Optional[Union[ContextRegister, Explanation]] = None,
+    ) -> Iterator[Explanation]:
+        """Generate explanations for how other may imply self."""
+        if not isinstance(context, Explanation):
+            context = Explanation.from_context(context)
+        reversed = context.reversed_context()
+        if isinstance(other, Factor):
+            other = FactorGroup(other)
+        if isinstance(other, FactorGroup):
+            yield from other.explanations_implication(self, context=reversed)
+
     def explanations_union(
         self,
         other: Union[Factor, FactorGroup],
