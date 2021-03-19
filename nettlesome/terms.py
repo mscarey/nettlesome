@@ -463,10 +463,9 @@ class Comparable(ABC):
     def _explanations_consistent_with(
         self,
         other: Comparable,
-        explanation: Optional[Union[Explanation, ContextRegister]] = None,
+        explanation: Explanation,
     ) -> Iterator[Explanation]:
-        if not isinstance(explanation, Explanation):
-            explanation = Explanation.from_context(explanation)
+
         for new_context in self._contexts_consistent_with(
             other=other, context=explanation.context
         ):
@@ -487,6 +486,8 @@ class Comparable(ABC):
             ``True`` if self and other can't both be true at
             the same time. Otherwise returns ``False``.
         """
+        if not isinstance(context, Explanation):
+            context = Explanation.from_context(context)
         for new in self._explanations_consistent_with(other, explanation=context):
             yield new.with_match(FactorMatch(self, consistent_with, other))
 
@@ -607,6 +608,7 @@ class Comparable(ABC):
         other: Comparable,
         context: Optional[Union[ContextRegister, Explanation]] = None,
     ) -> Iterator[Explanation]:
+        """Generate explanations for how other may imply self."""
         if not isinstance(context, Explanation):
             context = Explanation.from_context(context)
         for new in self._explanations_implied_by(other=other, explanation=context):
@@ -637,8 +639,7 @@ class Comparable(ABC):
         if not isinstance(context, Explanation):
             context = Explanation.from_context(context)
         for new in self._explanations_same_meaning(other=other, explanation=context):
-            result = new.with_match(FactorMatch(self, means, other))
-            yield result
+            yield new.with_match(FactorMatch(self, means, other))
 
     def _generic_register(self, other: Comparable) -> ContextRegister:
         register = ContextRegister()
