@@ -1,6 +1,6 @@
 Changelog
 =========
-dev
+0.3.0 (2021-03-19)
 ------------------
 - add FactorMatch NamedTuples to be listed in Explanation
 - remove FactorGroup.comparison method. Instead use implies, contradicts, etc.
