@@ -492,7 +492,7 @@ class Comparable(ABC):
             yield new.with_match(FactorMatch(self, consistent_with, other))
 
     def _explanations_contradiction(
-        self, other: Comparable, context: Explanation
+        self, other: Comparable, explanation: Explanation
     ) -> Iterator[Explanation]:
         if not isinstance(other, Comparable):
             raise TypeError(
@@ -502,14 +502,14 @@ class Comparable(ABC):
         if isinstance(other, self.__class__):
             if not self.__dict__.get("absent"):
                 if not other.__dict__.get("absent"):
-                    yield from self._contradicts_if_present(other, context)
+                    yield from self._contradicts_if_present(other, explanation)
                 else:
-                    yield from self._implies_if_present(other, context)
+                    yield from self._implies_if_present(other, explanation)
             elif self.__dict__.get("absent"):
                 # No contradiction between absences of any two Comparables
                 if not other.__dict__.get("absent"):
-                    explanation_reversed = context.with_context(
-                        context.context.reversed()
+                    explanation_reversed = explanation.with_context(
+                        explanation.context.reversed()
                     )
                     test = other._implies_if_present(self, explanation_reversed)
                     for new_explanation in test:
@@ -517,9 +517,9 @@ class Comparable(ABC):
                             new_explanation.context.reversed()
                         )
         elif isinstance(other, Iterable):
-            explanation_reversed = context.with_context(context.context.reversed())
+            explanation_reversed = explanation.reversed_context()
             yield from other._explanations_contradiction(
-                self, context=explanation_reversed
+                self, explanation=explanation_reversed
             )
 
     def explanations_contradiction(
@@ -540,7 +540,7 @@ class Comparable(ABC):
         if not isinstance(context, Explanation):
             context = Explanation.from_context(context)
         for new_explanation in self._explanations_contradiction(
-            other=other, context=context
+            other=other, explanation=context
         ):
             yield new_explanation.with_match(
                 FactorMatch(left=self, operation=contradicts, right=other)
