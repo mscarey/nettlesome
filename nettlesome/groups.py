@@ -328,7 +328,7 @@ class FactorGroup(Comparable):
     ) -> Iterator[Explanation]:
         """Find contexts that would cause all of ``other``'s Factors to be in ``self``."""
         explanation = Explanation(
-            factor_matches=[],
+            reasons=[],
             context=context or ContextRegister(),
             operation=means,
         )
@@ -361,7 +361,7 @@ class FactorGroup(Comparable):
         context_for_other = context.reversed()
 
         blank = Explanation(
-            factor_matches=[],
+            reasons=[],
             context=context_for_other,
             operation=means,
         )

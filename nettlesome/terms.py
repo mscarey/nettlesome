@@ -1264,11 +1264,11 @@ class FactorMatch(NamedTuple):
 class Explanation:
     def __init__(
         self,
-        factor_matches: List[FactorMatch],
+        reasons: List[FactorMatch],
         context: Optional[ContextRegister] = None,
         operation: Callable = operator.ge,
     ):
-        self.factor_matches = factor_matches
+        self.reasons = reasons
         self.context = context or ContextRegister()
         if not isinstance(self.context, ContextRegister):
             raise TypeError(
@@ -1278,7 +1278,7 @@ class Explanation:
 
     def __str__(self):
         context_text = f"Because {self.context.reason},\n" if self.context else "\n"
-        match_texts = [str(match) for match in self.factor_matches]
+        match_texts = [str(match) for match in self.reasons]
         if len(match_texts) > 1:
             match_texts[-2] = match_texts[-2].rstrip("\n") + ", and\n"
         for line in match_texts:
@@ -1286,12 +1286,12 @@ class Explanation:
         return context_text.rstrip("\n")
 
     def __repr__(self) -> str:
-        return f"Explanation(matches={repr(self.factor_matches)}, context={repr(self.context)}), operation={repr(self.operation)})"
+        return f"Explanation(matches={repr(self.reasons)}, context={repr(self.context)}), operation={repr(self.operation)})"
 
     @property
     def short_string(self) -> str:
         context_text = f"Because {self.context.reason}, " if self.context else ""
-        match_texts = [match.short_string for match in self.factor_matches]
+        match_texts = [match.short_string for match in self.reasons]
         if len(match_texts) > 1:
             match_texts[-2:] = [f"{match_texts[-2]}, and {match_texts[-1]}"]
         context_text += ", ".join(match_texts)
@@ -1299,7 +1299,7 @@ class Explanation:
 
     @classmethod
     def from_context(cls, context: Optional[ContextRegister] = None) -> Explanation:
-        return Explanation(factor_matches=[], context=context or ContextRegister())
+        return Explanation(reasons=[], context=context or ContextRegister())
 
     def operate(self, left: Comparable, right: Comparable) -> Iterator[Explanation]:
         """Generate further explanations for applying self.operation to a new Factor pair."""
@@ -1321,16 +1321,16 @@ class Explanation:
 
     def with_match(self, match: FactorMatch) -> Explanation:
         """Add a pair of compared objects that has been found to satisfy operation, given context."""
-        new_matches = self.factor_matches + [match]
+        new_matches = self.reasons + [match]
         return Explanation(
-            factor_matches=new_matches,
+            reasons=new_matches,
             context=self.context,
             operation=self.operation,
         )
 
     def with_context(self, context: ContextRegister) -> Explanation:
         return Explanation(
-            factor_matches=self.factor_matches,
+            reasons=self.reasons,
             context=context,
             operation=self.operation,
         )

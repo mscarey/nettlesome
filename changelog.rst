@@ -5,6 +5,9 @@ dev
 - add FactorMatch NamedTuples to be listed in Explanation
 - remove FactorGroup.comparison method. Instead use implies, contradicts, etc.
 - Factor "explanations" methods yield Explanation, not ContextRegister
+- add FactorGroup.explanations_implied_by method
+- fix bug: shares_all_factors passed without checking all factors
+- fix bug: two empty FactorGroups should have same meaning
 
 0.2.2 (2021-03-08)
 ------------------
