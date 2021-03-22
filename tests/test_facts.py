@@ -133,6 +133,14 @@ class TestFacts:
         )
         assert len(statement) == 1
 
+    def test_truth_param(self):
+        no_license = Statement(
+            "$business was licensed as a money transmitting business",
+            truth=False,
+            terms=Entity("Helix"),
+        )
+        assert no_license.predicate.truth is False
+
 
 class TestSameMeaning:
     def test_equality_factor_from_same_predicate(self, make_statement):
@@ -534,7 +542,7 @@ class TestContradiction:
             comparison=means,
             context=context,
         )
-        assert not any(register is not None for register in update)
+        assert all(register is None for register in update)
 
     def test_entity_consistency_identity_not_equality(self, make_statement):
 
@@ -545,7 +553,7 @@ class TestContradiction:
             context=register,
             comparison=means,
         )
-        assert not any(register is not None for register in update)
+        assert all(register is None for register in update)
 
     def test_check_entity_consistency_type_error(self, make_statement, make_predicate):
         """

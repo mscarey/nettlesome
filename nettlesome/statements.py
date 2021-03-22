@@ -32,6 +32,7 @@ class Statement(Factor):
         name: str = "",
         absent: bool = False,
         generic: bool = False,
+        truth: Optional[bool] = None,
     ):
         """
         Normalize ``terms`` to initialize Statement.
@@ -59,11 +60,16 @@ class Statement(Factor):
             object of the same class without changing the truth of a
             :class:`:class:`~nettlesome.predicates.Predicate`` in
             which it is mentioned.
+
+        :param truth:
+            a new "truth" attribute for the "predicate", if needed.
         """
         terms = terms or TermSequence()
 
         if isinstance(predicate, str):
             predicate = Predicate(predicate)
+        if truth is not None:
+            predicate.truth = truth
         self.predicate = predicate
 
         if isinstance(terms, Mapping):
@@ -237,8 +243,8 @@ class Statement(Factor):
             right = [term for term in term_permutation if term is not None]
             changes = ContextRegister.from_lists(left, right)
             changed_registry = matches.replace_keys(changes)
-            if not any(
-                changed_registry == returned_dict for returned_dict in already_returned
+            if all(
+                changed_registry != returned_dict for returned_dict in already_returned
             ):
                 already_returned.append(changed_registry)
                 yield changed_registry
