@@ -71,7 +71,7 @@ class TestDoctrine:
             Entity("Twitter user"), Entity("Python Software Foundation", generic=False)
         )
         new = self.generic_authority.new_context(context)
-        assert "according to the entity Python" in str(new)
+        assert "according to Python" in str(new)
 
 
 class TestInterchangeable:

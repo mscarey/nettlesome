@@ -39,7 +39,9 @@ class Entity(Term):
         super().__init__(name=name, generic=generic)
 
     def __str__(self):
-        return super().__str__().format(self.short_string)
+        if self.generic:
+            return f"<{self.name}>"
+        return self.name
 
     @property
     def short_string(self):
@@ -49,9 +51,7 @@ class Entity(Term):
         In Nettlesome, including angle brackets around the representation
         of an object is an indication that the object is generic.
         """
-        if self.generic:
-            return f"<{self.name}>"
-        return self.name
+        return str(self)
 
     def __repr__(self) -> str:
         return (

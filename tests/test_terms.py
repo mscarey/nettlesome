@@ -15,6 +15,10 @@ class TestMakeEntities:
         generic = jon.make_generic()
         assert generic.generic is True
 
+    def test_wrapped_string(self):
+        entity = Entity("the mummy")
+        assert entity.wrapped_string == "<the mummy>"
+
     def test_context_register(self):
         """
         There will be a match because both object are :class:`.Term`.
