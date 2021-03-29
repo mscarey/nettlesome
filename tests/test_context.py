@@ -2,7 +2,7 @@ import operator
 
 import pytest
 
-from nettlesome.terms import ContextRegister, means
+from nettlesome.terms import ContextRegister, Explanation, means
 from nettlesome.entities import Entity
 from nettlesome.groups import FactorGroup
 from nettlesome.predicates import Predicate
@@ -146,6 +146,14 @@ class TestContextRegisters:
         assert first_pattern[0].name == second_pattern[1].name
         assert first_pattern[1].name == second_pattern[0].name
         assert first_pattern[0].name != first_pattern[1].name
+
+    def test_wrong_type_in_input_list(self, make_statement):
+        explanation = Explanation(reasons=[])
+        with pytest.raises(TypeError):
+            ContextRegister.from_lists(
+                to_replace=[Entity("Al"), explanation],
+                replacements=[Entity("Bo"), Entity("Cid")],
+            )
 
 
 class TestLikelyContext:

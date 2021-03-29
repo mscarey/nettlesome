@@ -1087,12 +1087,6 @@ class ContextRegister:
             replacements = [
                 expand_string_from_source(change, incoming) for change in replacements
             ]
-        for change in replacements:
-            if not isinstance(change, Comparable):
-                raise TypeError(
-                    "'replacements' must be a list of replacement "
-                    f"Terms, but {change} was type {type(change)}."
-                )
         if len(to_replace) != len(replacements):
             raise ValueError(
                 "Cannot create ContextRegister because 'to_replace' is not the same length "

@@ -132,7 +132,7 @@ class TestStatements:
         new = shot.new_context(changes=["Henry", Entity("Jenna")], source=told)
         assert "<henry> shot <jenna>" in new.short_string.lower()
 
-    def test_new_context_no_strings_with_terms_to_replace(self):
+    def test_new_context_changes_as_strings_replacements_as_entities(self):
         predicate_shot = Predicate("$shooter shot $victim")
         predicate_no_gun = Predicate("$suspect had a gun", truth=False)
         predicate_told = Predicate("$speaker told $hearer $statement")
@@ -141,12 +141,12 @@ class TestStatements:
         told = Statement(
             predicate_told, terms=[Entity("Henry"), Entity("Jenna"), no_gun]
         )
-        with pytest.raises(TypeError):
-            shot.new_context(
-                changes=["Henry", "Jenna"],
-                terms_to_replace=[Entity("Alice"), Entity("Bob")],
-                source=told,
-            )
+        new = shot.new_context(
+            changes=["Henry", "Jenna"],
+            terms_to_replace=[Entity("Alice"), Entity("Bob")],
+            source=told,
+        )
+        assert str(new).lower() == "the statement that <henry> shot <jenna>"
 
     def test_new_context_use_terms_to_replace(self):
         predicate_shot = Predicate("$shooter shot $victim")
