@@ -472,6 +472,13 @@ class TestImpliedBy:
         left = FactorGroup(make_statement["more"])
         assert left.implied_by(make_statement["way_more"])
 
+    def test_context_prevents_implied_by_factor(self, make_statement):
+        left = FactorGroup(make_statement["more"])
+        assert not left.implied_by(
+            make_statement["way_more"],
+            context=(["<San Francisco>"], [Entity("Richmond")]),
+        )
+
 
 class TestContradiction:
     def test_contradiction_of_group(self):

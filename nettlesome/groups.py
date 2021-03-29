@@ -174,7 +174,9 @@ class FactorGroup(Comparable):
         """Find contexts that would cause ``self`` to contradict ``other``."""
 
         if not isinstance(context, Explanation):
-            context = Explanation.from_context(context)
+            context = context = Explanation.from_context(
+                context=context, current=self, incoming=other
+            )
         yield from self._explanations_contradiction(other=other, explanation=context)
 
     def contradicts(
@@ -221,7 +223,9 @@ class FactorGroup(Comparable):
     ) -> Iterator[Explanation]:
         """Generate explanations for how other may imply self."""
         if not isinstance(context, Explanation):
-            context = Explanation.from_context(context)
+            context = context = Explanation.from_context(
+                context=context, current=self, incoming=other
+            )
         yield from self._explanations_implied_by(other=other, explanation=context)
 
     def explanations_union(
@@ -404,7 +408,9 @@ class FactorGroup(Comparable):
     ) -> Iterator[Explanation]:
         """Yield explanations for how ``self`` can have the same meaning as ``other``."""
         if not isinstance(context, Explanation):
-            context = Explanation.from_context(context)
+            context = context = Explanation.from_context(
+                context=context, current=self, incoming=other
+            )
         context.operation = means
         to_match = self.from_comparable(other)
         if to_match is not None:

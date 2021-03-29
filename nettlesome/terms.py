@@ -451,7 +451,9 @@ class Comparable(ABC):
             the same time. Otherwise returns ``False``.
         """
         if not isinstance(context, Explanation):
-            context = Explanation.from_context(context)
+            context = context = Explanation.from_context(
+                context=context, current=self, incoming=other
+            )
         for new in self._explanations_consistent_with(other, explanation=context):
             yield new.with_match(FactorMatch(self, consistent_with, other))
 
@@ -502,7 +504,9 @@ class Comparable(ABC):
             the same time. Otherwise returns ``False``.
         """
         if not isinstance(context, Explanation):
-            context = Explanation.from_context(context)
+            context = context = Explanation.from_context(
+                context=context, current=self, incoming=other
+            )
         for new_explanation in self._explanations_contradiction(
             other=other, explanation=context
         ):
@@ -550,7 +554,9 @@ class Comparable(ABC):
         of view and then swap the keys and values.
         """
         if not isinstance(context, Explanation):
-            context = Explanation.from_context(context)
+            context = context = Explanation.from_context(
+                context=context, current=self, incoming=other
+            )
         for new_explanation in self._explanations_implication(
             other=other, explanation=context
         ):
@@ -574,7 +580,9 @@ class Comparable(ABC):
     ) -> Iterator[Explanation]:
         """Generate explanations for how other may imply self."""
         if not isinstance(context, Explanation):
-            context = Explanation.from_context(context)
+            context = context = Explanation.from_context(
+                context=context, current=self, incoming=other
+            )
         for new in self._explanations_implied_by(other=other, explanation=context):
             yield new.with_match(FactorMatch(other, operator.ge, self))
 
@@ -601,7 +609,9 @@ class Comparable(ABC):
     ) -> Iterator[Explanation]:
         """Generate ways to match contexts of self and other so they mean the same."""
         if not isinstance(context, Explanation):
-            context = Explanation.from_context(context)
+            context = context = Explanation.from_context(
+                context=context, current=self, incoming=other
+            )
         for new in self._explanations_same_meaning(other=other, explanation=context):
             yield new.with_match(FactorMatch(self, means, other))
 
@@ -1432,7 +1442,9 @@ class Term(Comparable):
         context: Optional[Union[ContextRegister, Explanation]] = None,
     ) -> Iterator[Explanation]:
         if not isinstance(context, Explanation):
-            context = Explanation.from_context(context)
+            context = context = Explanation.from_context(
+                context=context, current=self, incoming=other
+            )
         if not isinstance(other, Term):
             yield from other.explanations_consistent_with(
                 self, context.reversed_context()
