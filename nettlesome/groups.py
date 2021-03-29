@@ -318,7 +318,9 @@ class FactorGroup(Comparable):
     ) -> Iterator[Explanation]:
         """Find contexts that would cause ``self`` to imply ``other``."""
         if not isinstance(context, Explanation):
-            context = Explanation.from_context(context)
+            context = Explanation.from_context(
+                context=context, current=self, incoming=other
+            )
         yield from self._explanations_implication(other, context)
 
     def _contexts_has_all_factors_of(

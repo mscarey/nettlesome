@@ -1,3 +1,5 @@
+"""Tests that Statements work the same as AuthoritySpoke Facts."""
+
 import operator
 
 import pytest

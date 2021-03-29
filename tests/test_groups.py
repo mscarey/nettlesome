@@ -420,6 +420,20 @@ class TestImplication:
         )
         assert protest_facts.implies(speech_zone_facts)
 
+    def test_context_prevents_implication(self, make_statement):
+        left = FactorGroup([make_statement["shooting"], make_statement["crime"]])
+        right = FactorGroup(
+            [make_statement["shooting_craig"], make_statement["crime_craig"]]
+        )
+        assert left.implies(right)
+        assert not left.implies(
+            right,
+            context=(
+                [Entity("Alice"), Entity("Bob")],
+                [Entity("Dan"), Entity("Craig")],
+            ),
+        )
+
 
 class TestImpliedBy:
     def test_implied_by(self):

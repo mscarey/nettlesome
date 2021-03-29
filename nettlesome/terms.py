@@ -97,11 +97,11 @@ def new_context_helper(func: Callable):
         source: Optional[Comparable] = None,
     ) -> Comparable:
 
-        expanded_changes = convert_changes_to_register(
-            factor=factor,
+        expanded_changes = ContextRegister.create(
+            current=factor,
             changes=changes,
             terms_to_replace=terms_to_replace,
-            source=source,
+            incoming=source,
         )
 
         for old, new in expanded_changes.items():
@@ -124,42 +124,6 @@ def expand_string_from_source(
     if result is None:
         raise ValueError(f'Unable to find replacement term for text "{term}"')
     return result
-
-
-def convert_changes_to_register(
-    factor: Comparable,
-    changes: Union[Comparable, ContextRegister, Sequence[Comparable]],
-    source: Optional[Comparable],
-    terms_to_replace: Optional[Sequence[Comparable]] = None,
-) -> ContextRegister:
-    """Convert changes to ``factor``, expressed as normal Python objects, to a ContextRegister."""
-    if isinstance(changes, ContextRegister):
-        return changes
-    if not isinstance(changes, Iterable):
-        changes = [changes]
-    if terms_to_replace:
-        for change in changes:
-            if not isinstance(change, Comparable):
-                raise TypeError(
-                    "If 'terms_to_replace' is given, 'changes' must be a list of replacement "
-                    f"Terms, but {change} was type {type(change)}."
-                )
-        if len(terms_to_replace) != len(changes):
-            raise ValueError(
-                "Cannot create ContextRegister because 'terms_to_replace' is not the same length "
-                f"as 'changes'.\nterms_to_replace: ({terms_to_replace})\nchanges: ({changes})"
-            )
-        return ContextRegister.from_lists(keys=terms_to_replace, values=changes)
-
-    if source:
-        changes = [expand_string_from_source(change, source) for change in changes]
-    generic_factors = list(factor.generic_factors_by_str().values())
-    if len(generic_factors) != len(changes):
-        raise ValueError(
-            f"Needed {len(generic_factors)} replacements for the "
-            + f"items of generic_factors, but {len(changes)} were provided."
-        )
-    return ContextRegister.from_lists(generic_factors, changes)
 
 
 class Comparable(ABC):
@@ -1106,6 +1070,8 @@ class ContextRegister:
         cls,
         keys: Union[Sequence[Comparable]],
         values: Union[Sequence[Comparable]],
+        current: Optional[Comparable] = None,
+        incoming: Optional[Comparable] = None,
     ) -> ContextRegister:
         """Make new ContextRegister from two lists of Comparables."""
         pairs = zip(keys, values)
@@ -1113,6 +1079,49 @@ class ContextRegister:
         for pair in pairs:
             new.insert_pair(pair[0], pair[1])
         return new
+
+    @classmethod
+    def create(
+        cls,
+        changes: ContextMemo,
+        current: Optional[Comparable] = None,
+        incoming: Optional[Comparable] = None,
+        terms_to_replace: Optional[Sequence[Comparable]] = None,
+    ) -> ContextRegister:
+        """Convert changes to ``factor``, expressed as built-in Python objects, to a ContextRegister."""
+        if isinstance(changes, ContextRegister):
+            return changes
+        if not isinstance(changes, Iterable):
+            changes = [changes]
+        if len(changes) == 2 and all(isinstance(item, List) for item in changes):
+            return cls.from_lists(
+                keys=changes[0], values=changes[1], current=current, incoming=incoming
+            )
+        if terms_to_replace:
+            for change in changes:
+                if not isinstance(change, Comparable):
+                    raise TypeError(
+                        "If 'terms_to_replace' is given, 'changes' must be a list of replacement "
+                        f"Terms, but {change} was type {type(change)}."
+                    )
+            if len(terms_to_replace) != len(changes):
+                raise ValueError(
+                    "Cannot create ContextRegister because 'terms_to_replace' is not the same length "
+                    f"as 'changes'.\nterms_to_replace: ({terms_to_replace})\nchanges: ({changes})"
+                )
+            return cls.from_lists(keys=terms_to_replace, values=changes)
+
+        if incoming:
+            changes = [
+                expand_string_from_source(change, incoming) for change in changes
+            ]
+        generic_factors = list(current.generic_factors_by_str().values())
+        if len(generic_factors) != len(changes):
+            raise ValueError(
+                f"Needed {len(generic_factors)} replacements for the "
+                + f"items of generic_factors, but {len(changes)} were provided."
+            )
+        return cls.from_lists(generic_factors, changes)
 
     def assigns_same_value_to_key_factor(
         self, other: ContextRegister, key_factor: Comparable
@@ -1298,7 +1307,18 @@ class Explanation:
         return context_text
 
     @classmethod
-    def from_context(cls, context: Optional[ContextRegister] = None) -> Explanation:
+    def from_context(
+        cls,
+        context: Optional[ContextMemo] = None,
+        current: Optional[Comparable] = None,
+        incoming: Optional[Comparable] = None,
+    ) -> Explanation:
+        if not context:
+            context = ContextRegister()
+        elif not isinstance(context, ContextRegister):
+            context = ContextRegister.create(
+                changes=context, current=current, incoming=incoming
+            )
         return Explanation(reasons=[], context=context or ContextRegister())
 
     def operate(self, left: Comparable, right: Comparable) -> Iterator[Explanation]:
@@ -1482,3 +1502,11 @@ class TermSequence(Tuple[Optional[Term], ...]):
         context = context or ContextRegister()
         ordered_pairs = list(zip_longest(self, other))
         yield from update_register(register=context, factor_pairs=ordered_pairs)
+
+
+# Type annotation of formats for describing the context of a comparison
+# between two Factors. All of these can be converted to a ContextRegister
+# using information from the Factors being compared.
+ContextMemo = Union[
+    ContextRegister, List[Term], Tuple[List[Term], List[Term]], Dict[str, Term]
+]
