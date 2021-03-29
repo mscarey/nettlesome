@@ -1074,6 +1074,8 @@ class ContextRegister:
         incoming: Optional[Comparable] = None,
     ) -> ContextRegister:
         """Make new ContextRegister from two lists of Comparables."""
+        keys = [expand_string_from_source(change, current) for change in keys]
+        values = [expand_string_from_source(change, incoming) for change in values]
         pairs = zip(keys, values)
         new = cls()
         for pair in pairs:
@@ -1096,6 +1098,13 @@ class ContextRegister:
         if len(changes) == 2 and all(isinstance(item, List) for item in changes):
             return cls.from_lists(
                 keys=changes[0], values=changes[1], current=current, incoming=incoming
+            )
+        if isinstance(changes, Dict):
+            return cls.from_lists(
+                keys=changes.keys(),
+                values=changes.values(),
+                current=current,
+                incoming=incoming,
             )
         if terms_to_replace:
             for change in changes:

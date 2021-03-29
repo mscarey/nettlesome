@@ -434,6 +434,16 @@ class TestImplication:
             ),
         )
 
+    def test_context_preventing_implication_as_dict(self, make_statement):
+        left = FactorGroup([make_statement["shooting"], make_statement["crime"]])
+        right = FactorGroup(
+            [make_statement["shooting_craig"], make_statement["crime_craig"]]
+        )
+        assert left.implies(right)
+        assert not left.implies(
+            right, context={"<Alice>": Entity("Dan"), "<Bob>": Entity("Craig")}
+        )
+
 
 class TestImpliedBy:
     def test_implied_by(self):
