@@ -711,6 +711,15 @@ class TestContradiction:
         assert fact.contradicts(absent_fact)
         assert absent_fact.contradicts(fact)
 
+    def test_contradiction_with_empty_explanation_for_context(self):
+        predicate = Predicate("$person was a person")
+        fact = Statement(predicate, terms=Entity("Alice"))
+        absent_fact = Statement(predicate, terms=Entity("Alice"), absent=True)
+        explanation = Explanation(reasons=[])
+
+        assert fact.contradicts(absent_fact, context=explanation)
+        assert absent_fact.contradicts(fact, context=explanation)
+
     def test_absences_of_contradictory_facts_consistent(self):
         predicate = Comparison(
             "the distance between $place1 and $place2 was",

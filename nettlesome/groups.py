@@ -10,7 +10,7 @@ from typing import Optional, Sequence, Tuple, Union
 
 from nettlesome.factors import Factor
 
-from nettlesome.terms import Comparable, ContextRegister
+from nettlesome.terms import Comparable, ContextMemo, ContextRegister
 from nettlesome.terms import Explanation, contradicts, means
 
 
@@ -169,14 +169,13 @@ class FactorGroup(Comparable):
     def explanations_contradiction(
         self,
         other: Comparable,
-        context: Optional[Union[ContextRegister, Explanation]] = None,
+        context: Optional[Union[ContextMemo, Explanation]] = None,
     ) -> Iterator[Explanation]:
         """Find contexts that would cause ``self`` to contradict ``other``."""
 
-        if not isinstance(context, Explanation):
-            context = context = Explanation.from_context(
-                context=context, current=self, incoming=other
-            )
+        context = Explanation.from_context(
+            context=context, current=self, incoming=other
+        )
         yield from self._explanations_contradiction(other=other, explanation=context)
 
     def contradicts(
@@ -222,10 +221,9 @@ class FactorGroup(Comparable):
         context: Optional[Union[ContextRegister, Explanation]] = None,
     ) -> Iterator[Explanation]:
         """Generate explanations for how other may imply self."""
-        if not isinstance(context, Explanation):
-            context = context = Explanation.from_context(
-                context=context, current=self, incoming=other
-            )
+        context = context = Explanation.from_context(
+            context=context, current=self, incoming=other
+        )
         yield from self._explanations_implied_by(other=other, explanation=context)
 
     def explanations_union(
@@ -321,10 +319,9 @@ class FactorGroup(Comparable):
         context: Optional[Union[ContextRegister, Explanation]] = None,
     ) -> Iterator[Explanation]:
         """Find contexts that would cause ``self`` to imply ``other``."""
-        if not isinstance(context, Explanation):
-            context = Explanation.from_context(
-                context=context, current=self, incoming=other
-            )
+        context = Explanation.from_context(
+            context=context, current=self, incoming=other
+        )
         yield from self._explanations_implication(other, context)
 
     def _contexts_has_all_factors_of(
@@ -407,10 +404,9 @@ class FactorGroup(Comparable):
         context: Optional[Union[ContextRegister, Explanation]] = None,
     ) -> Iterator[Explanation]:
         """Yield explanations for how ``self`` can have the same meaning as ``other``."""
-        if not isinstance(context, Explanation):
-            context = context = Explanation.from_context(
-                context=context, current=self, incoming=other
-            )
+        context = context = Explanation.from_context(
+            context=context, current=self, incoming=other
+        )
         context.operation = means
         to_match = self.from_comparable(other)
         if to_match is not None:

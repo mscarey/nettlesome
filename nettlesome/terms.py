@@ -450,10 +450,9 @@ class Comparable(ABC):
             ``True`` if self and other can't both be true at
             the same time. Otherwise returns ``False``.
         """
-        if not isinstance(context, Explanation):
-            context = context = Explanation.from_context(
-                context=context, current=self, incoming=other
-            )
+        context = context = Explanation.from_context(
+            context=context, current=self, incoming=other
+        )
         for new in self._explanations_consistent_with(other, explanation=context):
             yield new.with_match(FactorMatch(self, consistent_with, other))
 
@@ -503,10 +502,9 @@ class Comparable(ABC):
             ``True`` if self and other can't both be true at
             the same time. Otherwise returns ``False``.
         """
-        if not isinstance(context, Explanation):
-            context = context = Explanation.from_context(
-                context=context, current=self, incoming=other
-            )
+        context = context = Explanation.from_context(
+            context=context, current=self, incoming=other
+        )
         for new_explanation in self._explanations_contradiction(
             other=other, explanation=context
         ):
@@ -553,10 +551,9 @@ class Comparable(ABC):
         If self is `absent`, then generate a ContextRegister from other's point
         of view and then swap the keys and values.
         """
-        if not isinstance(context, Explanation):
-            context = context = Explanation.from_context(
-                context=context, current=self, incoming=other
-            )
+        context = context = Explanation.from_context(
+            context=context, current=self, incoming=other
+        )
         for new_explanation in self._explanations_implication(
             other=other, explanation=context
         ):
@@ -579,10 +576,9 @@ class Comparable(ABC):
         context: Optional[Union[ContextRegister, Explanation]] = None,
     ) -> Iterator[Explanation]:
         """Generate explanations for how other may imply self."""
-        if not isinstance(context, Explanation):
-            context = context = Explanation.from_context(
-                context=context, current=self, incoming=other
-            )
+        context = context = Explanation.from_context(
+            context=context, current=self, incoming=other
+        )
         for new in self._explanations_implied_by(other=other, explanation=context):
             yield new.with_match(FactorMatch(other, operator.ge, self))
 
@@ -608,10 +604,9 @@ class Comparable(ABC):
         context: Optional[Union[Explanation, ContextRegister]] = None,
     ) -> Iterator[Explanation]:
         """Generate ways to match contexts of self and other so they mean the same."""
-        if not isinstance(context, Explanation):
-            context = context = Explanation.from_context(
-                context=context, current=self, incoming=other
-            )
+        context = context = Explanation.from_context(
+            context=context, current=self, incoming=other
+        )
         for new in self._explanations_same_meaning(other=other, explanation=context):
             yield new.with_match(FactorMatch(self, means, other))
 
@@ -1328,10 +1323,12 @@ class Explanation:
     @classmethod
     def from_context(
         cls,
-        context: Optional[ContextMemo] = None,
+        context: Optional[Union[ContextMemo, Explanation]] = None,
         current: Optional[Comparable] = None,
         incoming: Optional[Comparable] = None,
     ) -> Explanation:
+        if isinstance(context, Explanation):
+            return context
         if not context:
             context = ContextRegister()
         elif not isinstance(context, ContextRegister):
@@ -1441,10 +1438,9 @@ class Term(Comparable):
         other: Comparable,
         context: Optional[Union[ContextRegister, Explanation]] = None,
     ) -> Iterator[Explanation]:
-        if not isinstance(context, Explanation):
-            context = context = Explanation.from_context(
-                context=context, current=self, incoming=other
-            )
+        context = context = Explanation.from_context(
+            context=context, current=self, incoming=other
+        )
         if not isinstance(other, Term):
             yield from other.explanations_consistent_with(
                 self, context.reversed_context()
