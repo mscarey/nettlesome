@@ -145,8 +145,7 @@ class StatementTemplate(Template):
             order they appear in the template string.
         """
         mapping = self.mapping_placeholder_to_term(context)
-        mapping_to_string = {k: v.short_string for k, v in mapping.items()}
-        return mapping_to_string
+        return {k: v.short_string for k, v in mapping.items()}
 
     def substitute_with_plurals(self, terms: Sequence[Term]) -> str:
         """
