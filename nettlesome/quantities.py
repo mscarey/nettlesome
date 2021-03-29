@@ -17,13 +17,12 @@ Q_ = ureg.Quantity
 
 
 def scale_interval(interval: Interval, scalar: Union[int, float]) -> Interval:
-    result = Interval(
+    return Interval(
         start=interval.start * scalar,
         end=interval.end * scalar,
         left_open=interval.left_open,
         right_open=interval.right_open,
     )
-    return result
 
 
 def scale_union_of_intervals(
@@ -32,14 +31,12 @@ def scale_union_of_intervals(
     scaled_intervals = [
         scale_interval(interval=interval, scalar=scalar) for interval in ranges.args
     ]
-    result = sympy.Union(*scaled_intervals)
-    return result
+    return sympy.Union(*scaled_intervals)
 
 
 def scale_finiteset(elements: FiniteSet, scalar: Union[int, float]) -> FiniteSet:
     scaled_intervals = [element * scalar for element in elements.args]
-    result = FiniteSet(*scaled_intervals)
-    return result
+    return FiniteSet(*scaled_intervals)
 
 
 def scale_ranges(
@@ -251,12 +248,10 @@ class UnitRange(QuantityRange):
             raise TypeError(
                 f"Unit coversions only available for type UnitRange, not {other.__class__}."
             )
-        if other.quantity.units != self.quantity.units:
-            ratio_of_units = other.quantity.units / self.quantity.units
-            other_interval = scale_ranges(other.interval, ratio_of_units)
-        else:
-            other_interval = other.interval
-        return other_interval
+        if other.quantity.units == self.quantity.units:
+            return other.interval
+        ratio_of_units = other.quantity.units / self.quantity.units
+        return scale_ranges(other.interval, ratio_of_units)
 
     def means(self, other: Any) -> bool:
         """Whether ``self`` and ``other`` represent the same quantity range."""
@@ -308,10 +303,7 @@ class NumberRange(QuantityRange):
                 f'not "{quantity}", which is type {type(quantity)}.'
             )
         self.quantity = quantity
-        if isinstance(self.quantity, int):
-            self.domain = S.Naturals0
-        else:
-            self.domain = S.Reals
+        self.domain = S.Naturals0 if isinstance(self.quantity, int) else S.Reals
         super().__init__(sign=sign, include_negatives=include_negatives)
 
     @property

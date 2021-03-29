@@ -517,12 +517,12 @@ class TestContradiction:
         )
         assert any(register is not None for register in easy_update)
         harder_register = ContextRegister.from_lists(
-            keys=[
+            to_replace=[
                 Entity("Alice"),
                 Entity("Bob"),
                 Entity("Craig"),
             ],
-            values=[
+            replacements=[
                 Entity("Bob"),
                 Entity("Alice"),
                 Entity("Craig"),

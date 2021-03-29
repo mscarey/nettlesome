@@ -99,8 +99,8 @@ class TestContextRegisters:
     def test_import_to_context_register(self, make_statement):
 
         left = ContextRegister.from_lists(
-            keys=[make_statement["shooting"], Entity("Alice")],
-            values=[make_statement["shooting_entity_order"], Entity("Bob")],
+            to_replace=[make_statement["shooting"], Entity("Alice")],
+            replacements=[make_statement["shooting_entity_order"], Entity("Bob")],
         )
         right = ContextRegister()
         right.insert_pair(Entity("Bob"), Entity("Alice"))

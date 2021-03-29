@@ -96,11 +96,10 @@ class FactorGroup(Comparable):
         self, other_factor: Comparable, context: ContextRegister
     ) -> bool:
         for self_factor in self:
-            if self_factor.contradicts(other_factor, context=context):
-                if self_factor._all_generic_factors_match(
-                    other_factor, context=context
-                ):
-                    return True
+            if self_factor.contradicts(
+                other_factor, context=context
+            ) and self_factor._all_generic_factors_match(other_factor, context=context):
+                return True
         return False
 
     def consistent_with(

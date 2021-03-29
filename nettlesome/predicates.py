@@ -251,9 +251,7 @@ class Predicate:
             a sentence created by substituting string representations
             of terms for the placeholders in the content template
         """
-        with_plurals = self.template.substitute_with_plurals(terms)
-
-        return with_plurals
+        return self.template.substitute_with_plurals(terms)
 
     def contradicts(self, other: Any) -> bool:
         r"""
@@ -440,7 +438,7 @@ class Predicate:
 
         for index, placeholder in enumerate(without_duplicates):
             if placeholder[-1].isdigit:
-                for k in result.keys():
+                for k in result:
                     if k[-1].isdigit() and k[:-1] == placeholder[:-1]:
                         result[k].add(index)
         return result

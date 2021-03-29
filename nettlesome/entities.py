@@ -68,9 +68,12 @@ class Entity(Term):
         A "generic" Entity implies another Entity even if their names are not
         the same.
         """
-        if isinstance(other, Entity) and other.generic is False:
-            if self.generic or self.name != other.name:
-                return False
+        if (
+            isinstance(other, Entity)
+            and other.generic is False
+            and (self.generic or self.name != other.name)
+        ):
+            return False
         return super().implies(other=other, context=context)
 
     def means(

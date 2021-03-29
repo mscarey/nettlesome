@@ -98,10 +98,10 @@ def new_context_helper(func: Callable):
     ) -> Comparable:
 
         expanded_changes = ContextRegister.create(
-            current=factor,
             changes=changes,
-            terms_to_replace=terms_to_replace,
+            current=factor,
             incoming=source,
+            terms_to_replace=terms_to_replace,
         )
 
         for old, new in expanded_changes.items():
@@ -972,7 +972,7 @@ class Comparable(ABC):
         produce the right updated context.
         """
         incoming = ContextRegister.from_lists(
-            keys=self.generic_factors(), values=other.generic_factors()
+            to_replace=self.generic_factors(), replacements=other.generic_factors()
         )
         updated_context = context.merged_with(incoming)
         return updated_context
@@ -1073,15 +1073,32 @@ class ContextRegister:
     @classmethod
     def from_lists(
         cls,
-        keys: Union[Sequence[Comparable]],
-        values: Union[Sequence[Comparable]],
+        to_replace: Union[Sequence[Comparable]],
+        replacements: Union[Sequence[Comparable]],
         current: Optional[Comparable] = None,
         incoming: Optional[Comparable] = None,
     ) -> ContextRegister:
         """Make new ContextRegister from two lists of Comparables."""
-        keys = [expand_string_from_source(change, current) for change in keys]
-        values = [expand_string_from_source(change, incoming) for change in values]
-        pairs = zip(keys, values)
+        if current:
+            to_replace = [
+                expand_string_from_source(change, current) for change in to_replace
+            ]
+        if incoming:
+            replacements = [
+                expand_string_from_source(change, incoming) for change in replacements
+            ]
+        for change in replacements:
+            if not isinstance(change, Comparable):
+                raise TypeError(
+                    "'replacements' must be a list of replacement "
+                    f"Terms, but {change} was type {type(change)}."
+                )
+        if len(to_replace) != len(replacements):
+            raise ValueError(
+                "Cannot create ContextRegister because 'to_replace' is not the same length "
+                f"as 'replacements'.\to_replace: ({to_replace})\replacements: ({replacements})"
+            )
+        pairs = zip(to_replace, replacements)
         new = cls()
         for pair in pairs:
             new.insert_pair(pair[0], pair[1])
@@ -1093,7 +1110,7 @@ class ContextRegister:
         changes: ContextMemo,
         current: Optional[Comparable] = None,
         incoming: Optional[Comparable] = None,
-        terms_to_replace: Optional[Sequence[Comparable]] = None,
+        terms_to_replace: Optional[Sequence[Term]] = None,
     ) -> ContextRegister:
         """Convert changes to ``factor``, expressed as built-in Python objects, to a ContextRegister."""
         if isinstance(changes, ContextRegister):
@@ -1102,28 +1119,25 @@ class ContextRegister:
             changes = [changes]
         if len(changes) == 2 and all(isinstance(item, List) for item in changes):
             return cls.from_lists(
-                keys=changes[0], values=changes[1], current=current, incoming=incoming
+                to_replace=changes[0],
+                replacements=changes[1],
+                current=current,
+                incoming=incoming,
             )
         if isinstance(changes, Dict):
             return cls.from_lists(
-                keys=changes.keys(),
-                values=changes.values(),
+                to_replace=changes.keys(),
+                replacements=changes.values(),
                 current=current,
                 incoming=incoming,
             )
         if terms_to_replace:
-            for change in changes:
-                if not isinstance(change, Comparable):
-                    raise TypeError(
-                        "If 'terms_to_replace' is given, 'changes' must be a list of replacement "
-                        f"Terms, but {change} was type {type(change)}."
-                    )
-            if len(terms_to_replace) != len(changes):
-                raise ValueError(
-                    "Cannot create ContextRegister because 'terms_to_replace' is not the same length "
-                    f"as 'changes'.\nterms_to_replace: ({terms_to_replace})\nchanges: ({changes})"
-                )
-            return cls.from_lists(keys=terms_to_replace, values=changes)
+            return cls.from_lists(
+                to_replace=terms_to_replace,
+                replacements=changes,
+                current=current,
+                incoming=incoming,
+            )
 
         if incoming:
             changes = [
@@ -1230,7 +1244,7 @@ class ContextRegister:
     def reversed(self):
         """Swap keys for values and vice versa."""
         return ContextRegister.from_lists(
-            keys=self.values(), values=self.reverse_matches.values()
+            to_replace=self.values(), replacements=self.reverse_matches.values()
         )
 
     def merged_with(
