@@ -130,6 +130,7 @@ def expand_string_from_source(
 def expand_strings_from_source(
     to_expand: Sequence[Union[str, Term]], source: Optional[Comparable]
 ) -> List[Term]:
+    """Make list of Terms by replacing strings with the real Terms they reference."""
     return [expand_string_from_source(change, source) for change in to_expand]
 
 
@@ -167,7 +168,7 @@ class Comparable(ABC):
 
     @property
     def short_string(self) -> str:
-        """Return string representation without line breaks."""
+        """Summarize self without line breaks."""
         return textwrap.shorten(str(self), width=5000, placeholder="...")
 
     @property
@@ -1118,6 +1119,7 @@ class ContextRegister:
         current: Comparable,
         incoming: Optional[Comparable] = None,
     ):
+        """Make new ContextRegister from a list of replacement generic Terms."""
         changes = expand_strings_from_source(to_expand=changes, source=incoming)
         generic_terms = list(current.generic_terms_by_str().values())
         if len(generic_terms) != len(changes):
@@ -1297,6 +1299,8 @@ class ContextRegister:
 
 
 class FactorMatch(NamedTuple):
+    """A pair of corresponding Factors, with the operation that they can satisfy."""
+
     left: Comparable
     operation: Callable
     right: Comparable
@@ -1310,6 +1314,7 @@ class FactorMatch(NamedTuple):
 
     @property
     def short_string(self) -> str:
+        """Summarize self without line breaks."""
         relation = self.operation_names[self.operation]
         return f"{self.left.short_string} {relation} {self.right.short_string}"
 
@@ -1323,12 +1328,15 @@ class FactorMatch(NamedTuple):
 
 
 class Explanation:
+    """Explanation of how a comparison method between Comparables can succeed."""
+
     def __init__(
         self,
         reasons: List[FactorMatch],
         context: Optional[ContextRegister] = None,
         operation: Callable = operator.ge,
     ):
+        """Set pairs of corresponding Factors as "reasons", and corresponding generic Terms as "context"."""
         self.reasons = reasons
         self.context = context or ContextRegister()
         if not isinstance(self.context, ContextRegister):
@@ -1351,6 +1359,7 @@ class Explanation:
 
     @property
     def short_string(self) -> str:
+        """Summarize self without line breaks."""
         context_text = f"Because {self.context.reason}, " if self.context else ""
         match_texts = [match.short_string for match in self.reasons]
         if len(match_texts) > 1:
@@ -1365,6 +1374,7 @@ class Explanation:
         current: Optional[Comparable] = None,
         incoming: Optional[Comparable] = None,
     ) -> Explanation:
+        """Return new Explanation with self as context but no reasons."""
         if isinstance(context, Explanation):
             return context
         if not context:
@@ -1391,6 +1401,7 @@ class Explanation:
             )
 
     def reversed_context(self) -> Explanation:
+        """Make new copy of self, swapping keys and values of context."""
         return self.with_context(self.context.reversed())
 
     def with_match(self, match: FactorMatch) -> Explanation:
@@ -1403,6 +1414,7 @@ class Explanation:
         )
 
     def with_context(self, context: ContextRegister) -> Explanation:
+        """Make new copy of self, replacing context."""
         return Explanation(
             reasons=self.reasons,
             context=context,
@@ -1476,6 +1488,7 @@ class Term(Comparable):
         other: Comparable,
         context: Optional[Union[ContextRegister, Explanation]] = None,
     ) -> Iterator[Explanation]:
+        """Get Term assignments resulting in no contradiction between self and other."""
         context = context = Explanation.from_context(
             context=context, current=self, incoming=other
         )
@@ -1489,8 +1502,9 @@ class Term(Comparable):
             )
 
     def generic_terms_by_str(self) -> Dict[str, Term]:
+        """Get all generic Terms found in this Term, indexed by their string keys."""
         if self.generic:
-            return {self.short_string: self}
+            return {self.key: self}
         return super().generic_terms_by_str()
 
     @property

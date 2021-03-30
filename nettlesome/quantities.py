@@ -1,3 +1,5 @@
+"""Descriptions of quantities."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractproperty
@@ -17,6 +19,11 @@ Q_ = ureg.Quantity
 
 
 def scale_interval(interval: Interval, scalar: Union[int, float]) -> Interval:
+    """
+    Scale up one interval by multiplying by a scalar.
+
+    Used for converting the units of a UnitRange.
+    """
     return Interval(
         start=interval.start * scalar,
         end=interval.end * scalar,
@@ -28,6 +35,11 @@ def scale_interval(interval: Interval, scalar: Union[int, float]) -> Interval:
 def scale_union_of_intervals(
     ranges: sympy.Union, scalar: Union[int, float]
 ) -> sympy.Union:
+    """
+    Scale up union of several intervals by multiplying by a scalar.
+
+    Used for converting the units of a UnitRange.
+    """
     scaled_intervals = [
         scale_interval(interval=interval, scalar=scalar) for interval in ranges.args
     ]
@@ -35,6 +47,11 @@ def scale_union_of_intervals(
 
 
 def scale_finiteset(elements: FiniteSet, scalar: Union[int, float]) -> FiniteSet:
+    """
+    Scale up set of finite numbers by multiplying by a scalar.
+
+    Used for converting the units of a UnitRange.
+    """
     scaled_intervals = [element * scalar for element in elements.args]
     return FiniteSet(*scaled_intervals)
 
@@ -42,6 +59,11 @@ def scale_finiteset(elements: FiniteSet, scalar: Union[int, float]) -> FiniteSet
 def scale_ranges(
     ranges: Union[Interval, sympy.Union], scalar: Union[int, float]
 ) -> Union[Interval, FiniteSet, sympy.Union]:
+    """
+    Scale up set of interval ranges by multiplying by a scalar.
+
+    Used for converting the units of a UnitRange.
+    """
     if isinstance(ranges, Interval):
         return scale_interval(interval=ranges, scalar=scalar)
     if isinstance(ranges, FiniteSet):
@@ -65,6 +87,7 @@ class QuantityRange(ABC):
     normalized_comparisons: ClassVar[Dict[str, str]] = {"=": "==", "<>": "!="}
 
     def __init__(self, sign: str, include_negatives: Optional[bool] = None) -> None:
+        """Normalize operator sign and exclude negatives, if needed."""
         if sign in self.normalized_comparisons:
             sign = self.normalized_comparisons[sign]
         if sign not in self.opposite_comparisons.keys():
@@ -134,6 +157,7 @@ class QuantityRange(ABC):
 
     @abstractproperty
     def magnitude(self) -> Union[int, float]:
+        """Get amount of max or minimum of the quantity range, without a unit."""
         pass
 
     def consistent_dimensionality(self, other: QuantityRange) -> bool:
@@ -141,11 +165,13 @@ class QuantityRange(ABC):
         return isinstance(other, self.__class__)
 
     def contradicts(self, other: Any) -> bool:
+        """Check if self's interval excludes all of other's interval."""
         if not isinstance(other, self.__class__):
             return False
         return self._excludes_quantity_interval(other.interval)
 
     def implies(self, other: Any) -> bool:
+        """Check if self's interval includes all of other's interval."""
         if not isinstance(other, self.__class__):
             return False
         return self._implies_quantity_interval(other.interval)
@@ -166,6 +192,7 @@ class QuantityRange(ABC):
         return self.interval.is_subset(combined_interval)
 
     def means(self, other: Any) -> bool:
+        """Compare for same meaning."""
         if not isinstance(other, self.__class__):
             return False
         return Eq(self.interval, other.interval)
