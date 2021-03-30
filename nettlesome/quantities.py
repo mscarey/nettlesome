@@ -170,7 +170,19 @@ class QuantityRange(ABC):
             return False
         return Eq(self.interval, other.interval)
 
-    def opposite_meaning(self) -> None:
+    def reverse_meaning(self) -> None:
+        """
+        Change self.sign in place to reverse the range of numbers covered.
+
+            >>> quantity_range = UnitRange(quantity="100 meters", sign=">")
+            >>> str(quantity_range)
+            'greater than 100 meter'
+            >>> quantity_range.reverse_meaning()
+            >>> quantity_range.sign
+            '<='
+            >>> str(quantity_range)
+            'no more than 100 meter'
+        """
         self.sign = self.opposite_comparisons[self.sign]
 
     def _quantity_string(self) -> str:
@@ -275,6 +287,7 @@ class DateRange(QuantityRange):
         sign: str = "",
         include_negatives: Optional[bool] = None,
     ) -> None:
+        """Set domain as natural numbers."""
         self.quantity = quantity
         self.domain = S.Naturals
         super().__init__(sign=sign, include_negatives=include_negatives)
@@ -297,6 +310,7 @@ class NumberRange(QuantityRange):
         sign: str = "",
         include_negatives: Optional[bool] = None,
     ) -> None:
+        """Check number type and set domain for number range."""
         if not isinstance(quantity, (int, float)):
             raise TypeError(
                 f'"quantity" must be a number (integer or float), '
@@ -418,7 +432,7 @@ class Comparison(Predicate):
 
             if self.truth is False:
                 self.truth = True
-                self.quantity_range.opposite_meaning()
+                self.quantity_range.reverse_meaning()
 
         if not self.content.endswith("was"):
             raise ValueError(
@@ -470,18 +484,56 @@ class Comparison(Predicate):
 
     @property
     def interval(self) -> Union[FiniteSet, Interval, sympy.Union]:
+        """
+        Get the range of numbers covered by the UnitInterval.
+
+        >>> weight=Comparison(
+        >>>     "the amount of gold $person possessed was",
+        >>>     sign=">=",
+        >>>     expression="10 grams")
+        >>> weight.interval
+        Interval(10, oo)
+
+        """
         return self.quantity_range.interval
 
     @property
     def quantity(self) -> Union[int, float, Quantity, date]:
+        """
+        Get the maximum or minimum of the range.
+
+        :returns:
+            the number, pint Quantity, or date at the beginning or end of
+            the range
+
+            >>> weight=Comparison(
+            >>>     "the amount of gold $person possessed was",
+            >>>     sign=">=",
+            >>>     expression="10 grams")
+            >>> weight.quantity
+            <Quantity(10, 'gram')>
+        """
         return self.quantity_range.quantity
 
     @property
     def sign(self) -> str:
+        """
+        Get operator describing the relationship between the quantity and the range.
+
+            >>> weight=Comparison(
+            >>>     "the amount of gold $person possessed was",
+            >>>     sign=">=",
+            >>>     expression="10 grams")
+            >>> str(weight.quantity_range)
+            'at least 10 gram'
+            >>> weight.sign
+            '>='
+        """
         return self.quantity_range.sign
 
-    def add_truth_to_content(self, content: str) -> str:
-        content = super().add_truth_to_content(content)
+    def _add_truth_to_content(self, content: str) -> str:
+        """Get self's content with a prefix indicating the truth value."""
+        content = super()._add_truth_to_content(content)
         return f"{content} {str(self.quantity_range)}"
 
     def implies(self, other: Any) -> bool:

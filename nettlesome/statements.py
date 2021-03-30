@@ -125,7 +125,7 @@ class Statement(Factor):
     def wrapped_string(self):
         """Wrap text in string representation of ``self``."""
         content = str(self.predicate._content_with_terms(self.terms))
-        unwrapped = self.predicate.add_truth_to_content(content)
+        unwrapped = self.predicate._add_truth_to_content(content)
         text = wrapped(super().__str__().format(unwrapped))
         return text
 
@@ -157,7 +157,7 @@ class Statement(Factor):
     def __str__(self):
         """Create one-line string representation for inclusion in other Facts."""
         content = str(self.predicate._content_with_terms(self.terms))
-        unwrapped = self.predicate.add_truth_to_content(content)
+        unwrapped = self.predicate._add_truth_to_content(content)
         return super().__str__().format(unwrapped)
 
     @property
@@ -172,7 +172,7 @@ class Statement(Factor):
             yield from super()._means_if_concrete(other, context)
 
     def __len__(self):
-        return len(self.generic_factors())
+        return len(self.generic_terms())
 
     def _implies_if_concrete(
         self, other: Comparable, context: Explanation
@@ -223,6 +223,10 @@ class Statement(Factor):
     ) -> Iterator[ContextRegister]:
         r"""
         Find possible combination of interchangeable :attr:`terms`.
+
+        :param matches:
+            matching Terms between self and other
+
         :yields:
             context registers with every possible combination of
             ``self``\'s and ``other``\'s interchangeable

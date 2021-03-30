@@ -513,6 +513,46 @@ class TestContradiction:
         assert explanation.context["<Houston>"].name == "El Paso"
         assert contradicts(left, right)
 
+    def test_no_repeated_explanations(self):
+        nafta = FactorGroup(
+            [
+                Statement(
+                    "$country1 signed a treaty with $country2",
+                    terms=[Entity("Mexico"), Entity("USA")],
+                ),
+                Statement(
+                    "$country2 signed a treaty with $country3",
+                    terms=[Entity("USA"), Entity("Canada")],
+                ),
+                Statement(
+                    "$country3 signed a treaty with $country1",
+                    terms=[Entity("USA"), Entity("Canada")],
+                ),
+            ]
+        )
+        brexit = FactorGroup(
+            [
+                Statement(
+                    "$country1 signed a treaty with $country2",
+                    terms=[Entity("UK"), Entity("European Union")],
+                ),
+                Statement(
+                    "$country2 signed a treaty with $country3",
+                    terms=[Entity("European Union"), Entity("Germany")],
+                ),
+                Statement(
+                    "$country3 signed a treaty with $country1",
+                    terms=[Entity("Germany"), Entity("UK")],
+                    truth=False,
+                ),
+            ]
+        )
+        assert nafta.contradicts(brexit)
+        explanations_usa_like_uk = nafta.explanations_contradiction(
+            brexit, context=([Entity("USA")], [Entity("UK")])
+        )
+        assert len(list(explanations_usa_like_uk)) == 2
+
 
 class TestAdd:
     def test_add_does_not_consolidate_factors(self, make_statement):
@@ -680,7 +720,7 @@ class TestConsistent:
         group = FactorGroup([make_statement["shooting"], make_statement["no_shooting"]])
         assert not group.internally_consistent()
 
-    def test_all_generic_factors_match_in_statement(self):
+    def test_all_generic_terms_match_in_statement(self):
         predicate = Predicate("the telescope pointed at $object")
         morning = Statement(predicate=predicate, terms=Entity("Morning Star"))
         evening = Statement(predicate=predicate, terms=Entity("Evening Star"))
@@ -688,4 +728,4 @@ class TestConsistent:
         right = FactorGroup(evening)
         context = ContextRegister()
         context.insert_pair(Entity("Morning Star"), Entity("Evening Star"))
-        assert left._all_generic_factors_match(right, context=context)
+        assert left._all_generic_terms_match(right, context=context)

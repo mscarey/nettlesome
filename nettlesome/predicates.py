@@ -448,7 +448,7 @@ class Predicate:
         without_duplicates = [x for x in product_of_positions if len(set(x)) == len(x)]
         return without_duplicates
 
-    def add_truth_to_content(self, content: str) -> str:
+    def _add_truth_to_content(self, content: str) -> str:
         """Get self's content with a prefix indicating the truth value."""
         if self.truth is None:
             truth_prefix = "whether "
@@ -459,4 +459,4 @@ class Predicate:
         return f"{truth_prefix}{content}"
 
     def __str__(self):
-        return self.add_truth_to_content(self.content)
+        return self._add_truth_to_content(self.content)

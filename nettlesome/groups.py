@@ -98,7 +98,7 @@ class FactorGroup(Comparable):
         for self_factor in self:
             if self_factor.contradicts(
                 other_factor, context=context
-            ) and self_factor._all_generic_factors_match(other_factor, context=context):
+            ) and self_factor._all_generic_terms_match(other_factor, context=context):
                 return True
         return False
 
@@ -339,11 +339,11 @@ class FactorGroup(Comparable):
             explanation=explanation,
         )
 
-    def generic_factors_by_str(self) -> Dict[str, Term]:
+    def generic_terms_by_str(self) -> Dict[str, Term]:
         """Index Terms that can be replaced without changing ``self``'s meaning."""
         generics: Dict[str, Term] = {}
         for factor in self:
-            generics.update(factor.generic_factors_by_str())
+            generics.update(factor.generic_terms_by_str())
         return generics
 
     def has_all_factors_of(
@@ -389,6 +389,7 @@ class FactorGroup(Comparable):
     def from_comparable(
         self, value: Union[Comparable, Sequence[Factor]]
     ) -> Optional[FactorGroup]:
+        """Create a FactorGroup from a Factor or sequence of Factors."""
         if isinstance(value, FactorGroup):
             return value
         if isinstance(value, Factor):

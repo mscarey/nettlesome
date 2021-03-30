@@ -156,7 +156,7 @@ class TestSameMeaning:
             make_statement["crime_specific_person"]
         )
 
-    def test_generic_factors_equal(self):
+    def test_generic_terms_equal(self):
         generic = Statement("something happened", generic=True)
         generic_false = Statement(
             Predicate("something happened", truth=False), generic=True
@@ -565,7 +565,7 @@ class TestConsistent:
         left = make_statement["less_than_20"]
         right = make_statement["more_meters"]
         register = ContextRegister()
-        register.insert_pair(left.generic_factors()[0], right.generic_factors()[0])
+        register.insert_pair(left.generic_terms()[0], right.generic_terms()[0])
         assert not left.consistent_with(right, register)
         assert left.explain_consistent_with(right, register) is None
 
@@ -573,7 +573,7 @@ class TestConsistent:
         left = make_statement["less_than_20"]
         right = make_statement["more_meters"]
         register = ContextRegister()
-        register.insert_pair(left.generic_factors()[0], right.generic_factors()[0])
+        register.insert_pair(left.generic_terms()[0], right.generic_terms()[0])
         explanations = list(left.explanations_consistent_with(right, context=register))
         assert not explanations
 

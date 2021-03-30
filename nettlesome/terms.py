@@ -70,7 +70,7 @@ def new_context_helper(func: Callable):
 
     If a :class:`list` has been passed in rather than a :class:`dict`, uses
     the input as a series of :class:`Factor`\s to replace the
-    :attr:`~Factor.generic_factors` from the calling object.
+    :attr:`~Factor.generic_terms` from the calling object.
 
     Also, if ``changes`` contains a replacement for the calling
     object, the decorator returns the replacement and never calls
@@ -230,7 +230,7 @@ class Comparable(ABC):
             text = "absence of " + text
         return text
 
-    def _all_generic_factors_match(
+    def _all_generic_terms_match(
         self, other: Comparable, context: ContextRegister
     ) -> bool:
         if all(
@@ -238,7 +238,7 @@ class Comparable(ABC):
                 context.assigns_same_value_to_key_factor(
                     other=other_register, key_factor=generic
                 )
-                for generic in self.generic_factors()
+                for generic in self.generic_terms()
             )
             for other_register in self._context_registers(
                 other=other, comparison=means, context=context
@@ -510,7 +510,7 @@ class Comparable(ABC):
             ``True`` if self and other can't both be true at
             the same time. Otherwise returns ``False``.
         """
-        context = context = Explanation.from_context(
+        context = Explanation.from_context(
             context=context, current=self, incoming=other
         )
         for new_explanation in self._explanations_contradiction(
@@ -644,11 +644,11 @@ class Comparable(ABC):
             if not self.generic:
                 yield from self._implies_if_concrete(other, explanation)
 
-    def generic_factors(self) -> List[Term]:
+    def generic_terms(self) -> List[Term]:
         """Get Terms that can be replaced without changing ``self``'s meaning."""
-        return list(self.generic_factors_by_str().values())
+        return list(self.generic_terms_by_str().values())
 
-    def generic_factors_by_str(self) -> Dict[str, Term]:
+    def generic_terms_by_str(self) -> Dict[str, Term]:
         r"""
         Index Terms that can be replaced without changing ``self``'s meaning.
 
@@ -660,7 +660,7 @@ class Comparable(ABC):
         generics: Dict[str, Comparable] = {}
         for factor in self.terms:
             if factor is not None:
-                for generic in factor.generic_factors():
+                for generic in factor.generic_terms():
                     generics[generic.short_string] = generic
         return generics
 
@@ -779,7 +779,7 @@ class Comparable(ABC):
     def implies_same_context(self, other) -> bool:
         """Check if self would imply other if their generic terms are matched in order."""
         same_context = ContextRegister()
-        for key in self.generic_factors():
+        for key in self.generic_terms():
             same_context.insert_pair(key, key)
         return self.implies(other, context=same_context)
 
@@ -931,12 +931,12 @@ class Comparable(ABC):
         context = context or ContextRegister()
         unused_self = [
             factor
-            for factor in self.generic_factors()
+            for factor in self.generic_terms()
             if factor.short_string not in context.matches.keys()
         ]
         unused_other = [
             factor
-            for factor in other.generic_factors()
+            for factor in other.generic_terms()
             if factor.short_string not in context.reverse_matches.keys()
         ]
         if not (unused_self and unused_other):
@@ -977,7 +977,7 @@ class Comparable(ABC):
         produce the right updated context.
         """
         incoming = ContextRegister.from_lists(
-            to_replace=self.generic_factors(), replacements=other.generic_factors()
+            to_replace=self.generic_terms(), replacements=other.generic_terms()
         )
         updated_context = context.merged_with(incoming)
         return updated_context
@@ -1119,13 +1119,13 @@ class ContextRegister:
         incoming: Optional[Comparable] = None,
     ):
         changes = expand_strings_from_source(to_expand=changes, source=incoming)
-        generic_factors = list(current.generic_factors_by_str().values())
-        if len(generic_factors) != len(changes):
+        generic_terms = list(current.generic_terms_by_str().values())
+        if len(generic_terms) != len(changes):
             raise ValueError(
-                f"Needed {len(generic_factors)} replacements for the "
-                + f"items of generic_factors, but {len(changes)} were provided."
+                f"Needed {len(generic_terms)} replacements for the "
+                + f"items of generic_terms, but {len(changes)} were provided."
             )
-        return cls._from_lists(to_replace=generic_factors, replacements=changes)
+        return cls._from_lists(to_replace=generic_terms, replacements=changes)
 
     @classmethod
     def create(
@@ -1488,10 +1488,10 @@ class Term(Comparable):
                 other=other, context=context
             )
 
-    def generic_factors_by_str(self) -> Dict[str, Term]:
+    def generic_terms_by_str(self) -> Dict[str, Term]:
         if self.generic:
             return {self.short_string: self}
-        return super().generic_factors_by_str()
+        return super().generic_terms_by_str()
 
     @property
     def recursive_terms(self) -> Dict[str, Term]:
