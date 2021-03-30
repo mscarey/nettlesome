@@ -88,11 +88,6 @@ class Statement(Factor):
             )
             raise ValueError(message)
 
-        if any(not isinstance(s, Comparable) for s in self.terms):
-            raise TypeError(
-                "Items in the 'terms' parameter should "
-                + "be a subclass of Comparable."
-            )
         super().__init__(name=name, generic=generic, absent=absent)
 
     @property

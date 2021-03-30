@@ -1514,6 +1514,23 @@ class TermSequence(Tuple[Optional[Term], ...]):
         """Convert Sequence of Terms to a subclass of Tuple."""
         if isinstance(value, Term):
             value = (value,)
+        seen: List[str] = []
+        for term in value:
+            if term and not isinstance(term, Term):
+                raise TypeError(
+                    f"'{term}' cannot be included in TermSequence because it is not type Term."
+                )
+        for term in value:
+            if term:
+                if term.key in seen:
+                    raise ValueError(
+                        f"Term '{term}' may not appear more than once in TermSequence. "
+                        "If you need to refer to the same term more than once in a Predicate, "
+                        "please use the same placeholder text instead of including the "
+                        "Term in the TermSequence more than once. If more than one distinct "
+                        "Term shares the same key text, please change one of them."
+                    )
+                seen.append(term.key)
         return tuple.__new__(TermSequence, value)
 
     def ordered_comparison(

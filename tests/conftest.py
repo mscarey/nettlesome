@@ -194,9 +194,6 @@ def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
         "three_entities": Statement(
             p["three_entities"], [Entity("Alice"), Entity("Bob"), Entity("Craig")]
         ),
-        "repeating_entity": Statement(
-            p["three_entities"], [Entity("Alice"), Entity("Bob"), Entity("Alice")]
-        ),
         "large_weight": Statement(
             p["large_weight"],
             Entity("Alice"),

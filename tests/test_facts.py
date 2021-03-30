@@ -169,13 +169,10 @@ class TestSameMeaning:
         specific = Statement("something happened", generic=False)
         assert not generic.means(specific)
 
-    def test_factor_reciprocal_unequal(self, make_predicate):
+    def test_cannot_repeat_term_in_termsequence(self, make_predicate):
 
-        left = Statement(make_predicate["shooting"], terms=[Entity("Al"), Entity("Bo")])
-        right = Statement(
-            make_predicate["shooting"], terms=[Entity("Al"), Entity("Al")]
-        )
-        assert not left.means(right)
+        with pytest.raises(ValueError):
+            Statement("$person1 shot $person2", terms=[Entity("Al"), Entity("Al")])
 
     def test_factor_different_predicate_truth_unequal(self, make_statement):
         assert not make_statement["shooting"].means(make_statement["murder"])
@@ -183,7 +180,7 @@ class TestSameMeaning:
     def test_unequal_because_one_factor_is_absent(self, make_predicate):
         left = Statement(make_predicate["shooting"], terms=[Entity("Al"), Entity("Bo")])
         right = Statement(
-            make_predicate["shooting"], terms=[Entity("Al"), Entity("Al")], absent=True
+            make_predicate["shooting"], terms=[Entity("Al"), Entity("Bob")], absent=True
         )
         assert not left.means(right)
 
@@ -217,14 +214,6 @@ class TestSameMeaning:
         )
 
         assert ann_and_bob_were_family.means(bob_and_ann_were_family)
-
-    def test_unequal_due_to_repeating_entity(self, make_statement):
-        """I'm not convinced that a model of a Fact ever needs to include
-        multiple references to the same Term just because the name of the
-        Term appears more than once in the Predicate."""
-        f = make_statement
-        assert not f["three_entities"].means(f["repeating_entity"])
-        assert f["three_entities"].explain_same_meaning(f["repeating_entity"]) is None
 
     def test_means_despite_plural(self):
         directory = Entity("Rural's telephone directory", plural=False)
