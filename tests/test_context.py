@@ -155,6 +155,10 @@ class TestContextRegisters:
                 replacements=[Entity("Bo"), Entity("Cid")],
             )
 
+    def test_cannot_create_register_from_one_list(self):
+        with pytest.raises(ValueError):
+            ContextRegister.create([Entity("Alice"), Entity("Bob")])
+
 
 class TestLikelyContext:
     def test_likely_context_one_factor(self, make_statement):

@@ -11,6 +11,7 @@ import operator
 import textwrap
 from typing import Any, Callable, ClassVar, Dict, Iterable, Iterator
 from typing import List, NamedTuple, Optional, Sequence, Tuple, Union
+from typing import KeysView, ValuesView, ItemsView
 
 logger = logging.getLogger(__name__)
 
@@ -113,10 +114,12 @@ def new_context_helper(func: Callable):
     return wrapper
 
 
-def expand_string_from_source(term: Union[str, Term], source: Comparable) -> Term:
+def expand_string_from_source(
+    term: Union[str, Term], source: Optional[Comparable]
+) -> Term:
     """Replace ``term`` with the real term it references, if ``term`` is a string reference."""
     if isinstance(term, str):
-        result = source.get_factor(term)
+        result: Optional[Term] = source.get_factor(term)
     else:
         return term
     if result is None:
@@ -125,7 +128,7 @@ def expand_string_from_source(term: Union[str, Term], source: Comparable) -> Ter
 
 
 def expand_strings_from_source(
-    to_expand: Sequence[Union[str, Term]], source: Comparable
+    to_expand: Sequence[Union[str, Term]], source: Optional[Comparable]
 ) -> List[Term]:
     return [expand_string_from_source(change, source) for change in to_expand]
 
@@ -173,18 +176,19 @@ class Comparable(ABC):
         return str(self)
 
     @property
-    def recursive_factors(self) -> Dict[str, Comparable]:
+    def recursive_terms(self) -> Dict[str, Term]:
         r"""
         Collect `self`'s :attr:`terms`, and their :attr:`terms`, recursively.
 
         :returns:
             a :class:`dict` (instead of a :class:`set`,
-            to preserve order) of :class:`Factor`\s.
+            to preserve order) of :class:`Term`\s.
         """
-        answers: Dict[str, Comparable] = {self.short_string: self}
+        answers: Dict[str, Term] = {}
+
         for context in self.terms:
             if context is not None:
-                answers.update(context.recursive_factors)
+                answers.update(context.recursive_terms)
         return answers
 
     @property
@@ -660,7 +664,7 @@ class Comparable(ABC):
                     generics[generic.short_string] = generic
         return generics
 
-    def get_factor(self, query: str) -> Optional[Comparable]:
+    def get_factor(self, query: str) -> Optional[Term]:
         """
         Search for Comparable with str or name matching query.
 
@@ -673,7 +677,7 @@ class Comparable(ABC):
             result = self.get_factor_by_name(query)
         return result
 
-    def get_factor_by_name(self, name: str) -> Optional[Comparable]:
+    def get_factor_by_name(self, name: str) -> Optional[Term]:
         """
         Search of ``self`` and ``self``'s attributes for :class:`Factor` with specified ``name``.
 
@@ -681,7 +685,7 @@ class Comparable(ABC):
             a :class:`Comparable` with the specified ``name`` attribute
             if it exists, otherwise ``None``.
         """
-        factors_to_search = self.recursive_factors
+        factors_to_search = self.recursive_terms
         for value in factors_to_search.values():
             if hasattr(value, "name") and value.name == name:
                 return value
@@ -695,7 +699,7 @@ class Comparable(ABC):
             a :class:`Factor` with the specified string
             if it exists, otherwise ``None``.
         """
-        for name, factor in self.recursive_factors.items():
+        for name, factor in self.recursive_terms.items():
             if name == query:
                 return factor
         return None
@@ -1097,15 +1101,15 @@ class ContextRegister:
                 "Cannot create ContextRegister because 'to_replace' is not the same length "
                 f"as 'replacements'.\to_replace: ({to_replace})\replacements: ({replacements})"
             )
-        if current:
-            to_replace = expand_strings_from_source(
-                to_expand=to_replace, source=current
-            )
-        if incoming:
-            replacements = expand_strings_from_source(
-                to_expand=replacements, source=incoming
-            )
-        return cls._from_lists(to_replace=to_replace, replacements=replacements)
+        terms_to_replace = expand_strings_from_source(
+            to_expand=to_replace, source=current
+        )
+        term_replacements = expand_strings_from_source(
+            to_expand=replacements, source=incoming
+        )
+        return cls._from_lists(
+            to_replace=terms_to_replace, replacements=term_replacements
+        )
 
     @classmethod
     def from_changes_and_current(
@@ -1114,10 +1118,7 @@ class ContextRegister:
         current: Comparable,
         incoming: Optional[Comparable] = None,
     ):
-        if incoming:
-            changes = [
-                expand_string_from_source(change, incoming) for change in changes
-            ]
+        changes = expand_strings_from_source(to_expand=changes, source=incoming)
         generic_factors = list(current.generic_factors_by_str().values())
         if len(generic_factors) != len(changes):
             raise ValueError(
@@ -1146,7 +1147,11 @@ class ContextRegister:
                 current=current,
                 incoming=incoming,
             )
-        if len(changes) == 2 and all(isinstance(item, List) for item in changes):
+        if (
+            len(changes) == 2
+            and all(not isinstance(change, str) for change in changes)
+            and all(isinstance(change, Sequence) for change in changes)
+        ):
             return cls.from_lists(
                 to_replace=changes[0],
                 replacements=changes[1],
@@ -1160,7 +1165,12 @@ class ContextRegister:
                 current=current,
                 incoming=incoming,
             )
-
+        if not current:
+            raise ValueError(
+                "If terms to replace are not provided in the 'changes' attribute "
+                "or the 'terms_to_replace' attribue, "
+                "then a 'current' object must be provided."
+            )
         return cls.from_changes_and_current(
             current=current, changes=changes, incoming=incoming
         )
@@ -1180,9 +1190,9 @@ class ContextRegister:
             return False
         return self[key.key].compare_keys(value)
 
-    def factor_pairs(self) -> Iterator[Tuple[Comparable, Comparable]]:
+    def factor_pairs(self) -> Iterator[Tuple[Term, Term]]:
         """Get pairs of corresponding Comparables."""
-        for key, value in self.items():
+        for value in self.values():
             yield (self.get_reverse_factor(value), value)
 
     def get(self, query: str) -> Optional[Comparable]:
@@ -1197,15 +1207,15 @@ class ContextRegister:
         """Get key corresponding to the value ``query``."""
         return self.reverse_matches.get(query.short_string)
 
-    def items(self):
+    def items(self) -> ItemsView:
         """Get items from ``matches`` mapping."""
         return self.matches.items()
 
-    def keys(self):
+    def keys(self) -> KeysView:
         """Get keys from ``matches`` mapping."""
         return self.matches.keys()
 
-    def values(self):
+    def values(self) -> ValuesView:
         """Get values from ``matches`` mapping."""
         return self.matches.values()
 
@@ -1429,8 +1439,8 @@ class Term(Comparable):
         self.generic = generic
 
     def _borrow_generic_context(self, other: Term) -> Term:
-        self_factors = list(self.recursive_factors.values())
-        other_factors = list(other.recursive_factors.values())
+        self_factors = list(self.recursive_terms.values())
+        other_factors = list(other.recursive_terms.values())
         changes = ContextRegister()
         for i, factor in enumerate(self_factors):
             if factor.generic:
@@ -1482,6 +1492,19 @@ class Term(Comparable):
         if self.generic:
             return {self.short_string: self}
         return super().generic_factors_by_str()
+
+    @property
+    def recursive_terms(self) -> Dict[str, Term]:
+        r"""
+        Collect `self`'s :attr:`terms`, and their :attr:`terms`, recursively.
+
+        :returns:
+            a :class:`dict` (instead of a :class:`set`,
+            to preserve order) of :class:`Term`\s.
+        """
+        answers = super().recursive_terms
+        answers[self.key] = self
+        return answers
 
 
 class TermSequence(Tuple[Optional[Term], ...]):

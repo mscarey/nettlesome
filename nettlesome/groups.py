@@ -11,7 +11,7 @@ from typing import Optional, Sequence, Tuple, Union
 from nettlesome.factors import Factor
 
 from nettlesome.terms import Comparable, ContextMemo, ContextRegister
-from nettlesome.terms import Explanation, contradicts, means
+from nettlesome.terms import Explanation, Term, contradicts, means
 
 
 class FactorGroup(Comparable):
@@ -73,7 +73,7 @@ class FactorGroup(Comparable):
         return self._add_group(to_add)
 
     @property
-    def recursive_factors(self) -> Dict[str, Comparable]:
+    def recursive_terms(self) -> Dict[str, Term]:
         r"""
         Collect `self`'s :attr:`terms`, and their :attr:`terms`, recursively.
 
@@ -81,9 +81,9 @@ class FactorGroup(Comparable):
             a :class:`dict` (instead of a :class:`set`,
             to preserve order) of :class:`Factor`\s.
         """
-        result: Dict[str, Comparable] = {}
+        result: Dict[str, Term] = {}
         for context in self:
-            result.update(context.recursive_factors)
+            result.update(context.recursive_terms)
         return result
 
     def __gt__(self, other: Optional[Comparable]) -> bool:
@@ -339,9 +339,9 @@ class FactorGroup(Comparable):
             explanation=explanation,
         )
 
-    def generic_factors_by_str(self) -> Dict[str, Comparable]:
+    def generic_factors_by_str(self) -> Dict[str, Term]:
         """Index Terms that can be replaced without changing ``self``'s meaning."""
-        generics: Dict[str, Comparable] = {}
+        generics: Dict[str, Term] = {}
         for factor in self:
             generics.update(factor.generic_factors_by_str())
         return generics

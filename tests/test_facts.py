@@ -90,7 +90,7 @@ class TestFacts:
 
     def test_get_factor_from_recursive_search(self, make_complex_fact):
         complex = make_complex_fact["relevant_murder"]
-        factor_list = list(complex.recursive_factors.values())
+        factor_list = list(complex.recursive_terms.values())
         assert any(factor.name == "Alice" for factor in factor_list)
 
     def test_new_context_from_factor(self, make_statement):

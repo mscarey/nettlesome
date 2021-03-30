@@ -1,4 +1,3 @@
-from nettlesome.factors import Factor
 import pytest
 
 from nettlesome.terms import (
@@ -10,7 +9,7 @@ from nettlesome.terms import (
 from nettlesome.entities import Entity
 from nettlesome.groups import FactorGroup
 from nettlesome.predicates import Predicate
-from nettlesome.quantities import Comparison, UnitRange
+from nettlesome.quantities import Comparison
 from nettlesome.statements import Statement
 
 
@@ -40,10 +39,10 @@ class TestMakeGroup:
         assert isinstance(identical_group, FactorGroup)
         assert identical_group[0] == make_statement["crime"]
 
-    def test_recursive_factors_from_factorgroup(self, make_statement):
+    def test_recursive_terms_from_factorgroup(self, make_statement):
         factor_list = [make_statement["crime"], make_statement["shooting"]]
         group = FactorGroup(factor_list)
-        factors = group.recursive_factors
+        factors = group.recursive_terms
         assert factors["<Alice>"].name == "Alice"
 
     def test_one_factor_implies_and_has_same_context_as_other(self, make_statement):
@@ -477,6 +476,13 @@ class TestImpliedBy:
         assert not left.implied_by(
             make_statement["way_more"],
             context=(["<San Francisco>"], [Entity("Richmond")]),
+        )
+
+    def test_context_prevents_implied_by_factor_tuples_not_lists(self, make_statement):
+        left = FactorGroup(make_statement["more"])
+        assert not left.implied_by(
+            make_statement["way_more"],
+            context=(("<San Francisco>",), (Entity("Richmond"),)),
         )
 
 

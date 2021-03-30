@@ -437,7 +437,7 @@ class Predicate:
 
         for index, placeholder in enumerate(without_duplicates):
             if placeholder[-1].isdigit:
-                for k in result:
+                for k in result.keys():
                     if k[-1].isdigit() and k[:-1] == placeholder[:-1]:
                         result[k].add(index)
         return result

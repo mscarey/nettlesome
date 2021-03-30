@@ -181,7 +181,7 @@ class TestStatements:
         predicate_told = Predicate("$speaker told $hearer $statement")
         shot = Statement(predicate_shot, terms=[Entity("Alice"), Entity("Bob")])
         told = Statement(predicate_told, terms=[Entity("Henry"), Entity("Jenna"), shot])
-        factors = told.recursive_factors
+        factors = told.recursive_terms
         assert factors["<Alice>"].name == "Alice"
 
     def test_new_concrete_context(self):
