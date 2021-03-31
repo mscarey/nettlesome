@@ -1331,6 +1331,10 @@ class FactorMatch(NamedTuple):
         relation = self.operation_names[self.operation]
         return f"{self.left.short_string} {relation} {self.right.short_string}"
 
+    @property
+    def key(self) -> str:
+        return self.short_string
+
     def __str__(self):
         relation = self.operation_names[self.operation]
         indent = "  "
@@ -1368,7 +1372,7 @@ class Explanation:
         return context_text.rstrip("\n")
 
     def __repr__(self) -> str:
-        return f"Explanation(matches={repr(self.reasons)}, context={repr(self.context)}), operation={repr(self.operation)})"
+        return f"Explanation(reasons={repr(self.reasons)}, context={repr(self.context)}), operation={repr(self.operation)})"
 
     @property
     def short_string(self) -> str:
@@ -1397,6 +1401,20 @@ class Explanation:
                 changes=context, current=current, incoming=incoming
             )
         return Explanation(reasons=[], context=context or ContextRegister())
+
+    def means(self, other: Explanation) -> bool:
+        if not isinstance(other, Explanation):
+            return False
+        if not self.context.means(other.context):
+            return False
+        if not len(self.reasons) == len(other.reasons):
+            return False
+        for reason in self.reasons:
+            if not any(
+                other_reason.key == reason.key for other_reason in other.reasons
+            ):
+                return False
+        return True
 
     def operate(self, left: Comparable, right: Comparable) -> Iterator[Explanation]:
         """Generate further explanations for applying self.operation to a new Factor pair."""

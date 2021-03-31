@@ -3,15 +3,32 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import functools
 import operator
 import textwrap
-from typing import Dict, Iterable, Iterator, List
+from typing import Callable, Dict, Iterable, Iterator, List
 from typing import Optional, Sequence, Tuple, Union
 
 from nettlesome.factors import Factor
 
 from nettlesome.terms import Comparable, ContextMemo, ContextRegister
 from nettlesome.terms import Explanation, Term, contradicts, means
+
+
+def unique_explanations(func: Callable):
+    @functools.wraps(func)
+    def wrapper(
+        factor,
+        other: Comparable,
+        context: Optional[Union[ContextMemo, Explanation]] = None,
+    ) -> Iterator[Explanation]:
+        seen: List[Explanation] = []
+        for explanation in func(factor, other, context):
+            if not any(explanation.means(item) for item in seen):
+                seen.append(explanation)
+                yield explanation
+
+    return wrapper
 
 
 class FactorGroup(Comparable):
@@ -165,6 +182,7 @@ class FactorGroup(Comparable):
         else:
             yield from self._explain_contradicts_factor(other, explanation=explanation)
 
+    @unique_explanations
     def explanations_contradiction(
         self,
         other: Comparable,
