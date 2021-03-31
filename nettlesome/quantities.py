@@ -380,10 +380,10 @@ class Comparison(Predicate):
 
         >>> # example comparing a pint Quantity
         >>> drug_comparison_with_upper_bound = Comparison(
-        >>>     "the weight of marijuana that $defendant possessed was",
-        >>>     sign=">",
-        >>>     expression="10 grams",
-        >>>     truth=False)
+        ...     "the weight of marijuana that $defendant possessed was",
+        ...     sign=">",
+        ...     expression="10 grams",
+        ...     truth=False)
         >>> str(drug_comparison_with_upper_bound)
         'that the weight of marijuana that $defendant possessed was no more than 10 gram'
 
@@ -395,9 +395,9 @@ class Comparison(Predicate):
 
         >>> # example comparing an integer
         >>> three_children = Comparison(
-        >>>     "the number of children in ${taxpayer}'s household was",
-        >>>     sign="=",
-        >>>     expression=3)
+        ...     "the number of children in ${taxpayer}'s household was",
+        ...     sign="=",
+        ...     expression=3)
         >>> str(three_children)
         "that the number of children in ${taxpayer}'s household was exactly equal to 3"
 
@@ -515,9 +515,9 @@ class Comparison(Predicate):
         Get the range of numbers covered by the UnitInterval.
 
         >>> weight=Comparison(
-        >>>     "the amount of gold $person possessed was",
-        >>>     sign=">=",
-        >>>     expression="10 grams")
+        ...     "the amount of gold $person possessed was",
+        ...     sign=">=",
+        ...     expression="10 grams")
         >>> weight.interval
         Interval(10, oo)
 
@@ -534,9 +534,9 @@ class Comparison(Predicate):
             the range
 
             >>> weight=Comparison(
-            >>>     "the amount of gold $person possessed was",
-            >>>     sign=">=",
-            >>>     expression="10 grams")
+            ...     "the amount of gold $person possessed was",
+            ...     sign=">=",
+            ...     expression="10 grams")
             >>> weight.quantity
             <Quantity(10, 'gram')>
         """
@@ -548,9 +548,9 @@ class Comparison(Predicate):
         Get operator describing the relationship between the quantity and the range.
 
             >>> weight=Comparison(
-            >>>     "the amount of gold $person possessed was",
-            >>>     sign=">=",
-            >>>     expression="10 grams")
+            ...     "the amount of gold $person possessed was",
+            ...     sign=">=",
+            ...     expression="10 grams")
             >>> str(weight.quantity_range)
             'at least 10 gram'
             >>> weight.sign
@@ -570,13 +570,13 @@ class Comparison(Predicate):
         May be based on template text, truth values, and :class:`.QuantityRange`\s.
 
         >>> small_weight=Comparison(
-        >>>     "the amount of gold $person possessed was",
-        >>>     sign=">=",
-        >>>     expression=Q_("1 gram"))
+        ...     "the amount of gold $person possessed was",
+        ...     sign=">=",
+        ...     expression=Q_("1 gram"))
         >>> large_weight=Comparison(
-        >>>     "the amount of gold $person possessed was",
-        >>>     sign=">=",
-        >>>     expression=Q_("100 kilograms"))
+        ...     "the amount of gold $person possessed was",
+        ...     sign=">=",
+        ...     expression=Q_("100 kilograms"))
         >>> str(large_weight)
         'that the amount of gold $person possessed was at least 100 kilogram'
         >>> str(small_weight)
@@ -598,13 +598,11 @@ class Comparison(Predicate):
         refer to the same :class:`~.quantities.QuantityRange`\.
 
         >>> volume_in_liters = Comparison(
-        >>>     "the volume of fuel in the tank was",
-        >>>     sign="=",
-        >>>     expression="10 liters")
+        ...     "the volume of fuel in the tank was",
+        ...     sign="=", expression="10 liters")
         >>> volume_in_milliliters = Comparison(
-        >>>     "the volume of fuel in the tank was",
-        >>>     sign="=",
-        >>>     expression="10000 milliliters")
+        ...     "the volume of fuel in the tank was",
+        ...     sign="=", expression="10000 milliliters")
         >>> volume_in_liters.means(volume_in_milliliters)
         True
         """
@@ -622,13 +620,11 @@ class Comparison(Predicate):
         numeric range of the :class:`~.QuantityRange`\s for ``self`` and ``other``.
 
             >>> earlier = Comparison(
-            >>>     "the date $dentist became a licensed dentist was",
-            >>>     sign="<",
-            >>>     expression=date(1990, 1, 1))
+            ...     "the date $dentist became a licensed dentist was",
+            ...     sign="<", expression=date(1990, 1, 1))
             >>> later = Comparison(
-            >>>     "the date $dentist became a licensed dentist was",
-            >>>     sign=">",
-            >>>     expression=date(2010, 1, 1))
+            ...     "the date $dentist became a licensed dentist was",
+            ...     sign=">", expression=date(2010, 1, 1))
             >>> str(earlier)
             'that the date $dentist became a licensed dentist was less than 1990-01-01'
             >>> str(later)

@@ -31,7 +31,8 @@ class StatementTemplate(Template):
         r"""
         Identify placeholders in template text, and make verbs singular if needed.
 
-            >>> StatementTemplate("$group were at school", make_singular=True)
+            >>> school_template = StatementTemplate(
+            ... "$group were at school", make_singular=True)
             >>> str(school_template)
             'StatementTemplate("$group was at school")'
 
@@ -183,7 +184,7 @@ class Predicate:
     term once.
 
         >>> # the template has two placeholders referring to the identical term
-        >>> Predicate("$applicant opened a bank account for $applicant and $cosigner")
+        >>> opened = Predicate("$applicant opened a bank account for $applicant and $cosigner")
 
     Sometimes, a Predicate or Comparison needs to mention two terms that are
     different from each other, but that have interchangeable positions in that
@@ -192,7 +193,7 @@ class Predicate:
     except that the different placeholders should each end with a different digit.
 
         >>> # the template has two placeholders referring to different but interchangeable terms
-        >>> Predicate("$relative1 and $relative2 both were members of the same family")
+        >>> members = Predicate("$relative1 and $relative2 both were members of the same family")
 
     :param template:
         a clause containing an assertion in English in the past tense, with
@@ -325,9 +326,9 @@ class Predicate:
         which placeholders are marked as interchangeable.
 
         >>> game_between_others = Predicate(
-        >>>     "$organizer1 and $organizer2 planned for $player1 to play $game against $player2.")
+        ...     "$organizer1 and $organizer2 planned for $player1 to play $game against $player2.")
         >>> game_between_each_other = Predicate(
-        >>>     "$organizer1 and $organizer2 planned for $organizer1 to play $game against $organizer2.")
+        ...     "$organizer1 and $organizer2 planned for $organizer1 to play $game against $organizer2.")
         >>> game_between_others.means(game_between_each_other)
         False
 
@@ -357,11 +358,11 @@ class Predicate:
         text but a truth value of None.
 
             >>> lived_at = Predicate(
-            >>>     "$person lived at $place",
-            >>>     truth=True)
+            ...     "$person lived at $place",
+            ...     truth=True)
             >>> whether_lived_at = Predicate(
-            >>>     "$person lived at $place",
-            >>>     truth=None)
+            ...     "$person lived at $place",
+            ...     truth=None)
             >>> str(whether_lived_at)
             'whether $person lived at $place'
             >>> lived_at.implies(whether_lived_at)
