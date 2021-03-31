@@ -548,10 +548,13 @@ class TestContradiction:
             ]
         )
         assert nafta.contradicts(brexit)
+        answers = []
         explanations_usa_like_uk = nafta.explanations_contradiction(
             brexit, context=([Entity("USA")], [Entity("UK")])
         )
-        assert len(list(explanations_usa_like_uk)) == 2
+        for answer in explanations_usa_like_uk:
+            answers.append(answer)
+        assert len(answers) == 2
 
 
 class TestAdd:

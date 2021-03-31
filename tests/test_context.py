@@ -159,6 +159,23 @@ class TestContextRegisters:
         with pytest.raises(ValueError):
             ContextRegister.create([Entity("Alice"), Entity("Bob")])
 
+    def test_no_duplicate_context_interchangeable_terms(self):
+        left = Statement(
+            Predicate(template="$country1 signed a treaty with $country2"),
+            terms=(Entity("Mexico"), Entity("USA")),
+        )
+
+        right = Statement(
+            Predicate(template="$country3 signed a treaty with $country1"),
+            terms=(Entity("Germany"), Entity("UK")),
+        )
+
+        context = ContextRegister.from_lists([Entity("USA")], [Entity("UK")])
+
+        gen = left._context_registers(right, operator.ge, context)
+        results = list(gen)
+        assert len(results) == 1
+
 
 class TestLikelyContext:
     def test_likely_context_one_factor(self, make_statement):
@@ -260,6 +277,18 @@ class TestLikelyContext:
             "literal element of <Lotus 1-2-3>"
         )
         assert text in new[0].short_string
+
+
+class TestCompareRegisters:
+    def test_same_register_one_term(self):
+        left = ContextRegister.from_lists([Entity("Odysseus")], [Entity("Ulysses")])
+        right = ContextRegister.from_lists([Entity("Odysseus")], [Entity("Ulysses")])
+        assert right.means(left)
+
+    def test_not_same_register_one_term(self):
+        left = ContextRegister.from_lists([Entity("Odysseus")], [Entity("Ulysses")])
+        right = ContextRegister.from_lists([Entity("Odysseus")], [Entity("Jason")])
+        assert not right.means(left)
 
 
 class TestChangeRegisters:

@@ -336,11 +336,15 @@ class Comparable(ABC):
             if self_value is None or (self_value.compare_keys(other)):
                 yield self._generic_register(other)
         else:
+            already_found: List[ContextRegister] = []
             for term_permutation in self.term_permutations():
                 for other_permutation in other.term_permutations():
-                    yield from term_permutation.ordered_comparison(
+                    for answer in term_permutation.ordered_comparison(
                         other=other_permutation, operation=comparison, context=context
-                    )
+                    ):
+                        if not any(answer.means(entry) for entry in already_found):
+                            already_found.append(answer)
+                            yield answer
 
     def contradicts(
         self, other: Optional[Comparable], context: Optional[ContextRegister] = None
@@ -1197,6 +1201,14 @@ class ContextRegister:
         """Get pairs of corresponding Comparables."""
         for value in self.values():
             yield (self.get_reverse_factor(value), value)
+
+    def means(self, other: ContextRegister) -> bool:
+        if not isinstance(other, ContextRegister):
+            return False
+        for key, value in self.factor_pairs():
+            if not other.check_match(key=key, value=value):
+                return False
+        return True
 
     def get(self, query: str) -> Optional[Comparable]:
         """Get value corresponding to the key named ``query``."""
