@@ -27,8 +27,6 @@ jobs:
           pip install pytest
           pip install pytest-cov
           pip install coveralls
-      - name: Run doctests with pytest
-        run: pytest --doctest-modules
       - name: Test with pytest
         run: |
           pytest tests/ --cov=nettlesome --cov-report=term-missing
