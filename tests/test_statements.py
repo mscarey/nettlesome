@@ -668,6 +668,34 @@ class TestImplication:
         explanation = self.relevant_whether.explain_implied_by(self.relevant_fact)
         assert explanation.context["<Alice>"].name == "Alice"
 
+    def test_interchangeable_implication_no_duplicate_explanations(self):
+        men = Statement(
+            "$winner1 and $winner2 won the US Open against $loser1 and $loser2",
+            terms=[
+                Entity("Pavić"),
+                Entity("Soares"),
+                Entity("Koolhof"),
+                Entity("Mektić"),
+            ],
+        )
+        women = Statement(
+            "$winner1 and $winner2 won the US Open against $loser1 and $loser2",
+            terms=[
+                Entity("Siegemund"),
+                Entity("Zvonareva"),
+                Entity("Melichar"),
+                Entity("Yifan"),
+            ],
+        )
+        all_answers = list(men.explanations_implication(women))
+        assert len(all_answers) == 4
+        limited = list(
+            men.explanations_implication(
+                women, context=([Entity("Mektić")], [Entity("Melichar")])
+            )
+        )
+        assert len(limited) == 2
+
 
 class TestContradiction:
     def test_factor_different_predicate_truth_contradicts(self):

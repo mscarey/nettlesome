@@ -261,6 +261,47 @@ class TestSameFactors:
         )
         assert not left.means(right)
 
+    def test_interchangeable_same_meaning_no_repeated_explanations(self):
+        nafta = FactorGroup(
+            [
+                Statement(
+                    "$country1 signed a treaty with $country2",
+                    terms=[Entity("Mexico"), Entity("USA")],
+                ),
+                Statement(
+                    "$country2 signed a treaty with $country3",
+                    terms=[Entity("USA"), Entity("Canada")],
+                ),
+                Statement(
+                    "$country3 signed a treaty with $country1",
+                    terms=[Entity("Canada"), Entity("Mexico")],
+                ),
+            ]
+        )
+        nato = FactorGroup(
+            [
+                Statement(
+                    "$country1 signed a treaty with $country2",
+                    terms=[Entity("USA"), Entity("UK")],
+                ),
+                Statement(
+                    "$country2 signed a treaty with $country3",
+                    terms=[Entity("UK"), Entity("Germany")],
+                ),
+                Statement(
+                    "$country3 signed a treaty with $country1",
+                    terms=[Entity("Germany"), Entity("USA")],
+                ),
+            ]
+        )
+        assert nafta.means(nato)
+        answers = list(
+            nafta.explanations_same_meaning(
+                nato, context=([Entity("USA")], [Entity("UK")])
+            )
+        )
+        assert len(answers) == 2
+
 
 class TestImplication:
     def test_factorgroup_implies_none(self, make_statement):
@@ -513,7 +554,7 @@ class TestContradiction:
         assert explanation.context["<Houston>"].name == "El Paso"
         assert contradicts(left, right)
 
-    def test_no_repeated_explanations(self):
+    def test_interchangeable_contradiction_no_repeated_explanations(self):
         nafta = FactorGroup(
             [
                 Statement(
@@ -526,7 +567,7 @@ class TestContradiction:
                 ),
                 Statement(
                     "$country3 signed a treaty with $country1",
-                    terms=[Entity("USA"), Entity("Canada")],
+                    terms=[Entity("Canada"), Entity("Mexico")],
                 ),
             ]
         )
@@ -555,6 +596,101 @@ class TestContradiction:
         for answer in explanations_usa_like_uk:
             answers.append(answer)
         assert len(answers) == 2
+
+    def test_implication_no_repeated_explanations(self):
+        large_payments = FactorGroup(
+            [
+                Statement(
+                    Comparison(
+                        "the number of dollars that $payer paid to $payee was",
+                        sign=">",
+                        expression=10000,
+                    ),
+                    terms=[Entity("Alice"), Entity("Bob")],
+                ),
+                Statement(
+                    Comparison(
+                        "the number of dollars that $payer paid to $payee was",
+                        sign=">",
+                        expression=1000,
+                    ),
+                    terms=[Entity("Dan"), Entity("Eve")],
+                ),
+            ]
+        )
+        small_payments = FactorGroup(
+            [
+                Statement(
+                    Comparison(
+                        "the number of dollars that $payer paid to $payee was",
+                        sign=">",
+                        expression=100,
+                    ),
+                    terms={"payer": Entity("Fred"), "payee": Entity("Greg")},
+                ),
+                Statement(
+                    Comparison(
+                        "the number of dollars that $payer paid to $payee was",
+                        sign=">",
+                        expression=10,
+                    ),
+                    terms={"payer": Entity("Jim"), "payee": Entity("Kim")},
+                ),
+            ]
+        )
+        assert large_payments.implies(small_payments)
+        all_explanations = list(large_payments.explanations_implication(small_payments))
+        assert len(all_explanations) == 2
+        limited_explanations = list(
+            large_payments.explanations_implication(
+                small_payments, context=([Entity("Alice")], [Entity("Jim")])
+            )
+        )
+        assert len(limited_explanations) == 1
+
+    def test_interchangeable_implication_no_repeated_explanations(self):
+        nafta = FactorGroup(
+            [
+                Statement(
+                    "$country1 signed a treaty with $country2",
+                    terms=[Entity("Mexico"), Entity("USA")],
+                ),
+                Statement(
+                    "$country2 signed a treaty with $country3",
+                    terms=[Entity("USA"), Entity("Canada")],
+                ),
+                Statement(
+                    "$country3 signed a treaty with $country1",
+                    terms=[Entity("Canada"), Entity("Mexico")],
+                ),
+            ]
+        )
+        nato = FactorGroup(
+            [
+                Statement(
+                    "$country1 signed a treaty with $country2",
+                    terms=[Entity("USA"), Entity("UK")],
+                ),
+                Statement(
+                    "$country2 signed a treaty with $country3",
+                    terms=[Entity("UK"), Entity("Germany")],
+                ),
+                Statement(
+                    "$country3 signed a treaty with $country1",
+                    terms=[Entity("Germany"), Entity("USA")],
+                ),
+            ]
+        )
+        assert nafta.implies(nato)
+        all_answers = list(nafta.explanations_implication(nato))
+        assert len(all_answers) == 6
+
+        limited_answers = list(
+            nafta.explanations_implication(
+                nato, context=([Entity("USA")], [Entity("UK")])
+            )
+        )
+        assert len(limited_answers) == 2
 
 
 class TestAdd:
@@ -671,6 +807,59 @@ class TestConsistent:
         assert not consistent_with(group, self.faster_statement, context=register)
         assert repr(group).startswith("FactorGroup([Statement")
         assert '"30.0 mile / hour"' in repr(group)
+
+    def test_no_duplicate_explanations_consistent(self):
+        large_payments = FactorGroup(
+            [
+                Statement(
+                    Comparison(
+                        "the number of dollars that $payer paid to $payee was",
+                        sign=">",
+                        expression=10000,
+                    ),
+                    terms=[Entity("Alice"), Entity("Bob")],
+                ),
+                Statement(
+                    Comparison(
+                        "the number of dollars that $payer paid to $payee was",
+                        sign=">",
+                        expression=1000,
+                    ),
+                    terms=[Entity("Dan"), Entity("Eve")],
+                ),
+            ]
+        )
+        small_payments = FactorGroup(
+            [
+                Statement(
+                    Comparison(
+                        "the number of dollars that $payer paid to $payee was",
+                        sign=">",
+                        expression=100,
+                    ),
+                    terms={"payer": Entity("Fred"), "payee": Entity("Greg")},
+                ),
+                Statement(
+                    Comparison(
+                        "the number of dollars that $payer paid to $payee was",
+                        sign=">",
+                        expression=10,
+                    ),
+                    terms={"payer": Entity("Jim"), "payee": Entity("Kim")},
+                ),
+            ]
+        )
+        assert large_payments.consistent_with(small_payments)
+        all_explanations = list(
+            large_payments.explanations_consistent_with(small_payments)
+        )
+        assert len(all_explanations) == 24
+        limited_explanations = list(
+            large_payments.explanations_consistent_with(
+                small_payments, context=([Entity("Alice")], [Entity("Jim")])
+            )
+        )
+        assert len(limited_explanations) == 6
 
     def test_groups_with_one_statement_consistent(self):
         specific_group = FactorGroup([self.slower_specific_statement])

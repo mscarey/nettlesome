@@ -16,6 +16,8 @@ from nettlesome.terms import Explanation, Term, contradicts, means
 
 
 def unique_explanations(func: Callable):
+    """Filter out any duplicate Explanations before yielding them from func."""
+
     @functools.wraps(func)
     def wrapper(
         factor,
