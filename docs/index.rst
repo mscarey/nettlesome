@@ -30,6 +30,7 @@ Nettlesome itself doesn't depend on any legal concepts or legal knowledge.
     :caption: Guides
 
     guides/intro.rst
+    guides/context.rst
 
 .. toctree::
     :maxdepth: 1

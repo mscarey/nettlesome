@@ -1,3 +1,5 @@
+.. _Introduction to Nettlesome:
+
 Introduction to Nettlesome
 ==========================
 
@@ -142,12 +144,16 @@ replaced with “were”.
     >>> str(singular_statement)
     'the statement it was false that <Lee> was at school'
 
+.. _Generic Terms:
+
+Generic Terms
+~~~~~~~~~~~~~
 
 The ``generic`` attribute is more subtle than the ``plural`` attribute.
 An :class:`~nettlesome.entities.Entity` should be marked as ``generic`` if
 it’s really being used as a
 stand-in for a broader category. For instance, in ``singular_statement``
-above, the fact that ``<Lee>`` is generic indicates that
+above, the fact that `<Lee>` is generic indicates that
 the :class:`~nettlesome.statements.Statement`
 isn’t really about a specific incident when Lee was not at school.
 Instead, it’s more about the concept of someone not being at school. In

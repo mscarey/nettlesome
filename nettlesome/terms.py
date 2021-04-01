@@ -377,7 +377,23 @@ class Comparable(ABC):
     def explain_same_meaning(
         self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Optional[Explanation]:
-        """Get one explanation of why self and other have the same meaning."""
+        """
+        Get one explanation of why self and other have the same meaning.
+
+            >>> from nettlesome import Statement, Entity
+            >>> hades_curse = Statement(
+            ...    "$deity cursed $target",
+            ...    terms=[Entity("Hades"), Entity("Persephone")])
+            >>> aphrodite_curse = Statement(
+            ...    "$deity cursed $target",
+            ...    terms=[Entity("Aphrodite"), Entity("Narcissus")])
+            >>> print(hades_curse.explain_same_meaning(aphrodite_curse))
+            Because <Hades> is like <Aphrodite>, and <Persephone> is like <Narcissus>,
+              the statement that <Hades> cursed <Persephone>
+            MEANS
+              the statement that <Aphrodite> cursed <Narcissus>
+
+        """
         explanations = self.explanations_same_meaning(other, context=context)
         try:
             explanation = next(explanations)
@@ -399,7 +415,40 @@ class Comparable(ABC):
     def explain_contradiction(
         self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Optional[Explanation]:
-        """Get one explanation of why self and other contradict."""
+        """
+        Get one explanation of why self and other contradict.
+
+        Using the :meth:`~nettlesome.terms.Comparable.explanations_contradiction` method,
+        generates one :class:`~nettlesome.terms.Explanation` of how an analogy between the
+        generic terms of the two objects can make them contradictory.
+
+        In this example using two :class:~nettlesome.groups.FactorGroup`\s,
+        if the three :class:`~nettlesome.statements.Statement`\s in ``brexit`` were asserted
+        about the three :class:`~nettlesome.entities.Entity` terms in ``nafta``,
+        there would be an inconsistency as to whether one pair of Entities
+        signed a treaty with each other.
+
+        >>> from nettlesome import Statement, Entity, FactorGroup
+        >>> nafta = FactorGroup([
+        ...     Statement("$country1 signed a treaty with $country2",
+        ...               terms=[Entity("Mexico"), Entity("USA")]),
+        ...     Statement("$country2 signed a treaty with $country3",
+        ...               terms=[Entity("USA"), Entity("Canada")]),
+        ...     Statement("$country3 signed a treaty with $country1",
+        ...           terms=[Entity("USA"), Entity("Canada")])])
+        >>> brexit = FactorGroup([
+        ...     Statement("$country1 signed a treaty with $country2",
+        ...               terms=[Entity("UK"), Entity("European Union")]),
+        ...     Statement("$country2 signed a treaty with $country3",
+        ...               terms=[Entity("European Union"), Entity("Germany")]),
+        ...     Statement("$country3 signed a treaty with $country1",
+        ...          terms=[Entity("Germany"), Entity("UK")], truth=False)])
+        >>> print(nafta.explain_contradiction(brexit))
+        Because <Mexico> is like <Germany>, and <USA> is like <UK>,
+          the statement that <Mexico> signed a treaty with <USA>
+        CONTRADICTS
+          the statement it was false that <Germany> signed a treaty with <UK>
+        """
         explanations = self.explanations_contradiction(other, context=context)
         try:
             explanation = next(explanations)
@@ -864,10 +913,20 @@ class Comparable(ABC):
 
         :returns:
             whether ``other`` is another :class:`Factor`
-            with the same meaning as ``self``. Not the same as an
-            equality comparison with the ``==`` symbol, which simply
-            converts ``self``\'s and ``other``\'s fields to tuples
-            and compares them.
+            with the same meaning as ``self``.
+
+        Not the same as an
+        equality comparison with the ``==`` symbol, which simply
+        converts ``self``\'s and ``other``\'s fields to tuples
+        and compares them.
+
+        >>> from nettlesome import Statement, Entity
+        >>> hades_curse = Statement("$deity cursed $target",
+        ...    terms=[Entity("Hades"), Entity("Persephone")])
+        >>> aphrodite_curse = Statement("$deity cursed $target",
+        ...    terms=[Entity("Aphrodite"), Entity("Narcissus")])
+        >>> hades_curse.means(aphrodite_curse)
+        True
         """
         if other is None:
             return False

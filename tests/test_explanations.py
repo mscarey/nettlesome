@@ -226,3 +226,37 @@ class TestApplyOperation:
         gen = explanation.operate(left, right)
         with pytest.raises(ValueError):
             next(gen)
+
+
+class TestSameMeaning:
+    def test_not_same_meaning(self, make_statement):
+        left = make_statement["shooting"].explain_same_meaning(
+            make_statement["shooting_craig"]
+        )
+        right = make_statement["murder"].explain_same_meaning(
+            make_statement["murder_craig"]
+        )
+        assert not left.means(right)
+
+    def test_not_same_meaning_more_reasons(self, make_statement):
+        left = FactorGroup(
+            [make_statement["shooting"], make_statement["crime"]]
+        ).explain_same_meaning(
+            FactorGroup(
+                [make_statement["shooting_craig"], make_statement["crime_craig"]]
+            )
+        )
+        right = make_statement["murder"].explain_same_meaning(
+            make_statement["murder_craig"]
+        )
+        assert not left.means(right)
+
+    def test_not_same_meaning_as_contextregister(self, make_statement):
+        left = make_statement["shooting"].explain_same_meaning(
+            make_statement["shooting_craig"]
+        )
+        right = make_statement["murder"].explain_same_meaning(
+            make_statement["murder_craig"]
+        )
+        assert not left.means(right.context)
+        assert not right.context.means(left)

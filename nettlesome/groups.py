@@ -190,7 +190,35 @@ class FactorGroup(Comparable):
         other: Comparable,
         context: Optional[Union[ContextMemo, Explanation]] = None,
     ) -> Iterator[Explanation]:
-        """Find contexts that would cause ``self`` to contradict ``other``."""
+        """
+        Find contexts that would cause ``self`` to contradict ``other``.
+
+        In this example, by adding a context parameter to this method's comparison
+        of two FactorGroups for contradiction, we can narrow down how nettlesome
+        discovers analogies between the Entity objects. The result is that
+        nettlesome finds only two Explanations for how a contradiction can exist.
+
+            >>> from nettlesome import Statement, Entity
+            >>> nafta = FactorGroup([
+            ... Statement("$country1 signed a treaty with $country2",
+            ...     terms=[Entity("Mexico"), Entity("USA")]),
+            ... Statement("$country2 signed a treaty with $country3",
+            ...     terms=[Entity("USA"), Entity("Canada")]),
+            ... Statement("$country3 signed a treaty with $country1",
+            ...    terms=[Entity("USA"), Entity("Canada")])])
+            >>> brexit = FactorGroup([
+            ... Statement("$country1 signed a treaty with $country2",
+            ...     terms=[Entity("UK"), Entity("European Union")]),
+            ... Statement("$country2 signed a treaty with $country3",
+            ...     terms=[Entity("European Union"), Entity("Germany")]),
+            ... Statement("$country3 signed a treaty with $country1",
+            ...     terms=[Entity("Germany"), Entity("UK")], truth=False)])
+            >>> explanations_usa_like_uk = nafta.explanations_contradiction(
+            ...     brexit,
+            ...     context=([Entity("USA")], [Entity("UK")]))
+            >>> len(list(explanations_usa_like_uk))
+            2
+        """
 
         context = Explanation.from_context(
             context=context, current=self, incoming=other
@@ -217,6 +245,24 @@ class FactorGroup(Comparable):
             whether any :class:`.Factor` assignment can be found that
             makes a :class:`.Factor` in the output of ``other`` contradict
             a :class:`.Factor` in the output of ``self``.
+
+        >>> from nettlesome import Statement, Entity
+        >>> nafta = FactorGroup([
+        ... Statement("$country1 signed a treaty with $country2",
+        ...        terms=[Entity("Mexico"), Entity("USA")]),
+        ... Statement("$country2 signed a treaty with $country3",
+        ...        terms=[Entity("USA"), Entity("Canada")]),
+        ... Statement("$country3 signed a treaty with $country1",
+        ...    terms=[Entity("USA"), Entity("Canada")])])
+        >>> brexit = FactorGroup([
+        ... Statement("$country1 signed a treaty with $country2",
+        ...         terms=[Entity("UK"), Entity("European Union")]),
+        ... Statement("$country2 signed a treaty with $country3",
+        ...         terms=[Entity("European Union"), Entity("Germany")]),
+        ... Statement("$country3 signed a treaty with $country1",
+        ...     terms=[Entity("Germany"), Entity("UK")], truth=False)])
+        >>> nafta.contradicts(brexit)
+        True
         """
         if other is None:
             return False
