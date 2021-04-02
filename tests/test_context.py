@@ -176,6 +176,15 @@ class TestContextRegisters:
         results = list(gen)
         assert len(results) == 1
 
+    def test_context_from_lists_wrong_length(self):
+        try:
+            ContextRegister.from_lists(
+                [Entity("Death Star 3"), Entity("Kylo Ren")],
+                [Entity("Death Star 1")],
+            )
+        except ValueError as e:
+            assert "to_replace" in str(e)
+
 
 class TestLikelyContext:
     def test_likely_context_one_factor(self, make_statement):

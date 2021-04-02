@@ -1164,7 +1164,7 @@ class ContextRegister:
         if len(to_replace) != len(replacements):
             raise ValueError(
                 "Cannot create ContextRegister because 'to_replace' is not the same length "
-                f"as 'replacements'.\to_replace: ({to_replace})\replacements: ({replacements})"
+                f"as 'replacements'. to_replace: ({to_replace}). replacements: ({replacements})."
             )
         terms_to_replace = expand_strings_from_source(
             to_expand=to_replace, source=current
