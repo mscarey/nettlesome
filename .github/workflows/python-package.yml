@@ -29,7 +29,7 @@ jobs:
           pip install coveralls
       - name: Test with pytest
         run: |
-          pytest --cov=nettlesome --cov-report=term-missing
+          pytest --doctest-modules --cov=nettlesome --cov-report=term-missing
       - name: Upload coverage data to coveralls.io
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

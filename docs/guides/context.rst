@@ -48,6 +48,10 @@ Aphrodite? That changes the meaning of the second Statement and
 indicates that the two Statements don’t have the same meaning. To add
 that context information in Nettlesome, use the ``context``
 parameter of the :meth:`~nettlesome.terms.Comparable.means` method.
+
+Option 1: Context from Two Lists
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 One input format for the ``context``
 parameter is a :py:class:`tuple` of two :py:class:`list`\s, with the first List containing Terms
 from the Statement on the left, and the second List containing the
@@ -61,6 +65,9 @@ instead of ``True``.
 
     >>> hades_curse.means(aphrodite_curse, context=([Entity("Hades")], [Entity("Narcissus")]))
     False
+
+Option 2: Context from a Dict
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Maybe it seems more natural to use a Python :py:class:`dict`\, instead
 of a :py:class:`tuple` of
@@ -99,7 +106,11 @@ property of the Entity.
     ...     context=({Entity("Hades").key: Entity("Narcissus")}))
     False
 
-Finally, we might want to skip identifying any Terms from the left
+Option 3: Context from One List
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If neither of the options above is convenient, a third alternative is
+to skip identifying any Terms from the left
 :class:`~nettlesome.statements.Statement`\, and instead provide
 one :py:class:`list` with matching :class:`~nettlesome.terms.Term`\s for all of
 the left :class:`~nettlesome.statements.Statement`\'s
@@ -178,13 +189,16 @@ how to cause a contradiction. In this case it generates four Explanations.
     >>> len(all_explanations)
     4
 
-By adding a context parameter to the method that compares the
+By adding a ``context`` parameter to the method that compares the
 :class:`~nettlesome.groups.FactorGroup`\s for contradiction, we can narrow
-down how nettlesome discovers analogies between
+down how Nettlesome discovers analogies between
 the :class:`~nettlesome.entities.Entity` objects. The result is that
-nettlesome finds only two Explanations of how a contradiction can exist.
+Nettlesome finds only two :class:`~nettlesome.terms.Explanation`\s of
+how a contradiction can exist.
 
-    >>> explanations_usa_like_uk = list(nafta.explanations_contradiction(brexit, context=([Entity("USA")], [Entity("UK")])))
+    >>> explanations_usa_like_uk = list(nafta.explanations_contradiction(
+    ...     brexit,
+    ...     context=([Entity("USA")], [Entity("UK")])))
     >>> len(explanations_usa_like_uk)
     2
 
