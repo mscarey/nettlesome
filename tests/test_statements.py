@@ -165,16 +165,16 @@ class TestStatements:
             shot.new_context(changes)
 
     def test_too_much_info_to_change_context(self):
-        """Test that a list of terms to replace requires "changes" to be consistent."""
+        """Test that new Statement is created with truncated ContextRegister."""
         statement = Statement(
             "$person1 loved $person2",
             terms=[Entity("Donald"), Entity("Daisy")],
         )
-        with pytest.raises(ValueError):
-            statement.new_context(
-                changes=Entity("Mickey"),
-                terms_to_replace=[Entity("Donald"), Entity("Daisy")],
-            )
+        new = statement.new_context(
+            changes=Entity("Mickey"),
+            terms_to_replace=[Entity("Donald"), Entity("Daisy")],
+        )
+        assert "<Mickey> loved <Daisy>".lower() in str(new).lower()
 
     def test_get_factor_from_recursive_search(self):
         predicate_shot = Predicate("$shooter shot $victim")

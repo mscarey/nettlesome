@@ -177,13 +177,12 @@ class TestContextRegisters:
         assert len(results) == 1
 
     def test_context_from_lists_wrong_length(self):
-        try:
-            ContextRegister.from_lists(
-                [Entity("Death Star 3"), Entity("Kylo Ren")],
-                [Entity("Death Star 1")],
-            )
-        except ValueError as e:
-            assert "to_replace" in str(e)
+        context = ContextRegister.from_lists(
+            [Entity("Death Star 3"), Entity("Kylo Ren")],
+            [Entity("Death Star 1")],
+        )
+
+        assert "Kylo Ren" not in str(context)
 
 
 class TestLikelyContext:

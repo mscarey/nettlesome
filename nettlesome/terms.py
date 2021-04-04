@@ -415,7 +415,7 @@ class Comparable(ABC):
     def explain_contradiction(
         self, other: Comparable, context: Optional[ContextRegister] = None
     ) -> Optional[Explanation]:
-        """
+        r"""
         Get one explanation of why self and other contradict.
 
         Using the :meth:`~nettlesome.terms.Comparable.explanations_contradiction` method,
@@ -1161,11 +1161,6 @@ class ContextRegister:
         incoming: Optional[Comparable] = None,
     ) -> ContextRegister:
         """Make new ContextRegister from two lists of Comparables."""
-        if len(to_replace) != len(replacements):
-            raise ValueError(
-                "Cannot create ContextRegister because 'to_replace' is not the same length "
-                f"as 'replacements'. to_replace: ({to_replace}). replacements: ({replacements})."
-            )
         terms_to_replace = expand_strings_from_source(
             to_expand=to_replace, source=current
         )
@@ -1173,7 +1168,8 @@ class ContextRegister:
             to_expand=replacements, source=incoming
         )
         return cls._from_lists(
-            to_replace=terms_to_replace, replacements=term_replacements
+            to_replace=terms_to_replace[: len(term_replacements)],
+            replacements=term_replacements[: len(terms_to_replace)],
         )
 
     @classmethod
