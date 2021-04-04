@@ -760,6 +760,12 @@ class TestUnion:
         combined = left | right
         assert len(combined) == 3
 
+    def test_union_same_entity_on_both_sides(self, make_statement):
+        two_terms = FactorGroup([make_statement["murder_entity_order"]])
+        one_term = FactorGroup([make_statement["crime"]])
+        result = one_term | two_terms
+        assert result
+
 
 class TestConsistent:
     predicate_less_specific = Comparison(

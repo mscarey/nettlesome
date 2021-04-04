@@ -11,7 +11,12 @@ from typing import Optional, Sequence, Tuple, Union
 
 from nettlesome.factors import Factor
 
-from nettlesome.terms import Comparable, ContextMemo, ContextRegister
+from nettlesome.terms import (
+    Comparable,
+    ContextMemo,
+    ContextRegister,
+    DuplicateTermError,
+)
 from nettlesome.terms import Explanation, Term, contradicts, means
 
 
@@ -586,14 +591,19 @@ class FactorGroup(Comparable):
         self, other: FactorGroup, context: ContextRegister
     ) -> Optional[FactorGroup]:
         result = self._union_from_explanation_allow_contradiction(other, context)
+        if result is None:
+            return None
         if not result.internally_consistent(context=context):
             return None
         return result
 
     def _union_from_explanation_allow_contradiction(
         self, other: FactorGroup, context: ContextRegister
-    ) -> FactorGroup:
+    ) -> Optional[FactorGroup]:
         updated_context = context.reversed() if context else None
-        result = self + other.new_context(changes=updated_context)
+        try:
+            result = self + other.new_context(changes=updated_context)
+        except DuplicateTermError:
+            return None
         result = result.drop_implied_factors()
         return result
