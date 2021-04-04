@@ -4,7 +4,8 @@ import operator
 
 import pytest
 
-from nettlesome.terms import ContextRegister, Explanation, TermSequence, means
+from nettlesome.terms import ContextRegister, DuplicateTermError
+from nettlesome.terms import Explanation, TermSequence, means
 from nettlesome.entities import Entity
 
 from nettlesome.predicates import Predicate
@@ -171,7 +172,7 @@ class TestSameMeaning:
 
     def test_cannot_repeat_term_in_termsequence(self, make_predicate):
 
-        with pytest.raises(ValueError):
+        with pytest.raises(DuplicateTermError):
             Statement("$person1 shot $person2", terms=[Entity("Al"), Entity("Al")])
 
     def test_factor_different_predicate_truth_unequal(self, make_statement):

@@ -1611,6 +1611,10 @@ class Term(Comparable):
         return answers
 
 
+class DuplicateTermError(Exception):
+    pass
+
+
 class TermSequence(Tuple[Optional[Term], ...]):
     """A sequence of Terms that can be compared in order."""
 
@@ -1627,7 +1631,7 @@ class TermSequence(Tuple[Optional[Term], ...]):
         for term in value:
             if term:
                 if term.key in seen:
-                    raise ValueError(
+                    raise DuplicateTermError(
                         f"Term '{term}' may not appear more than once in TermSequence. "
                         "If you need to refer to the same term more than once in a Predicate, "
                         "please use the same placeholder text instead of including the "
