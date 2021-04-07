@@ -30,6 +30,7 @@ class TestStatements:
         city = Predicate("$place was a city")
         statement = Statement(city, terms=Entity("New York"))
         assert "<New York> was a city" in str(statement)
+        assert ", terms=(Entity(name='New York'),)," in repr(statement)
 
     def test_get_terms(self, make_statement):
         terms = make_statement["friends"].terms
@@ -416,6 +417,7 @@ class TestSameMeaning:
         )
         listings_original = Statement(Predicate("$thing were original"), terms=listings)
         assert directory_original.means(listings_original)
+        assert "plural=True" in repr(listings_original)
 
     def test_same_meaning_no_terms(self):
         assert Statement(Predicate("good morning")).means(
@@ -429,6 +431,7 @@ class TestSameMeaning:
         ann_parent = Statement(parent_sentence, terms=(ann, bob))
         bob_parent = Statement(parent_sentence, terms=(bob, ann))
         assert not ann_parent.means(bob_parent)
+        assert "generic=False" in repr(ann_parent)
 
 
 class TestImplication:

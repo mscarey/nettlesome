@@ -54,10 +54,12 @@ class Entity(Term):
         return str(self)
 
     def __repr__(self) -> str:
-        return (
-            f"""Entity(name="{self.name}", """
-            f"generic={self.generic}, plural={self.plural})"
-        )
+        attrs = f"name='{self.name}'"
+        if not self.generic:
+            attrs += ", generic=False"
+        if self.plural:
+            attrs += ", plural=True"
+        return f"{self.__class__.__name__}({attrs})"
 
     def implies(
         self, other: Optional[Comparable], context: Optional[ContextRegister] = None

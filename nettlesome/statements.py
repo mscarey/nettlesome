@@ -148,17 +148,14 @@ class Statement(Factor):
                 text += f"\n{str(factor_text)}"
         return text
 
-    def __repr__(self):
-        return (
-            f"{self.__class__.__name__}({repr(self.predicate)}, terms={self.terms}"
-            f"{', absent=True' if self.absent else ''}{', absent=True' if self.absent else ''})"
-        )
-
     def __str__(self):
         """Create one-line string representation for inclusion in other Facts."""
         content = str(self.predicate._content_with_terms(self.terms))
         unwrapped = self.predicate._add_truth_to_content(content)
         return super().__str__().format(unwrapped)
+
+    def __repr__(self) -> str:
+        return super().__repr__().replace(" _terms=", " terms=")
 
     @property
     def truth(self) -> Optional[bool]:
