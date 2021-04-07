@@ -227,6 +227,9 @@ def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
         "more": Statement(
             c["more"], terms=[Entity("San Francisco"), Entity("Oakland")]
         ),
+        "more_atlanta": Statement(
+            c["more"], terms=[Entity("Atlanta"), Entity("Marietta")]
+        ),
         "more_meters": Statement(
             c["meters"], terms=[Entity("San Francisco"), Entity("Oakland")]
         ),

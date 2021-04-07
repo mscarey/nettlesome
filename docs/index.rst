@@ -22,10 +22,6 @@ Nettlesome itself doesn't depend on any legal concepts or legal knowledge.
 
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-.. toctree::
     :maxdepth: 2
     :caption: Guides
 

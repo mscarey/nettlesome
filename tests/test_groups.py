@@ -708,6 +708,16 @@ class TestAdd:
         assert len(added) == 2
         assert isinstance(added, FactorGroup)
 
+    def test_add_factor_without_contradicting_due_to_context(self, make_statement):
+        left = FactorGroup(make_statement["less"])
+        combined = left + make_statement["more_atlanta"]
+        assert len(combined) == 2
+
+    def test_add_contradictory_factor_to_factorgroup(self, make_statement):
+        left = FactorGroup(make_statement["less"])
+        combined = left + make_statement["more"]
+        assert combined is None
+
 
 class TestUnion:
     def test_factors_combined_because_of_implication(self, make_statement):
@@ -911,9 +921,8 @@ class TestConsistent:
         context.insert_pair(Entity("Alice"), Entity("Alice"))
         context.insert_pair(Entity("Bob"), Entity("Bob"))
         group = FactorGroup([make_statement["shooting"], make_statement["no_shooting"]])
-        assert not group.internally_consistent(context=context)
+        assert not group.internally_consistent()
 
-    @pytest.mark.xfail(reason="Always returns True if no context is given.")
     def test_not_internally_consistent(self, make_statement):
         group = FactorGroup([make_statement["shooting"], make_statement["no_shooting"]])
         assert not group.internally_consistent()

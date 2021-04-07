@@ -88,13 +88,23 @@ class FactorGroup(Comparable):
         combined = self.sequence[:] + other.sequence[:]
         return self.__class__(combined)
 
-    def __add__(
-        self, other: Union[FactorGroup, Sequence[Factor], Factor]
-    ) -> FactorGroup:
+    def add(
+        self,
+        other: Union[FactorGroup, Sequence[Factor], Factor],
+        context: Optional[Union[ContextRegister, Explanation]] = None,
+    ) -> Optional[FactorGroup]:
         if isinstance(other, self.__class__):
             return self._add_group(other)
         to_add = self.__class__(other)
-        return self._add_group(to_add)
+        added = self._add_group(to_add)
+        if added.internally_consistent():
+            return added
+        return None
+
+    def __add__(
+        self, other: Union[FactorGroup, Sequence[Factor], Factor]
+    ) -> FactorGroup:
+        return self.add(other)
 
     @property
     def recursive_terms(self) -> Dict[str, Term]:
@@ -543,18 +553,17 @@ class FactorGroup(Comparable):
             result.append(current)
         return self.__class__(result)
 
-    def internally_consistent(self, context: Optional[ContextRegister] = None) -> bool:
+    def internally_consistent(self) -> bool:
         """
         Check for contradictions among the Factors in self.
 
         :returns: bool indicating whether self is internally consistent
         """
-        context = context or ContextRegister()
         unchecked = list(self)
         while unchecked:
             current = unchecked.pop()
             for item in unchecked:
-                if not current.consistent_with(item, context):
+                if current.contradicts_same_context(item):
                     return False
         return True
 
@@ -593,7 +602,7 @@ class FactorGroup(Comparable):
         result = self._union_from_explanation_allow_contradiction(other, context)
         if result is None:
             return None
-        if not result.internally_consistent(context=context):
+        if not result.internally_consistent():
             return None
         return result
 

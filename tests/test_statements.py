@@ -1049,6 +1049,18 @@ class TestConsistent:
         )
         assert not explanations
 
+    def test_not_consistent_different_terms(self, make_statement):
+        """Test that terms on left can only be matched with terms on right, where they contradict."""
+        assert not make_statement["less"].consistent_with(
+            make_statement["more_atlanta"]
+        )
+
+    def test_internally_consistent_different_terms(self, make_statement):
+        """Test that terms on left can only be matched with terms on right, where they contradict."""
+        assert not make_statement["less"].contradicts_same_context(
+            make_statement["more_atlanta"]
+        )
+
     def test_factor_consistent_with_none(self):
         assert self.small.consistent_with(None)
 

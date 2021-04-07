@@ -422,7 +422,7 @@ class Comparable(ABC):
         generates one :class:`~nettlesome.terms.Explanation` of how an analogy between the
         generic terms of the two objects can make them contradictory.
 
-        In this example using two :class:~nettlesome.groups.FactorGroup`\s,
+        In this example using two :class:`~nettlesome.groups.FactorGroup`\s,
         if the three :class:`~nettlesome.statements.Statement`\s in ``brexit`` were asserted
         about the three :class:`~nettlesome.entities.Entity` terms in ``nafta``,
         there would be an inconsistency as to whether one pair of Entities
@@ -831,12 +831,27 @@ class Comparable(ABC):
             ):
                 yield explanation.with_context(new_context)
 
-    def implies_same_context(self, other) -> bool:
+    def implies_same_context(self, other: Comparable) -> bool:
         """Check if self would imply other if their generic terms are matched in order."""
         same_context = ContextRegister()
         for key in self.generic_terms():
             same_context.insert_pair(key, key)
+        for value in other.generic_terms():
+            same_context.insert_pair(value, value)
         return self.implies(other, context=same_context)
+
+    def contradicts_same_context(self, other: Comparable) -> bool:
+        """
+        Check if self contradicts other if Terms with the same name always match.
+
+        Used to check consistency of FactorGroups.
+        """
+        same_context = ContextRegister()
+        for key in self.generic_terms():
+            same_context.insert_pair(key, key)
+        for value in other.generic_terms():
+            same_context.insert_pair(value, value)
+        return self.contradicts(other, context=same_context)
 
     def likely_contexts(
         self, other: Comparable, context: Optional[ContextRegister] = None
@@ -1575,7 +1590,7 @@ class Term(Comparable):
         context: Optional[Union[ContextRegister, Explanation]] = None,
     ) -> Iterator[Explanation]:
         """Get Term assignments resulting in no contradiction between self and other."""
-        context = context = Explanation.from_context(
+        context = Explanation.from_context(
             context=context, current=self, incoming=other
         )
         if not isinstance(other, Term):
