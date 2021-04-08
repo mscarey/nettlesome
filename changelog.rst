@@ -1,5 +1,19 @@
 Changelog
 =========
+0.4.0 (2021-04-08)
+------------------
+- Fact constructor accepts truth param
+- allow alternate methods to specify context for .implies()
+- add string expansion to ContextRegister.from_lists
+- all Explanation.from_context calls expand strings
+- disallow repeated Terms in TermSequence
+- fix bug: _context_registers method yielded same ContextRegister repeatedly
+- add DuplicateTermError
+- fix bug: FactorGroup.union used duplicative TermSequence
+- ContextRegister.from_lists works with unequal length lists
+- add contradicts_same_context method
+- add repr method for subclasses of Comparable to inherit
+
 0.3.0 (2021-03-19)
 ------------------
 - add FactorMatch NamedTuples to be listed in Explanation

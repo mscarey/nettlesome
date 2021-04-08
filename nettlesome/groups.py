@@ -91,8 +91,8 @@ class FactorGroup(Comparable):
     def add(
         self,
         other: Union[FactorGroup, Sequence[Factor], Factor],
-        context: Optional[Union[ContextRegister, Explanation]] = None,
     ) -> Optional[FactorGroup]:
+        """Combine all Factors into a single FactorGroup."""
         if isinstance(other, self.__class__):
             return self._add_group(other)
         to_add = self.__class__(other)

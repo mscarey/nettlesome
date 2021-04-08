@@ -7,4 +7,4 @@ from .predicates import Predicate
 from .quantities import Comparison, DateRange, NumberRange, UnitRange
 from .statements import Statement
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"

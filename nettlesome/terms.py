@@ -1277,6 +1277,7 @@ class ContextRegister:
             yield (self.get_reverse_factor(value), value)
 
     def means(self, other: ContextRegister) -> bool:
+        """Determine if self and other have the same Factor matches."""
         if not isinstance(other, ContextRegister):
             return False
         for key, value in self.factor_pairs():
@@ -1407,6 +1408,7 @@ class FactorMatch(NamedTuple):
 
     @property
     def key(self) -> str:
+        """Make a key for storing the FactorMatch in a dict."""
         return self.short_string
 
     def __str__(self):
@@ -1477,6 +1479,7 @@ class Explanation:
         return Explanation(reasons=[], context=context or ContextRegister())
 
     def means(self, other: Explanation) -> bool:
+        """Test if both Explanations have the same context and reasons."""
         if not isinstance(other, Explanation):
             return False
         if not self.context.means(other.context):
@@ -1627,6 +1630,8 @@ class Term(Comparable):
 
 
 class DuplicateTermError(Exception):
+    """Error indicating a TermSequence contains the same Term more than once."""
+
     pass
 
 
