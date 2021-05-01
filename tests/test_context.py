@@ -161,12 +161,12 @@ class TestContextRegisters:
 
     def test_no_duplicate_context_interchangeable_terms(self):
         left = Statement(
-            Predicate(template="$country1 signed a treaty with $country2"),
+            Predicate(content="$country1 signed a treaty with $country2"),
             terms=(Entity("Mexico"), Entity("USA")),
         )
 
         right = Statement(
-            Predicate(template="$country3 signed a treaty with $country1"),
+            Predicate(content="$country3 signed a treaty with $country1"),
             terms=(Entity("Germany"), Entity("UK")),
         )
 

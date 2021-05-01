@@ -207,7 +207,7 @@ class TestSameFactors:
         left = FactorGroup(
             [
                 Statement(
-                    Predicate(template="$suburb was a suburb of $city"),
+                    Predicate(content="$suburb was a suburb of $city"),
                     terms=(
                         Entity(name="Oakland"),
                         Entity(name="San Francisco"),
@@ -220,7 +220,7 @@ class TestSameFactors:
         right = FactorGroup(
             [
                 Statement(
-                    Predicate(template="$suburb was a suburb of $city"),
+                    Predicate(content="$suburb was a suburb of $city"),
                     terms=(
                         Entity(name="San Francisco"),
                         Entity(name="Oakland"),
@@ -236,7 +236,7 @@ class TestSameFactors:
         left = FactorGroup(
             [
                 Statement(
-                    Predicate(template="$suburb was a suburb of $city"),
+                    Predicate(content="$suburb was a suburb of $city"),
                     terms=(
                         Entity(name="Oakland"),
                         Entity(name="San Francisco"),
@@ -249,7 +249,7 @@ class TestSameFactors:
         right = FactorGroup(
             [
                 Statement(
-                    Predicate(template="$suburb was a suburb of $city"),
+                    Predicate(content="$suburb was a suburb of $city"),
                     terms=(
                         Entity(name="San Francisco"),
                         Entity(name="Oakland"),
@@ -351,7 +351,7 @@ class TestImplication:
             [
                 Statement(
                     Comparison(
-                        template="the distance between $place1 and $place2 was",
+                        content="the distance between $place1 and $place2 was",
                         truth=True,
                         sign="<=",
                         expression="35 foot",
@@ -363,7 +363,7 @@ class TestImplication:
                 ),
                 Statement(
                     Comparison(
-                        template="the distance between ${monster} and a boat used by ${hero} was",
+                        content="the distance between ${monster} and a boat used by ${hero} was",
                         truth=True,
                         sign="<=",
                         expression="5 foot",
@@ -380,7 +380,7 @@ class TestImplication:
             [
                 Statement(
                     Comparison(
-                        template="the distance between $place1 and $place2 was",
+                        content="the distance between $place1 and $place2 was",
                         truth=True,
                         sign="<=",
                         expression="35 foot",
@@ -392,7 +392,7 @@ class TestImplication:
                 ),
                 Statement(
                     Comparison(
-                        template="the distance between $thing and a boat used by $person was",
+                        content="the distance between $thing and a boat used by $person was",
                         truth=True,
                         sign="<=",
                         expression="5 foot",
@@ -491,7 +491,7 @@ class TestImpliedBy:
             [
                 Statement(
                     Predicate(
-                        template="${rural_s_telephone_directory} was a compilation of facts"
+                        content="${rural_s_telephone_directory} was a compilation of facts"
                     ),
                     terms=(Entity(name="Rural's telephone directory"),),
                 )
@@ -500,7 +500,7 @@ class TestImpliedBy:
         right = FactorGroup(
             [
                 Statement(
-                    Predicate(template="${rural_s_telephone_directory} was an idea"),
+                    Predicate(content="${rural_s_telephone_directory} was an idea"),
                     terms=(Entity(name="Rural's telephone directory"),),
                 )
             ]

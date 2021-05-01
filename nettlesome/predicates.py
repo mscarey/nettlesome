@@ -208,14 +208,14 @@ class Predicate:
 
     """
 
-    def __init__(self, template: str, truth: Optional[bool] = True):
+    def __init__(self, content: str, truth: Optional[bool] = True):
         """
         Clean up and test validity of attributes.
 
         If the :attr:`content` sentence is phrased to have a plural
         context term, normalizes it by changing "were" to "was".
         """
-        self.template = StatementTemplate(template, make_singular=True)
+        self.template = StatementTemplate(content, make_singular=True)
         self.truth = truth
 
     def __repr__(self):
@@ -421,7 +421,7 @@ class Predicate:
     def negated(self) -> Predicate:
         """Copy ``self``, with the opposite truth value."""
         return Predicate(
-            template=self.content,
+            content=self.content,
             truth=not self.truth,
         )
 

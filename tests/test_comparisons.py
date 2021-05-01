@@ -282,8 +282,8 @@ class TestImplication:
         assert not make_predicate["quantity>=4"] > make_predicate["quantity>5"]
 
     def test_no_implication_of_greater_or_equal_quantity(self):
-        less = Comparison(template="The number of mice was", sign=">", expression=4)
-        more = Comparison(template="The number of mice was", sign=">=", expression=5)
+        less = Comparison(content="The number of mice was", sign=">", expression=4)
+        more = Comparison(content="The number of mice was", sign=">=", expression=5)
         assert not less.implies(more)
 
     def test_no_contradiction_inconsistent_dimensions(self):

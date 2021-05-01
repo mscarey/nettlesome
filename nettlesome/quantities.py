@@ -419,7 +419,7 @@ class Comparison(Predicate):
 
     def __init__(
         self,
-        template: str,
+        content: str,
         sign: str = "",
         expression: Union[date, int, float, Quantity] = 0,
         truth: Optional[bool] = True,
@@ -432,7 +432,7 @@ class Comparison(Predicate):
         If the :attr:`content` sentence is phrased to have a plural
         context term, normalizes it by changing "were" to "was".
         """
-        super().__init__(template, truth=truth)
+        super().__init__(content, truth=truth)
 
         if quantity_range:
             self.quantity_range = quantity_range
@@ -646,7 +646,7 @@ class Comparison(Predicate):
     def negated(self) -> Comparison:
         """Copy ``self``, with the opposite truth value."""
         return Comparison(
-            template=self.content,
+            content=self.content,
             truth=not self.truth,
             sign=self.quantity_range.sign,
             expression=self.quantity_range.quantity,
