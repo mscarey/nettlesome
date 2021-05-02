@@ -71,7 +71,6 @@ class StatementSchema(Schema):
     __model__: Type = Statement
     predicate = fields.Nested(PredicateSchema)
     terms = fields.Nested(lambda: FactorSchema(many=True))
-    standard_of_proof = fields.Str(missing=None)
     absent = fields.Bool(missing=False)
     generic = fields.Bool(missing=False)
 

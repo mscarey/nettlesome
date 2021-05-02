@@ -2,7 +2,7 @@ from datetime import date
 
 from nettlesome.predicates import Predicate
 from nettlesome.quantities import Comparison, Q_
-from nettlesome.schemas import PredicateSchema
+from nettlesome.schemas import PredicateSchema, FactorSchema
 
 
 class TestPredicateLoad:
@@ -75,3 +75,21 @@ class TestPredicateDump:
         )
         dumped = self.schema.dump(copyright_date_range)
         assert dumped["expression"] == "1978-01-01"
+
+
+class TestFactorLoad:
+    schema = FactorSchema()
+
+    def test_round_trip_assertion(self):
+        data = {
+            "type": "Assertion",
+            "statement": {
+                "predicate": {"content": "$defendant jaywalked"},
+                "terms": [{"type": "Entity", "name": "Alice"}],
+            },
+            "authority": {"name": "Bob"},
+        }
+        loaded = self.schema.load(data)
+        assert loaded.statement.terms[0].name == "Alice"
+        dumped = self.schema.dump(loaded)
+        assert dumped["authority"]["name"] == "Bob"
