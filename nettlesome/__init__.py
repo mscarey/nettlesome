@@ -1,6 +1,6 @@
 """Nettlesome: Simplified semantic reasoning."""
 
-from .doctrines import Doctrine
+from .assertions import Assertion
 from .entities import Entity
 from .groups import FactorGroup
 from .predicates import Predicate

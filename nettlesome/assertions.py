@@ -1,7 +1,5 @@
 """
-Doctrines, or Statements associated with speakers or endorsers.
-
-There may be a better class name than "Doctrine".
+Assertions, or Statements associated with speakers or endorsers.
 """
 
 from typing import Optional
@@ -11,7 +9,7 @@ from nettlesome.statements import Statement
 from nettlesome.factors import Factor
 
 
-class Doctrine(Factor):
+class Assertion(Factor):
     """A Statement identified with the authority of an Entity."""
 
     context_factor_names = ("statement", "authority")

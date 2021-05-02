@@ -40,7 +40,7 @@ Nettlesome itself doesn't depend on any legal concepts or legal knowledge.
     api/comparisons.rst
     api/quantities.rst
     api/statements.rst
-    api/doctrines.rst
+    api/assertions.rst
     api/explanations.rst
     api/groups.rst
 

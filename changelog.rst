@@ -1,5 +1,11 @@
 Changelog
 =========
+dev
+------------------
+- change Doctrine class name to Assertion
+- change Predicate param name from template to content
+- add Marshmallow schemas
+
 0.4.0 (2021-04-08)
 ------------------
 - Fact constructor accepts truth param

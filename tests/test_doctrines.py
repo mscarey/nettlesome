@@ -1,21 +1,23 @@
 import pytest
 
 from nettlesome.terms import ContextRegister
-from nettlesome.doctrines import Doctrine
+from nettlesome.assertions import Assertion
 from nettlesome.entities import Entity
 from nettlesome.statements import Statement
 
 
-class TestDoctrine:
+class TestAssertion:
     namespaces = Statement(
         "$concept was one honking great idea",
         terms=Entity("namespaces", plural=True),
     )
-    generic_authority = Doctrine(statement=namespaces, authority=Entity("Twitter user"))
-    specific_authority = Doctrine(
+    generic_authority = Assertion(
+        statement=namespaces, authority=Entity("Twitter user")
+    )
+    specific_authority = Assertion(
         statement=namespaces, authority=Entity("Tim Peters", generic=False)
     )
-    no_authority = Doctrine(statement=namespaces, authority=None)
+    no_authority = Assertion(statement=namespaces, authority=None)
 
     def test_dictum_string(self):
         assert "<namespaces> were one honking great idea" in str(self.generic_authority)
@@ -79,11 +81,11 @@ class TestInterchangeable:
         "$god1 was identical with $god2",
         terms=[Entity("Dionysus"), Entity("Osiris")],
     )
-    generic_authority = Doctrine(statement=identical, authority=Entity("a historian"))
-    specific_authority = Doctrine(
+    generic_authority = Assertion(statement=identical, authority=Entity("a historian"))
+    specific_authority = Assertion(
         statement=identical, authority=Entity("Herodotus", generic=False)
     )
-    no_authority = Doctrine(statement=identical, authority=None)
+    no_authority = Assertion(statement=identical, authority=None)
 
     def test_means_self(self):
         assert self.generic_authority.means(self.generic_authority)
@@ -130,20 +132,20 @@ class TestInterchangeable:
     def test_no_implication_no_authority(self):
         assert not self.no_authority.implies(self.generic_authority)
 
-    def test_same_because_interchangeable(self, make_doctrine):
-        assert make_doctrine["plotted_per_alice"].means(
-            make_doctrine["plotted_per_craig"]
+    def test_same_because_interchangeable(self, make_assertion):
+        assert make_assertion["plotted_per_alice"].means(
+            make_assertion["plotted_per_craig"]
         )
-        assert make_doctrine["plotted_per_craig"].means(
-            make_doctrine["plotted_per_alice"]
+        assert make_assertion["plotted_per_craig"].means(
+            make_assertion["plotted_per_alice"]
         )
 
-    def test_different_because_not_interchangeable(self, make_doctrine):
-        assert not make_doctrine["plotted_per_alice"].means(
-            make_doctrine["plotted_per_bob"]
+    def test_different_because_not_interchangeable(self, make_assertion):
+        assert not make_assertion["plotted_per_alice"].means(
+            make_assertion["plotted_per_bob"]
         )
-        assert not make_doctrine["plotted_per_bob"].means(
-            make_doctrine["plotted_per_alice"]
+        assert not make_assertion["plotted_per_bob"].means(
+            make_assertion["plotted_per_alice"]
         )
 
 
@@ -159,28 +161,28 @@ class TestComplex:
             ("specific", "no", False),
         ],
     )
-    def test_doctrines_same_meaning(self, make_doctrine, left, right, expected):
+    def test_Assertions_same_meaning(self, make_assertion, left, right, expected):
         assert (
-            make_doctrine[f"{left}_authority"].means(
-                make_doctrine[f"{right}_authority"]
+            make_assertion[f"{left}_authority"].means(
+                make_assertion[f"{right}_authority"]
             )
             is expected
         )
         assert (
-            make_doctrine[f"{left}_authority_reversed"].means(
-                make_doctrine[f"{right}_authority"]
+            make_assertion[f"{left}_authority_reversed"].means(
+                make_assertion[f"{right}_authority"]
             )
             is expected
         )
         assert (
-            make_doctrine[f"{left}_authority"].means(
-                make_doctrine[f"{right}_authority_reversed"]
+            make_assertion[f"{left}_authority"].means(
+                make_assertion[f"{right}_authority_reversed"]
             )
             is expected
         )
         assert (
-            make_doctrine[f"{left}_authority_reversed"].means(
-                make_doctrine[f"{right}_authority_reversed"]
+            make_assertion[f"{left}_authority_reversed"].means(
+                make_assertion[f"{right}_authority_reversed"]
             )
             is expected
         )
@@ -199,28 +201,28 @@ class TestComplex:
             ("specific", "no", True),
         ],
     )
-    def test_doctrines_imply(self, make_doctrine, left, right, expected):
+    def test_Assertions_imply(self, make_assertion, left, right, expected):
         assert (
-            make_doctrine[f"{left}_authority"].implies(
-                make_doctrine[f"{right}_authority"]
+            make_assertion[f"{left}_authority"].implies(
+                make_assertion[f"{right}_authority"]
             )
             is expected
         )
         assert (
-            make_doctrine[f"{left}_authority_reversed"].implies(
-                make_doctrine[f"{right}_authority"]
+            make_assertion[f"{left}_authority_reversed"].implies(
+                make_assertion[f"{right}_authority"]
             )
             is expected
         )
         assert (
-            make_doctrine[f"{left}_authority"].implies(
-                make_doctrine[f"{right}_authority_reversed"]
+            make_assertion[f"{left}_authority"].implies(
+                make_assertion[f"{right}_authority_reversed"]
             )
             is expected
         )
         assert (
-            make_doctrine[f"{left}_authority_reversed"].implies(
-                make_doctrine[f"{right}_authority_reversed"]
+            make_assertion[f"{left}_authority_reversed"].implies(
+                make_assertion[f"{right}_authority_reversed"]
             )
             is expected
         )

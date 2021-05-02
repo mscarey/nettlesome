@@ -1,3 +1,5 @@
+marshmallow>=3.10
+marshmallow-oneofschema
 pint>=0.15
 python-slugify
 sympy~=1.7

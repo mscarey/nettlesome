@@ -1,11 +1,11 @@
 ==============
-Doctrines
+Assertions
 ==============
 
-.. inheritance-diagram:: nettlesome.doctrines.Doctrine
+.. inheritance-diagram:: nettlesome.assertions.Assertion
     :top-classes: authorityspoke.comparisons.Comparable
     :parts: 1
 
-.. autoclass:: nettlesome.doctrines.Doctrine
+.. autoclass:: nettlesome.assertions.Assertion
     :members:
     :special-members:

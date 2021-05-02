@@ -3,7 +3,7 @@ from typing import Dict
 import pytest
 
 from nettlesome.terms import ContextRegister
-from nettlesome.doctrines import Doctrine
+from nettlesome.assertions import Assertion
 from nettlesome.predicates import Predicate
 from nettlesome.quantities import Comparison, Q_
 from nettlesome.statements import Statement
@@ -301,37 +301,37 @@ def make_complex_fact(make_predicate, make_statement) -> Dict[str, Statement]:
 
 
 @pytest.fixture(scope="class")
-def make_doctrine(make_complex_fact, make_statement) -> Dict[str, Doctrine]:
+def make_assertion(make_complex_fact, make_statement) -> Dict[str, Assertion]:
     return {
-        "generic_authority": Doctrine(
+        "generic_authority": Assertion(
             statement=make_complex_fact["relevant_plotted_murder"],
             authority=Entity("a lawyer"),
         ),
-        "generic_authority_reversed": Doctrine(
+        "generic_authority_reversed": Assertion(
             statement=make_complex_fact["relevant_plotted_reversed_murder"],
             authority=Entity("a lawyer"),
         ),
-        "specific_authority": Doctrine(
+        "specific_authority": Assertion(
             statement=make_complex_fact["relevant_plotted_murder"],
             authority=Entity("Clarence Darrow", generic=False),
         ),
-        "specific_authority_reversed": Doctrine(
+        "specific_authority_reversed": Assertion(
             statement=make_complex_fact["relevant_plotted_reversed_murder"],
             authority=Entity("Clarence Darrow", generic=False),
         ),
-        "no_authority": Doctrine(
+        "no_authority": Assertion(
             statement=make_complex_fact["relevant_plotted_murder"]
         ),
-        "no_authority_reversed": Doctrine(
+        "no_authority_reversed": Assertion(
             statement=make_complex_fact["relevant_plotted_reversed_murder"]
         ),
-        "plotted_per_alice": Doctrine(
+        "plotted_per_alice": Assertion(
             statement=make_statement["plotted"], authority=Entity("Alice")
         ),
-        "plotted_per_bob": Doctrine(
+        "plotted_per_bob": Assertion(
             statement=make_statement["plotted"], authority=Entity("Bob")
         ),
-        "plotted_per_craig": Doctrine(
+        "plotted_per_craig": Assertion(
             statement=make_statement["plotted"], authority=Entity("Craig")
         ),
     }
