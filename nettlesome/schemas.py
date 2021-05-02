@@ -2,6 +2,8 @@ from datetime import date
 from nettlesome.assertions import Assertion
 from typing import Any, Dict, Optional, Sequence, Type, Union
 
+from apispec import APISpec
+from apispec_oneofschema import MarshmallowPlugin
 from marshmallow import Schema, fields, validate, post_load
 from marshmallow_oneofschema import OneOfSchema
 
@@ -10,6 +12,7 @@ from nettlesome.factors import Factor
 from nettlesome.predicates import Predicate
 from nettlesome.quantities import Comparison, QuantityRange
 from nettlesome.statements import Statement
+
 
 RawPredicate = Dict[str, Union[str, bool]]
 RawFactor = Dict[str, Union[RawPredicate, Sequence[Any], str, bool]]
@@ -29,7 +32,7 @@ def dump_quantity(
 
 
 class PredicateSchema(Schema):
-    """Schema for statements, separate from any claim about their truth or who asserts them."""
+    """Schema for phrases, separate from any claim about their truth or who asserts them."""
 
     __model__ = Predicate
     content = fields.Str()
@@ -81,7 +84,7 @@ class StatementSchema(Schema):
 
 
 class AssertionSchema(Schema):
-    """Schema for Statement, which may contain arbitrary levels of nesting."""
+    """Schema for Assertion, which may contain arbitrary levels of nesting."""
 
     __model__: Type = Assertion
     statement = fields.Nested(StatementSchema)
@@ -91,7 +94,7 @@ class AssertionSchema(Schema):
 
     @post_load
     def make_object(self, data: RawFactor, **kwargs) -> Statement:
-        """Make Statement."""
+        """Make Assertion from loaded data."""
         return self.__model__(**data)
 
 
