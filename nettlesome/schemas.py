@@ -32,7 +32,7 @@ def dump_quantity(
 
 
 class PredicateSchema(Schema):
-    """Schema for phrases, separate from any claim about their truth or who asserts them."""
+    """Schema for the Predicate and Comparison classes."""
 
     __model__ = Predicate
     content = fields.Str()

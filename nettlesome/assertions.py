@@ -28,7 +28,11 @@ class Assertion(Factor):
         super().__init__(name=name, absent=absent, generic=generic)
 
     def __str__(self):
-        content = f"{self.statement.short_string}"
+        content = f"of {self.statement.short_string}"
+
+        formatted = super().__str__().format(content)
         if self.authority:
-            content += f", according to {self.authority}"
-        return super().__str__().format(content)
+            formatted = formatted.replace(
+                "the assertion of", f"the assertion, by {self.authority}, of", 1
+            )
+        return formatted

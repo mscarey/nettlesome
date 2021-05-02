@@ -22,6 +22,14 @@ class TestAssertion:
     def test_dictum_string(self):
         assert "<namespaces> were one honking great idea" in str(self.generic_authority)
 
+    def test_include_of_in_string(self):
+        fact = Statement("$suspect stole bread", terms=Entity("Valjean"))
+        accusation = Assertion(statement=fact, authority=Entity("Javert"))
+        assert (
+            "the assertion, by <Javert>, of the statement that <Valjean> stole bread"
+            in str(accusation)
+        )
+
     def test_means_self(self):
         assert self.generic_authority.means(self.generic_authority)
 
@@ -73,7 +81,7 @@ class TestAssertion:
             Entity("Twitter user"), Entity("Python Software Foundation", generic=False)
         )
         new = self.generic_authority.new_context(context)
-        assert "according to Python" in str(new)
+        assert "by Python" in str(new)
 
 
 class TestInterchangeable:
