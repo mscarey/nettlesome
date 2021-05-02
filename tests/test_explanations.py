@@ -229,6 +229,15 @@ class TestApplyOperation:
 
 
 class TestSameMeaning:
+    def test_same_meaning(self, make_statement):
+        left = make_statement["shooting"].explain_same_meaning(
+            make_statement["shooting_craig"]
+        )
+        right = make_statement["shooting"].explain_same_meaning(
+            make_statement["shooting_craig"]
+        )
+        assert left.means(right)
+
     def test_not_same_meaning(self, make_statement):
         left = make_statement["shooting"].explain_same_meaning(
             make_statement["shooting_craig"]
