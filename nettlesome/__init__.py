@@ -8,4 +8,4 @@ from .quantities import Comparison, DateRange, NumberRange, UnitRange
 from .spec import make_spec
 from .statements import Statement
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"

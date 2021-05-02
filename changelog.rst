@@ -1,6 +1,6 @@
 Changelog
 =========
-dev
+0.5.0 (2021-05-02)
 ------------------
 - change Doctrine class name to Assertion
 - change Predicate param name from template to content
