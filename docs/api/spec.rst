@@ -1,7 +1,7 @@
 ================
-Predicates
+Spec
 ================
 
-.. automodule:: nettlesome.predicates
+.. automodule:: nettlesome.spec
     :members:
     :special-members:

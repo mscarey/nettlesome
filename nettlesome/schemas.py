@@ -1,3 +1,5 @@
+"""Marshmallow schemas for loading and dumping data."""
+
 from datetime import date
 from nettlesome.assertions import Assertion
 from typing import Any, Dict, Optional, Sequence, Type, Union

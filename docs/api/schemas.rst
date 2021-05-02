@@ -1,7 +1,7 @@
 ================
-Predicates
+Schemas
 ================
 
-.. automodule:: nettlesome.predicates
+.. automodule:: nettlesome.schemas
     :members:
     :special-members:
