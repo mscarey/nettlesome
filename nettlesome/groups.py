@@ -93,13 +93,22 @@ class FactorGroup(Comparable):
         other: Union[FactorGroup, Sequence[Factor], Factor],
     ) -> Optional[FactorGroup]:
         """Combine all Factors into a single FactorGroup."""
+        try:
+            return self.add_or_raise_error(other)
+        except ValueError:
+            return None
+
+    def add_or_raise_error(
+        self,
+        other: Union[FactorGroup, Sequence[Factor], Factor],
+    ) -> FactorGroup:
+        """Combine all Factors into a single FactorGroup."""
         if isinstance(other, self.__class__):
             return self._add_group(other)
         to_add = self.__class__(other)
         added = self._add_group(to_add)
-        if added.internally_consistent():
-            return added
-        return None
+        added.internally_consistent()
+        return added
 
     def __add__(
         self, other: Union[FactorGroup, Sequence[Factor], Factor]
@@ -325,8 +334,11 @@ class FactorGroup(Comparable):
     ) -> Iterator[ContextRegister]:
         for likely in self.likely_contexts(other, context):
             partial = self + other.new_context(likely.reversed())
-            if partial.internally_consistent():
+            try:
+                partial.internally_consistent()
                 yield likely
+            except ValueError:
+                pass
 
     def _verbose_comparison(
         self,
@@ -553,7 +565,7 @@ class FactorGroup(Comparable):
             result.append(current)
         return self.__class__(result)
 
-    def internally_consistent(self) -> bool:
+    def internally_consistent(self) -> None:
         """
         Check for contradictions among the Factors in self.
 
@@ -564,8 +576,9 @@ class FactorGroup(Comparable):
             current = unchecked.pop()
             for item in unchecked:
                 if current.contradicts_same_context(item):
-                    return False
-        return True
+                    raise ValueError(
+                        f"{item} can't be included in FactorGroup with contradictory Factor {current}."
+                    )
 
     def new_context(self, changes: ContextRegister) -> FactorGroup:
         """Use ContextRegister to choose changes to ``self``'s context."""
@@ -602,7 +615,9 @@ class FactorGroup(Comparable):
         result = self._union_from_explanation_allow_contradiction(other, context)
         if result is None:
             return None
-        if not result.internally_consistent():
+        try:
+            result.internally_consistent()
+        except ValueError:
             return None
         return result
 

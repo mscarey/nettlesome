@@ -920,11 +920,13 @@ class TestConsistent:
         context.insert_pair(Entity("Alice"), Entity("Alice"))
         context.insert_pair(Entity("Bob"), Entity("Bob"))
         group = FactorGroup([make_statement["shooting"], make_statement["no_shooting"]])
-        assert not group.internally_consistent()
+        with pytest.raises(ValueError):
+            group.internally_consistent()
 
     def test_not_internally_consistent(self, make_statement):
         group = FactorGroup([make_statement["shooting"], make_statement["no_shooting"]])
-        assert not group.internally_consistent()
+        with pytest.raises(ValueError):
+            group.internally_consistent()
 
     def test_all_generic_terms_match_in_statement(self):
         predicate = Predicate("the telescope pointed at $object")
