@@ -1,5 +1,9 @@
 Changelog
 =========
+0.5.1 (2021-05-20)
+------------------
+- internally_consistent raises ValueError identifying contradiction
+
 0.5.0 (2021-05-02)
 ------------------
 - change Doctrine class name to Assertion
