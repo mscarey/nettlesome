@@ -18,7 +18,7 @@ from nettlesome.groups import FactorGroup
 
 
 class TestContext:
-    sale = Predicate("$seller sold $product to $buyer")
+    sale = Predicate(content="$seller sold $product to $buyer")
     fact_al = Statement(sale, terms=[Entity("Al"), Entity("the bull"), Entity("Betty")])
     fact_alice = Statement(
         sale, terms=[Entity("Alice"), Entity("the cow"), Entity("Bob")]

@@ -10,8 +10,8 @@ from nettlesome.statements import Statement
 
 
 class TestContextRegisters:
-    bird = Predicate("$bird was a bird")
-    paid = Predicate("$employer paid $employee")
+    bird = Predicate(content="$bird was a bird")
+    paid = Predicate(content="$employer paid $employee")
 
     def test_possible_context_without_empty_spaces(self):
         left = Statement(self.bird, terms=Entity("Owl"))

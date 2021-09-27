@@ -610,18 +610,22 @@ class TestImplication:
         assert not absent_narrower >= absent_broader
 
     def test_equal_factors_not_gt(self):
-        fact = Statement(Predicate("$person was a person"), terms=Entity("Alice"))
+        fact = Statement(
+            Predicate(content="$person was a person"), terms=Entity("Alice")
+        )
         assert fact >= fact
         assert fact <= fact
         assert not fact > fact
 
-    shot_predicate = Predicate("$shooter shot $victim")
+    shot_predicate = Predicate(content="$shooter shot $victim")
     shot_fact = Statement(shot_predicate, terms=[Entity("Alice"), Entity("Bob")])
-    murder_predicate = Predicate("$shooter murdered $victim")
+    murder_predicate = Predicate(content="$shooter murdered $victim")
     murder_fact = Statement(murder_predicate, terms=[Entity("Alice"), Entity("Bob")])
-    relevant_predicate = Predicate("$clue was relevant to $conclusion")
+    relevant_predicate = Predicate(content="$clue was relevant to $conclusion")
     relevant_fact = Statement(relevant_predicate, terms=[shot_fact, murder_fact])
-    predicate_whether = Predicate("$clue was relevant to $conclusion", truth=None)
+    predicate_whether = Predicate(
+        content="$clue was relevant to $conclusion", truth=None
+    )
     relevant_whether = Statement(predicate_whether, terms=[shot_fact, murder_fact])
 
     def test_implication_complex_whether(self):
@@ -985,10 +989,12 @@ class TestContradiction:
 
     def test_check_entity_consistency_false(self):
         left = Statement(
-            Predicate("$shooter shot $victim"), terms=[Entity("Alice"), Entity("Bob")]
+            Predicate(content="$shooter shot $victim"),
+            terms=[Entity("Alice"), Entity("Bob")],
         )
         right = Statement(
-            Predicate("$shooter shot $victim"), terms=[Entity("Craig"), Entity("Dan")]
+            Predicate(content="$shooter shot $victim"),
+            terms=[Entity("Craig"), Entity("Dan")],
         )
         register = ContextRegister.from_lists([Entity("Alice")], [Entity("Dan")])
         update = left.update_context_register(right, register, comparison=means)

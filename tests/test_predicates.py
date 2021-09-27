@@ -60,14 +60,14 @@ class TestPredicates:
 
 
 class TestCompare:
-    same = Predicate("$thing was an apple")
-    lived_at = Predicate("$person lived at $place")
-    whether_lived_at = Predicate("$person lived at $place", truth=None)
+    same = Predicate(content="$thing was an apple")
+    lived_at = Predicate(content="$person lived at $place")
+    whether_lived_at = Predicate(content="$person lived at $place", truth=None)
 
     @pytest.mark.skip("placeholders break comparison")
     def test_predicate_content_comparison(self):
-        lived_at = Predicate("$person lived at $place")
-        also_lived_at = Predicate("$resident lived at $house")
+        lived_at = Predicate(content="$person lived at $place")
+        also_lived_at = Predicate(content="$resident lived at $house")
         assert lived_at.content == also_lived_at.content
 
     def test_expression_comparison(self, make_comparison):

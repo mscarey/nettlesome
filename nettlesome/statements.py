@@ -67,7 +67,7 @@ class Statement(Factor):
         terms = terms or TermSequence()
 
         if isinstance(predicate, str):
-            predicate = Predicate(predicate)
+            predicate = Predicate(content=predicate)
         if truth is not None:
             predicate.truth = truth
         self.predicate = predicate

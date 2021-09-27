@@ -15,6 +15,8 @@ from string import Template
 from typing import Any, Dict, Mapping
 from typing import List, Optional, Sequence, Set, Tuple
 
+from pydantic import BaseModel
+
 from nettlesome.terms import Comparable, TermSequence
 from nettlesome.terms import Term
 
@@ -166,7 +168,7 @@ class StatementTemplate(Template):
         return new_template.substitute(substitutions)
 
 
-class Predicate:
+class Predicate(BaseModel):
     r"""
     A statement about real events or about a legal conclusion.
 
@@ -208,26 +210,24 @@ class Predicate:
 
     """
 
-    def __init__(self, content: str, truth: Optional[bool] = True):
-        """
-        Clean up and test validity of attributes.
+    content: str
+    truth: Optional[bool] = True
 
-        If the :attr:`content` sentence is phrased to have a plural
-        context term, normalizes it by changing "were" to "was".
+    @property
+    def template(self) -> StatementTemplate:
         """
-        self.template = StatementTemplate(content, make_singular=True)
-        self.truth = truth
+        A text template for the predicate.
+
+        :returns:
+            a :class:`StatementTemplate` object
+        """
+        return StatementTemplate(self.content, make_singular=True)
 
     def __repr__(self):
         return (
             f"{self.__class__.__name__}(template='{self.template.template}', "
             f"truth={self.truth})"
         )
-
-    @property
-    def content(self) -> str:
-        """Get full template text, with no Terms substituted in."""
-        return self.template.template
 
     def content_without_placeholders(self) -> str:
         """
