@@ -1017,7 +1017,8 @@ class TestContradiction:
         instead of .gt. The comparison would just return False.
         """
         right = Statement(
-            Predicate("$shooter shot $victim"), terms=[Entity("Craig"), Entity("Dan")]
+            Predicate(content="$shooter shot $victim"),
+            terms=[Entity("Craig"), Entity("Dan")],
         )
         register = ContextRegister.from_lists([Entity("Dan")], [Entity("Dan")])
         update = right.update_context_register(
@@ -1031,17 +1032,17 @@ class TestContradiction:
 
 class TestConsistent:
     p_small_weight = Comparison(
-        "the amount of gold $person possessed was",
+        content="the amount of gold $person possessed was",
         sign="<",
         expression=Q_("1 gram"),
     )
     p_smallish_weight = Comparison(
-        "the amount of gold $person possessed was",
+        content="the amount of gold $person possessed was",
         sign="<",
         expression=Q_("100 grams"),
     )
     p_large_weight = Comparison(
-        "the amount of gold $person possessed was",
+        content="the amount of gold $person possessed was",
         sign=">=",
         expression=Q_("100 kilograms"),
     )

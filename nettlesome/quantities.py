@@ -7,6 +7,7 @@ from datetime import date
 from typing import Any, ClassVar, Dict, Optional, Union
 
 from pint import UnitRegistry, Quantity
+from pydantic import BaseModel, root_validator, validator
 import sympy
 from sympy import Eq, Interval, oo, S
 from sympy.sets import EmptySet, FiniteSet
@@ -86,6 +87,18 @@ class QuantityRange(ABC):
     }
     normalized_comparisons: ClassVar[Dict[str, str]] = {"=": "==", "<>": "!="}
 
+    @root_validator
+    def _check_sign(cls, values):
+        if values["sign"] in cls.normalized_comparisons:
+            values["sign"] = cls.normalized_comparisons[values["sign"]]
+        if values["sign"] not in cls.opposite_comparisons.keys():
+            raise ValueError(
+                f'"sign" string parameter must be one of {cls.opposite_comparisons.keys()}, not {values["sign"]}.'
+            )
+        if values["include_negatives"] is None:
+            values["include_negatives"] = bool(self.magnitude < 0)
+        return values
+
     def __init__(self, sign: str, include_negatives: Optional[bool] = None) -> None:
         """Normalize operator sign and exclude negatives, if needed."""
         if sign in self.normalized_comparisons:
@@ -94,11 +107,6 @@ class QuantityRange(ABC):
             raise ValueError(
                 f'"sign" string parameter must be one of {self.opposite_comparisons.keys()}.'
             )
-
-        self.sign = sign
-        if include_negatives is None:
-            include_negatives = bool(self.magnitude < 0)
-        self.include_negatives = include_negatives
 
     def __repr__(self):
         return (
@@ -216,21 +224,38 @@ class QuantityRange(ABC):
         return ""
 
 
-class UnitRange(QuantityRange):
+class UnitRange(QuantityRange, BaseModel):
     """A range defined relative to a pint Quantity."""
 
-    def __init__(
-        self,
-        quantity: Union[Quantity, str],
-        sign: str = "",
-        include_negatives: Optional[bool] = None,
-    ) -> None:
-        """Set domain as a real number of units."""
+    quantity: str
+    sign: str = ""
+    include_negatives: Optional[bool] = None
+
+    @validator("quantity", pre=True)
+    def validate_quantity(cls, quantity: Union[Quantity, str]) -> str:
+        """Validate that quantity is a pint Quantity."""
         if isinstance(quantity, str):
             quantity = Q_(quantity)
-        self.quantity = quantity
-        self.domain = S.Reals
-        super().__init__(sign=sign, include_negatives=include_negatives)
+        if not isinstance(quantity, Quantity):
+            raise TypeError(
+                f"quantity must be a pint Quantity or string, not {type(quantity)}"
+            )
+        return str(quantity)
+
+    @property
+    def domain(self) -> sympy.Set:
+        """Get the domain of the quantity range."""
+        return S.Reals
+
+    @property
+    def magnitude(self) -> Union[int, float]:
+        """Get amount of max or minimum of the quantity range, without a unit."""
+        return self.quantity.magnitude
+
+    @property
+    def pint_quantity(self) -> Quantity:
+        """Get the Quantity as a Pint object."""
+        return Q_(self.quantity)
 
     @property
     def magnitude(self) -> Union[int, float]:
@@ -305,19 +330,17 @@ class UnitRange(QuantityRange):
         return super()._quantity_string() + str(self.quantity)
 
 
-class DateRange(QuantityRange):
+class DateRange(QuantityRange, BaseModel):
     """A range defined relative to a date."""
 
-    def __init__(
-        self,
-        quantity: date,
-        sign: str = "",
-        include_negatives: Optional[bool] = None,
-    ) -> None:
+    quantity: date
+    sign: str = ""
+    include_negatives: Optional[bool] = None
+
+    @property
+    def domain(self) -> sympy.Set:
         """Set domain as natural numbers."""
-        self.quantity = quantity
-        self.domain = S.Naturals
-        super().__init__(sign=sign, include_negatives=include_negatives)
+        return S.Naturals
 
     @property
     def magnitude(self) -> Union[int, float]:
@@ -328,24 +351,17 @@ class DateRange(QuantityRange):
         return str(self.quantity)
 
 
-class NumberRange(QuantityRange):
+class NumberRange(QuantityRange, BaseModel):
     """A range defined relative to an integer or float."""
 
-    def __init__(
-        self,
-        quantity: Union[int, float],
-        sign: str = "",
-        include_negatives: Optional[bool] = None,
-    ) -> None:
-        """Check number type and set domain for number range."""
-        if not isinstance(quantity, (int, float)):
-            raise TypeError(
-                f'"quantity" must be a number (integer or float), '
-                f'not "{quantity}", which is type {type(quantity)}.'
-            )
-        self.quantity = quantity
-        self.domain = S.Naturals0 if isinstance(self.quantity, int) else S.Reals
-        super().__init__(sign=sign, include_negatives=include_negatives)
+    quantity: Union[int, float]
+    sign: str = ""
+    include_negatives: Optional[bool] = None
+
+    @property
+    def domain(self) -> sympy.Set:
+        """Set domain as natural numbers."""
+        return S.Naturals0 if isinstance(self.quantity, int) else S.Reals
 
     @property
     def magnitude(self) -> Union[int, float]:
@@ -356,7 +372,7 @@ class NumberRange(QuantityRange):
         return str(self.quantity)
 
 
-class Comparison(Predicate):
+class Comparison(BaseModel):
     r"""
     A Predicate that compares a described quantity to a constant.
 
@@ -417,56 +433,56 @@ class Comparison(Predicate):
         may contain no more than one ``sign`` and one ``quantity``.
     """
 
-    def __init__(
-        self,
-        content: str,
-        sign: str = "",
-        expression: Union[date, int, float, Quantity] = 0,
-        truth: Optional[bool] = True,
-        include_negatives: Optional[bool] = None,
-        quantity_range: Optional[Union[DateRange, NumberRange, UnitRange]] = None,
-    ):
-        """
-        Clean up and test validity of attributes.
+    content: str
+    sign: str = ""
+    expression: Union[date, int, float, str] = 0
+    truth: Optional[bool] = True
+    include_negatives: Optional[bool] = None
+    quantity_range: Optional[Union[DateRange, NumberRange, UnitRange]] = None
 
-        If the :attr:`content` sentence is phrased to have a plural
-        context term, normalizes it by changing "were" to "was".
-        """
-        super().__init__(content, truth=truth)
-
-        if quantity_range:
-            self.quantity_range = quantity_range
-        else:
-            quantity = self.read_quantity(expression)
+    @root_validator(pre=True)
+    def set_quantity_range(cls, values):
+        """Reverse the sign of a Comparison if necessary."""
+        if not values.get("quantity_range"):
+            quantity = cls.read_quantity(values["expression"])
+            sign = values.get("sign")
+            quantity = values.get("quantity")
+            include_negatives = values.get("include_negatives")
             if isinstance(quantity, date):
-                self.quantity_range = DateRange(
+                values["quantity_range"] = DateRange(
                     sign=sign,
                     quantity=quantity,
                     include_negatives=include_negatives,
                 )
-            elif isinstance(quantity, Quantity):
-                self.quantity_range = UnitRange(
+            elif isinstance(quantity, (str, Quantity)):
+                values["quantity_range"] = UnitRange(
                     sign=sign,
-                    quantity=quantity,
+                    quantity=str(quantity),
                     include_negatives=include_negatives,
                 )
             else:
-                self.quantity_range = NumberRange(
+                values["quantity_range"] = NumberRange(
                     sign=sign,
                     quantity=quantity,
                     include_negatives=include_negatives,
                 )
+        if values.get("truth") is False:
+            values["truth"] = True
+            values["quantity_range"].reverse_meaning()
+        return values
 
-            if self.truth is False:
-                self.truth = True
-                self.quantity_range.reverse_meaning()
-
-        if not self.content.endswith("was"):
+    @validator("content")
+    def content_ends_with_was(cls, content: str) -> str:
+        """Ensure content ends with 'was'."""
+        if content.endswith("were"):
+            return content[:-4] + "was"
+        if not content.endswith("was"):
             raise ValueError(
                 "A Comparison's template string must end "
                 "with the word 'was' to signal the comparison with the quantity. "
-                f"The word 'was' is not the end of the string '{self.template.template}'."
+                f"The word 'was' is not the end of the string '{content}'."
             )
+        return content
 
     def __repr__(self):
         result = super().__repr__()

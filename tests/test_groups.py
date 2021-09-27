@@ -778,21 +778,21 @@ class TestUnion:
 
 class TestConsistent:
     predicate_less_specific = Comparison(
-        "${vehicle}'s speed was",
+        content="${vehicle}'s speed was",
         sign="<",
         expression="30 miles per hour",
     )
     predicate_less_general = Comparison(
-        "${vehicle}'s speed was",
+        content="${vehicle}'s speed was",
         sign="<",
         expression="60 miles per hour",
     )
     predicate_more = Comparison(
-        "${vehicle}'s speed was",
+        content="${vehicle}'s speed was",
         sign=">",
         expression="55 miles per hour",
     )
-    predicate_farm = Predicate("$person had a farm")
+    predicate_farm = Predicate(content="$person had a farm")
     slower_specific_statement = Statement(
         predicate_less_specific, terms=Entity("the car")
     )
