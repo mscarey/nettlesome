@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractproperty
 from datetime import date
+from decimal import Decimal
 from typing import Any, ClassVar, Dict, Optional, Union
 
 from pint import UnitRegistry, Quantity
@@ -346,17 +347,17 @@ class DateRange(QuantityRange, BaseModel):
         return str(self.quantity)
 
 
-class NumberRange(QuantityRange, BaseModel):
+class IntRange(QuantityRange, BaseModel):
     """A range defined relative to an integer or float."""
 
-    quantity: Union[int, float]
+    quantity: int
     sign: str = "=="
     include_negatives: Optional[bool] = None
 
     @property
     def domain(self) -> sympy.Set:
         """Set domain as natural numbers."""
-        return S.Naturals0 if isinstance(self.quantity, int) else S.Reals
+        return S.Naturals0
 
     @property
     def magnitude(self) -> Union[int, float]:
@@ -367,7 +368,32 @@ class NumberRange(QuantityRange, BaseModel):
         return str(self.quantity)
 
     @property
-    def q(self) -> Union[int, float]:
+    def q(self) -> int:
+        return self.quantity
+
+
+class DecimalRange(QuantityRange, BaseModel):
+    """A range defined relative to an integer or float."""
+
+    quantity: Decimal
+    sign: str = "=="
+    include_negatives: Optional[bool] = None
+
+    @property
+    def domain(self) -> sympy.Set:
+        """Set domain as natural numbers."""
+        return S.Reals
+
+    @property
+    def magnitude(self) -> Union[int, float]:
+        """Return quantity attribute."""
+        return self.quantity
+
+    def _quantity_string(self) -> str:
+        return str(self.quantity)
+
+    @property
+    def q(self) -> float:
         return self.quantity
 
 
@@ -433,7 +459,7 @@ class Comparison(BaseModel, PhraseABC):
     """
 
     content: str
-    quantity_range: Union[NumberRange, UnitRange, DateRange]
+    quantity_range: Union[DecimalRange, IntRange, UnitRange, DateRange]
     truth: Optional[bool] = True
 
     @root_validator(pre=True)
@@ -455,8 +481,14 @@ class Comparison(BaseModel, PhraseABC):
                     quantity=str(quantity),
                     include_negatives=include_negatives,
                 )
+            elif isinstance(quantity, int):
+                values["quantity_range"] = IntRange(
+                    sign=sign,
+                    quantity=quantity,
+                    include_negatives=include_negatives,
+                )
             else:
-                values["quantity_range"] = NumberRange(
+                values["quantity_range"] = DecimalRange(
                     sign=sign,
                     quantity=quantity,
                     include_negatives=include_negatives,
@@ -663,3 +695,6 @@ class Comparison(BaseModel, PhraseABC):
 
     def __str__(self):
         return self._add_truth_to_content(self.content)
+
+
+Comparison.update_forward_refs()

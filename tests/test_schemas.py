@@ -60,11 +60,11 @@ class TestPredicateDump:
         assert dumped["expression"] == "35 foot"
 
     def test_round_trip(self):
-        predicate = self.schema.load(
-            {"content": "{}'s favorite number was", "sign": "==", "expression": 42}
+        predicate = Comparison(
+            **{"content": "{}'s favorite number was", "sign": "==", "expression": 42}
         )
-        dumped = self.schema.dump(predicate)
-        new_statement = self.schema.load(dumped)
+        dumped = predicate.dict()
+        new_statement = Comparison(**dumped)
         assert "{}'s favorite number was exactly equal to 42" in str(new_statement)
 
     def test_dump_comparison_with_date_expression(self):

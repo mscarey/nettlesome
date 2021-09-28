@@ -62,7 +62,7 @@ class TestContinuedExplanation:
         explanation = bob_lived.explain_implication(carl_lived)
 
         distance_long = Comparison(
-            "the distance from the center of $city to $residence was",
+            content="the distance from the center of $city to $residence was",
             sign=">=",
             expression="50 miles",
         )
@@ -71,7 +71,7 @@ class TestContinuedExplanation:
         )
 
         distance_short = Comparison(
-            "the distance from the center of $city to $residence was",
+            content="the distance from the center of $city to $residence was",
             sign="<=",
             expression="10 kilometers",
         )

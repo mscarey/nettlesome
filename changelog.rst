@@ -1,5 +1,9 @@
 Changelog
 =========
+0.6.0 (2021-05-20)
+------------------
+- replace NumberRange with IntRange, FloatRange
+
 0.5.1 (2021-05-20)
 ------------------
 - internally_consistent raises ValueError identifying contradiction

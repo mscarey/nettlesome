@@ -205,19 +205,19 @@ def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
             p["three_entities"], [Entity("Alice"), Entity("Bob"), Entity("Craig")]
         ),
         "large_weight": Statement(
-            p["large_weight"],
+            c["large_weight"],
             Entity("Alice"),
         ),
         "large_weight_craig": Statement(
-            p["large_weight"],
+            c["large_weight"],
             Entity("Craig"),
         ),
         "small_weight": Statement(
-            p["small_weight"],
+            c["small_weight"],
             Entity("Alice"),
         ),
         "small_weight_bob": Statement(
-            p["small_weight"],
+            c["small_weight"],
             Entity("Bob"),
         ),
         "friends": Statement(p["friends"], [Entity("Alice"), Entity("Bob")]),

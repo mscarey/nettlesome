@@ -270,13 +270,13 @@ class TestImplication:
 
     def test_factor_implies_because_of_quantity(self, make_statement):
         meters = Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             sign=">=",
             expression=Q_("10 meters"),
         )
         left = Statement(meters, terms=[Entity("Al"), Entity("Bob")])
         more = Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             truth=True,
             sign=">",
             expression=Q_("30 feet"),
@@ -471,12 +471,12 @@ class TestContradiction:
         contradiction if you assume they correspond to one another.
         """
         p_small_weight = Comparison(
-            "the amount of gold $person possessed was",
+            content="the amount of gold $person possessed was",
             sign="<",
             expression=Q_("1 gram"),
         )
         p_large_weight = Comparison(
-            "the amount of gold $person possessed was",
+            content="the amount of gold $person possessed was",
             sign=">=",
             expression=Q_("100 kilograms"),
         )
@@ -493,12 +493,12 @@ class TestContradiction:
         So there's no contradiction.
         """
         p_small_weight = Comparison(
-            "the amount of gold $person possessed was",
+            content="the amount of gold $person possessed was",
             sign="<",
             expression=Q_("1 gram"),
         )
         p_large_weight = Comparison(
-            "the amount of gold $person possessed was",
+            content="the amount of gold $person possessed was",
             sign=">=",
             expression=Q_("100 kilograms"),
         )
@@ -629,12 +629,14 @@ class TestAddition:
         dave = Entity("Dave")
         speed_template = "${driver}'s driving speed was"
         fast_fact = Statement(
-            Comparison(speed_template, sign=">=", expression="100 miles per hour"),
+            Comparison(
+                content=speed_template, sign=">=", expression="100 miles per hour"
+            ),
             terms=dave,
         )
         slow_fact = Statement(
             Comparison(
-                speed_template,
+                content=speed_template,
                 sign=">=",
                 expression="20 miles per hour",
             ),

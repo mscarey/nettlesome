@@ -7,7 +7,7 @@ import sympy
 from sympy import Interval, oo
 
 from nettlesome.predicates import Predicate
-from nettlesome.quantities import Comparison, NumberRange, Q_
+from nettlesome.quantities import Comparison, IntRange, DecimalRange, Q_
 from nettlesome.statements import Statement
 
 
@@ -27,7 +27,7 @@ class TestQuantityInterval:
         assert scones.interval == sympy.Interval(0, 5, right_open=True)
 
     def test_comparison_with_int(self):
-        value = NumberRange(sign="<", quantity=5)
+        value = IntRange(sign="<", quantity=5)
         scones = Comparison(
             content="the number of scones $diner ate was", quantity_range=value
         )
@@ -121,7 +121,7 @@ class TestQuantityInterval:
             content="the number of dogs was", sign=">", expression="3 gallons"
         )
         with pytest.raises(ValidationError):
-            NumberRange(quantity=dogs.quantity)
+            IntRange(quantity=dogs.quantity)
 
 
 class TestCompareQuantities:

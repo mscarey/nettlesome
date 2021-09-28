@@ -1,7 +1,10 @@
 from datetime import date
 
+import pytest
 
-from nettlesome.quantities import UnitRange, NumberRange, DateRange, Q_
+from nettlesome.entities import Entity
+from nettlesome.quantities import UnitRange, IntRange, DecimalRange, DateRange, Q_
+from nettlesome.statements import Statement
 
 
 class TestQuantities:
@@ -16,7 +19,7 @@ class TestQuantities:
 
     def test_no_contradiction_between_classes(self):
         left = UnitRange(quantity=Q_("2000 days"), sign="<")
-        right = NumberRange(quantity=2000, sign=">")
+        right = IntRange(quantity=2000, sign=">")
         assert left.magnitude == right.magnitude
         assert not left.contradicts(right)
 
