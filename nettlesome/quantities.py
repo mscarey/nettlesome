@@ -72,8 +72,11 @@ def scale_ranges(
     return scale_union_of_intervals(ranges=ranges, scalar=scalar)
 
 
-class QuantityRange(ABC):
+class QuantityRange(BaseModel):
     """Base class for ranges that can be assigned to Predicates."""
+
+    sign: str = ""
+    include_negatives: Optional[bool] = None
 
     opposite_comparisons: ClassVar[Dict[str, str]] = {
         ">=": "<",
@@ -87,22 +90,26 @@ class QuantityRange(ABC):
     }
     normalized_comparisons: ClassVar[Dict[str, str]] = {"=": "==", "<>": "!="}
 
-    @root_validator
+    @root_validator(pre=True)
     def _check_sign(cls, values):
-        if values["sign"] in cls.normalized_comparisons:
+        if values.get("sign") in cls.normalized_comparisons:
             values["sign"] = cls.normalized_comparisons[values["sign"]]
         if values["sign"] not in cls.opposite_comparisons.keys():
             raise ValueError(
                 f'"sign" string parameter must be one of {cls.opposite_comparisons.keys()}, not {values["sign"]}.'
             )
-        if values["include_negatives"] is None:
-            values["include_negatives"] = bool(self.magnitude < 0)
         return values
+
+    @property
+    def _include_negatives(self) -> bool:
+        if self.include_negatives is None:
+            return bool(self.magnitude < 0)
+        return self.include_negatives
 
     def __repr__(self):
         return (
             f'{self.__class__.__name__}(quantity="{self._quantity_string()}", '
-            f'sign="{self.sign}", include_negatives={self.include_negatives})'
+            f'sign="{self.sign}", include_negatives={self._include_negatives})'
         )
 
     def __str__(self) -> str:
@@ -152,7 +159,7 @@ class QuantityRange(ABC):
     @property
     def lower_bound(self):
         """Get lower bound of the range that the Comparison may refer to."""
-        return -oo if self.include_negatives else 0
+        return -oo if self._include_negatives else 0
 
     @abstractproperty
     def magnitude(self) -> Union[int, float]:
