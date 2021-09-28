@@ -225,21 +225,21 @@ class FactorGroup(Comparable):
             >>> from nettlesome import Statement, Entity
             >>> nafta = FactorGroup([
             ... Statement("$country1 signed a treaty with $country2",
-            ...     terms=[Entity("Mexico"), Entity("USA")]),
+            ...     terms=[Entity(name="Mexico"), Entity(name="USA")]),
             ... Statement("$country2 signed a treaty with $country3",
-            ...     terms=[Entity("USA"), Entity("Canada")]),
+            ...     terms=[Entity(name="USA"), Entity(name="Canada")]),
             ... Statement("$country3 signed a treaty with $country1",
-            ...    terms=[Entity("USA"), Entity("Canada")])])
+            ...    terms=[Entity(name="USA"), Entity(name="Canada")])])
             >>> brexit = FactorGroup([
             ... Statement("$country1 signed a treaty with $country2",
-            ...     terms=[Entity("UK"), Entity("European Union")]),
+            ...     terms=[Entity(name="UK"), Entity(name="European Union")]),
             ... Statement("$country2 signed a treaty with $country3",
-            ...     terms=[Entity("European Union"), Entity("Germany")]),
+            ...     terms=[Entity(name="European Union"), Entity(name="Germany")]),
             ... Statement("$country3 signed a treaty with $country1",
-            ...     terms=[Entity("Germany"), Entity("UK")], truth=False)])
+            ...     terms=[Entity(name="Germany"), Entity(name="UK")], truth=False)])
             >>> explanations_usa_like_uk = nafta.explanations_contradiction(
             ...     brexit,
-            ...     context=([Entity("USA")], [Entity("UK")]))
+            ...     context=([Entity(name="USA")], [Entity(name="UK")]))
             >>> len(list(explanations_usa_like_uk))
             2
         """
@@ -273,18 +273,18 @@ class FactorGroup(Comparable):
         >>> from nettlesome import Statement, Entity
         >>> nafta = FactorGroup([
         ... Statement("$country1 signed a treaty with $country2",
-        ...        terms=[Entity("Mexico"), Entity("USA")]),
+        ...        terms=[Entity(name="Mexico"), Entity(name="USA")]),
         ... Statement("$country2 signed a treaty with $country3",
-        ...        terms=[Entity("USA"), Entity("Canada")]),
+        ...        terms=[Entity(name="USA"), Entity(name="Canada")]),
         ... Statement("$country3 signed a treaty with $country1",
-        ...    terms=[Entity("USA"), Entity("Canada")])])
+        ...    terms=[Entity(name="USA"), Entity(name="Canada")])])
         >>> brexit = FactorGroup([
         ... Statement("$country1 signed a treaty with $country2",
-        ...         terms=[Entity("UK"), Entity("European Union")]),
+        ...         terms=[Entity(name="UK"), Entity(name="European Union")]),
         ... Statement("$country2 signed a treaty with $country3",
-        ...         terms=[Entity("European Union"), Entity("Germany")]),
+        ...         terms=[Entity(name="European Union"), Entity(name="Germany")]),
         ... Statement("$country3 signed a treaty with $country1",
-        ...     terms=[Entity("Germany"), Entity("UK")], truth=False)])
+        ...     terms=[Entity(name="Germany"), Entity(name="UK")], truth=False)])
         >>> nafta.contradicts(brexit)
         True
         """

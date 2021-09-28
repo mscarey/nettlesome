@@ -155,118 +155,144 @@ def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
     p = make_predicate
     c = make_comparison
     return {
-        "irrelevant_0": Statement(p["irrelevant_0"], [Entity("Craig")]),
-        "irrelevant_1": Statement(p["irrelevant_1"], [Entity("Dan")]),
-        "irrelevant_2": Statement(p["irrelevant_2"], Entity("Dan")),
+        "irrelevant_0": Statement(p["irrelevant_0"], [Entity(name="Craig")]),
+        "irrelevant_1": Statement(p["irrelevant_1"], [Entity(name="Dan")]),
+        "irrelevant_2": Statement(p["irrelevant_2"], Entity(name="Dan")),
         "irrelevant_3": Statement(
-            p["irrelevant_3"], [Entity("Craig"), Entity("circus")]
+            p["irrelevant_3"], [Entity(name="Craig"), Entity(name="circus")]
         ),
         "irrelevant_3_new_context": Statement(
-            p["irrelevant_3"], [Entity("Craig"), Entity("Dan")]
+            p["irrelevant_3"], [Entity(name="Craig"), Entity(name="Dan")]
         ),
         "irrelevant_3_context_0": Statement(
-            p["irrelevant_3"], [Entity("Craig"), Entity("Alice")]
+            p["irrelevant_3"], [Entity(name="Craig"), Entity(name="Alice")]
         ),
-        "crime": Statement(p["crime"], Entity("Alice")),
-        "crime_bob": Statement(p["crime"], Entity("Bob")),
-        "crime_craig": Statement(p["crime"], Entity("Craig")),
-        "crime_generic": Statement(p["crime"], Entity("Alice"), generic=True),
-        "crime_specific_person": Statement(p["crime"], Entity("Alice", generic=False)),
-        "absent_no_crime": Statement(p["no_crime"], Entity("Alice"), absent=True),
-        "no_crime": Statement(p["no_crime"], Entity("Alice")),
-        "no_crime_entity_order": Statement(p["no_crime"], [Entity("Bob")]),
-        "murder": Statement(p["murder"], terms=[Entity("Alice"), Entity("Bob")]),
+        "crime": Statement(p["crime"], Entity(name="Alice")),
+        "crime_bob": Statement(p["crime"], Entity(name="Bob")),
+        "crime_craig": Statement(p["crime"], Entity(name="Craig")),
+        "crime_generic": Statement(p["crime"], Entity(name="Alice"), generic=True),
+        "crime_specific_person": Statement(
+            p["crime"], Entity(name="Alice", generic=False)
+        ),
+        "absent_no_crime": Statement(p["no_crime"], Entity(name="Alice"), absent=True),
+        "no_crime": Statement(p["no_crime"], Entity(name="Alice")),
+        "no_crime_entity_order": Statement(p["no_crime"], [Entity(name="Bob")]),
+        "murder": Statement(
+            p["murder"], terms=[Entity(name="Alice"), Entity(name="Bob")]
+        ),
         "murder_false": Statement(
-            p["murder_false"], terms=[Entity("Alice"), Entity("Bob")]
+            p["murder_false"], terms=[Entity(name="Alice"), Entity(name="Bob")]
         ),
-        "murder_entity_order": Statement(p["murder"], [Entity("Bob"), Entity("Alice")]),
-        "murder_craig": Statement(p["murder"], [Entity("Craig"), Entity("Dan")]),
+        "murder_entity_order": Statement(
+            p["murder"], [Entity(name="Bob"), Entity(name="Alice")]
+        ),
+        "murder_craig": Statement(
+            p["murder"], [Entity(name="Craig"), Entity(name="Dan")]
+        ),
         "murder_whether": Statement(
-            p["murder_whether"], terms=[Entity("Alice"), Entity("Bob")]
+            p["murder_whether"], terms=[Entity(name="Alice"), Entity(name="Bob")]
         ),
-        "shooting": Statement(p["shooting"], terms=[Entity("Alice"), Entity("Bob")]),
-        "shooting_self": Statement(p["shooting_self"], terms=[Entity("Alice")]),
-        "shooting_craig": Statement(p["shooting"], [Entity("Craig"), Entity("Dan")]),
+        "shooting": Statement(
+            p["shooting"], terms=[Entity(name="Alice"), Entity(name="Bob")]
+        ),
+        "shooting_self": Statement(p["shooting_self"], terms=[Entity(name="Alice")]),
+        "shooting_craig": Statement(
+            p["shooting"], [Entity(name="Craig"), Entity(name="Dan")]
+        ),
         "shooting_entity_order": Statement(
-            p["shooting"], [Entity("Bob"), Entity("Alice")]
+            p["shooting"], [Entity(name="Bob"), Entity(name="Alice")]
         ),
         "no_shooting": Statement(
-            p["no_shooting"], terms=[Entity("Alice"), Entity("Bob")]
+            p["no_shooting"], terms=[Entity(name="Alice"), Entity(name="Bob")]
         ),
         "shooting_whether": Statement(
-            p["shooting_whether"], terms=[Entity("Alice"), Entity("Bob")]
+            p["shooting_whether"], terms=[Entity(name="Alice"), Entity(name="Bob")]
         ),
         "no_shooting_entity_order": Statement(
-            p["no_shooting"], [Entity("Bob"), Entity("Alice")]
+            p["no_shooting"], [Entity(name="Bob"), Entity(name="Alice")]
         ),
-        "plotted": Statement(p["plotted"], [Entity("Alice"), Entity("Craig")]),
-        "plotted_reversed": Statement(p["plotted"], [Entity("Alice"), Entity("Craig")]),
+        "plotted": Statement(
+            p["plotted"], [Entity(name="Alice"), Entity(name="Craig")]
+        ),
+        "plotted_reversed": Statement(
+            p["plotted"], [Entity(name="Alice"), Entity(name="Craig")]
+        ),
         "three_entities": Statement(
-            p["three_entities"], [Entity("Alice"), Entity("Bob"), Entity("Craig")]
+            p["three_entities"],
+            [Entity(name="Alice"), Entity(name="Bob"), Entity(name="Craig")],
         ),
         "large_weight": Statement(
             c["large_weight"],
-            Entity("Alice"),
+            Entity(name="Alice"),
         ),
         "large_weight_craig": Statement(
             c["large_weight"],
-            Entity("Craig"),
+            Entity(name="Craig"),
         ),
         "small_weight": Statement(
             c["small_weight"],
-            Entity("Alice"),
+            Entity(name="Alice"),
         ),
         "small_weight_bob": Statement(
             c["small_weight"],
-            Entity("Bob"),
+            Entity(name="Bob"),
         ),
-        "friends": Statement(p["friends"], [Entity("Alice"), Entity("Bob")]),
+        "friends": Statement(p["friends"], [Entity(name="Alice"), Entity(name="Bob")]),
         "no_context": Statement(p["no_context"]),
         "exact": Statement(
-            c["exact"], terms=[Entity("San Francisco"), Entity("Oakland")]
+            c["exact"], terms=[Entity(name="San Francisco"), Entity(name="Oakland")]
         ),
         "less": Statement(
-            c["less"], terms=[Entity("San Francisco"), Entity("Oakland")]
+            c["less"], terms=[Entity(name="San Francisco"), Entity(name="Oakland")]
         ),
         "less_than_20": Statement(
-            c["less_than_20"], terms=[Entity("San Francisco"), Entity("Oakland")]
+            c["less_than_20"],
+            terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
         ),
         "less_whether": Statement(
-            c["less_whether"], terms=[Entity("San Francisco"), Entity("Oakland")]
+            c["less_whether"],
+            terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
         ),
         "more": Statement(
-            c["more"], terms=[Entity("San Francisco"), Entity("Oakland")]
+            c["more"], terms=[Entity(name="San Francisco"), Entity(name="Oakland")]
         ),
         "more_atlanta": Statement(
-            c["more"], terms=[Entity("Atlanta"), Entity("Marietta")]
+            c["more"], terms=[Entity(name="Atlanta"), Entity(name="Marietta")]
         ),
         "more_meters": Statement(
-            c["meters"], terms=[Entity("San Francisco"), Entity("Oakland")]
+            c["meters"], terms=[Entity(name="San Francisco"), Entity(name="Oakland")]
         ),
         "not_more": Statement(
-            c["not_more"], terms=[Entity("San Francisco"), Entity("Oakland")]
+            c["not_more"], terms=[Entity(name="San Francisco"), Entity(name="Oakland")]
         ),
         "float_distance": Statement(
-            c["float_distance"], terms=[Entity("San Francisco"), Entity("Oakland")]
+            c["float_distance"],
+            terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
         ),
         "int_distance": Statement(
-            c["int_distance"], terms=[Entity("San Francisco"), Entity("Oakland")]
+            c["int_distance"],
+            terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
         ),
         "higher_int": Statement(
-            c["higher_int"], terms=[Entity("San Francisco"), Entity("Oakland")]
+            c["higher_int"],
+            terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
         ),
         "way_more": Statement(
-            c["way_more"], terms=[Entity("San Francisco"), Entity("Oakland")]
+            c["way_more"], terms=[Entity(name="San Francisco"), Entity(name="Oakland")]
         ),
         "absent_less": Statement(
-            c["less"], terms=[Entity("San Francisco"), Entity("Oakland")], absent=True
+            c["less"],
+            terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
+            absent=True,
         ),
         "absent_more": Statement(
-            c["more"], terms=[Entity("San Francisco"), Entity("Oakland")], absent=True
+            c["more"],
+            terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
+            absent=True,
         ),
         "absent_way_more": Statement(
             c["way_more"],
-            terms=[Entity("San Francisco"), Entity("Oakland")],
+            terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
             absent=True,
         ),
     }
@@ -315,19 +341,19 @@ def make_assertion(make_complex_fact, make_statement) -> Dict[str, Assertion]:
     return {
         "generic_authority": Assertion(
             statement=make_complex_fact["relevant_plotted_murder"],
-            authority=Entity("a lawyer"),
+            authority=Entity(name="a lawyer"),
         ),
         "generic_authority_reversed": Assertion(
             statement=make_complex_fact["relevant_plotted_reversed_murder"],
-            authority=Entity("a lawyer"),
+            authority=Entity(name="a lawyer"),
         ),
         "specific_authority": Assertion(
             statement=make_complex_fact["relevant_plotted_murder"],
-            authority=Entity("Clarence Darrow", generic=False),
+            authority=Entity(name="Clarence Darrow", generic=False),
         ),
         "specific_authority_reversed": Assertion(
             statement=make_complex_fact["relevant_plotted_reversed_murder"],
-            authority=Entity("Clarence Darrow", generic=False),
+            authority=Entity(name="Clarence Darrow", generic=False),
         ),
         "no_authority": Assertion(
             statement=make_complex_fact["relevant_plotted_murder"]
@@ -336,13 +362,13 @@ def make_assertion(make_complex_fact, make_statement) -> Dict[str, Assertion]:
             statement=make_complex_fact["relevant_plotted_reversed_murder"]
         ),
         "plotted_per_alice": Assertion(
-            statement=make_statement["plotted"], authority=Entity("Alice")
+            statement=make_statement["plotted"], authority=Entity(name="Alice")
         ),
         "plotted_per_bob": Assertion(
-            statement=make_statement["plotted"], authority=Entity("Bob")
+            statement=make_statement["plotted"], authority=Entity(name="Bob")
         ),
         "plotted_per_craig": Assertion(
-            statement=make_statement["plotted"], authority=Entity("Craig")
+            statement=make_statement["plotted"], authority=Entity(name="Craig")
         ),
     }
 
@@ -350,6 +376,6 @@ def make_assertion(make_complex_fact, make_statement) -> Dict[str, Assertion]:
 @pytest.fixture(scope="function")
 def make_context_register() -> ContextRegister:
     context_names = ContextRegister()
-    context_names.insert_pair(key=Entity("Alice"), value=Entity("Craig"))
-    context_names.insert_pair(key=Entity("Bob"), value=Entity("Dan"))
+    context_names.insert_pair(key=Entity(name="Alice"), value=Entity(name="Craig"))
+    context_names.insert_pair(key=Entity(name="Bob"), value=Entity(name="Dan"))
     return context_names

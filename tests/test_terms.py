@@ -11,20 +11,20 @@ from nettlesome.terms import means
 
 class TestMakeEntities:
     def test_conversion_to_generic(self):
-        jon = Entity("Jon Doe", generic=False)
+        jon = Entity(name="Jon Doe", generic=False)
         generic = jon.make_generic()
         assert generic.generic is True
 
     def test_wrapped_string(self):
-        entity = Entity("the mummy")
+        entity = Entity(name="the mummy")
         assert entity.wrapped_string == "<the mummy>"
 
     def test_context_register(self):
         """
         There will be a match because both object are :class:`.Term`.
         """
-        left = Entity("peanut butter")
-        right = Entity("jelly")
+        left = Entity(name="peanut butter")
+        right = Entity(name="jelly")
         update = left._context_registers(right, operator.ge)
         assert any(register is not None for register in update)
 
@@ -36,16 +36,16 @@ class TestMakeEntities:
     def test_new_context(self):
 
         changes = ContextRegister.from_lists(
-            [Entity("Death Star 3"), Entity("Kylo Ren")],
-            [Entity("Death Star 1"), Entity("Darth Vader")],
+            [Entity(name="Death Star 3"), Entity(name="Kylo Ren")],
+            [Entity(name="Death Star 1"), Entity(name="Darth Vader")],
         )
-        place = Entity("Death Star 3")
+        place = Entity(name="Death Star 3")
         assert place.new_context(changes) == changes.get_factor(place)
 
     def test_register_for_matching_entities(self):
         known = ContextRegister()
-        alice = Entity("Alice")
-        craig = Entity("Craig")
+        alice = Entity(name="Alice")
+        craig = Entity(name="Craig")
         known.insert_pair(alice, craig)
 
         gen = alice._context_registers(other=craig, comparison=means, context=known)
@@ -55,13 +55,13 @@ class TestMakeEntities:
 
 class TestSameMeaning:
     def test_equality_generic_entities(self):
-        left = Entity("Bert")
-        right = Entity("Ernie")
+        left = Entity(name="Bert")
+        right = Entity(name="Ernie")
         assert left.means(right)
         assert not left == right
 
     def test_entity_does_not_mean_statement(self):
-        entity = Entity("Bob")
+        entity = Entity(name="Bob")
         statement = Statement("$person loves ice cream", terms=entity)
         assert not entity.means(statement)
         assert not statement.means(entity)
@@ -69,33 +69,33 @@ class TestSameMeaning:
 
 class TestImplication:
     def test_implication_of_generic_entity(self):
-        assert Entity("Specific Bob", generic=False) > Entity("Clara")
+        assert Entity(name="Specific Bob", generic=False) > Entity(name="Clara")
 
     def test_generic_entity_does_not_imply_specific_and_different(self):
-        assert not Entity("Clara") > Entity("Specific Bob", generic=False)
+        assert not Entity(name="Clara") > Entity(name="Specific Bob", generic=False)
 
     def test_generic_entity_does_not_imply_specific_and_same(self):
-        assert not Entity("Clara") > Entity("Clara", generic=False)
+        assert not Entity(name="Clara") > Entity(name="Clara", generic=False)
 
     def test_same_entity_not_ge(self):
-        assert not Entity("Clara") > Entity("Clara")
+        assert not Entity(name="Clara") > Entity(name="Clara")
 
     def test_implies_concrete_with_same_name(self):
-        concrete = Entity("Bob", generic=False)
-        other = Entity("Bob", generic=False)
+        concrete = Entity(name="Bob", generic=False)
+        other = Entity(name="Bob", generic=False)
         assert concrete.implies(other)
         assert concrete >= other
         assert not concrete > other
 
     def test_implication_concrete_with_different_name(self):
-        concrete = Entity("Bob", generic=False)
-        generic = Entity("Barb")
+        concrete = Entity(name="Bob", generic=False)
+        generic = Entity(name="Barb")
         assert concrete.implies(generic)
         assert concrete > generic
         assert concrete >= generic
 
     def test_entity_does_not_imply_statement(self):
-        entity = Entity("Bob")
+        entity = Entity(name="Bob")
         statement = Statement("$person loves ice cream", terms=entity)
         assert not entity.implies(statement)
         assert not statement.implies(entity)
@@ -108,34 +108,38 @@ class TestImplication:
 class TestContradiction:
     def test_error_contradiction_with_non_factor(self):
         with pytest.raises(TypeError):
-            assert Entity("Al").contradicts(Predicate(content="any text"))
+            assert Entity(name="Al").contradicts(Predicate(content="any text"))
 
     def test_no_contradiction_of_other_entity(self):
-        assert not Entity("Al").contradicts(Entity("Ed"))
-        assert not Entity("Al").contradicts(Statement("any text"))
+        assert not Entity(name="Al").contradicts(Entity(name="Ed"))
+        assert not Entity(name="Al").contradicts(Statement("any text"))
 
 
 class TestAdd:
     def test_union_not_valid_alias(self):
         with pytest.raises(TypeError):
-            Entity("Al") | Entity("Ed")
+            Entity(name="Al") | Entity(name="Ed")
 
     def test_add_generic(self):
-        new = Entity("Al") + Entity("Ed")
+        new = Entity(name="Al") + Entity(name="Ed")
         assert new.name == "Al"
 
     def test_no_adding_string(self):
         with pytest.raises(TypeError):
-            Entity("Al") + "Ed"
+            Entity(name="Al") + "Ed"
 
     def test_add_generic_and_specific(self):
-        new = Entity("Al") + Entity("Mister Ed", generic=False)
+        new = Entity(name="Al") + Entity(name="Mister Ed", generic=False)
         assert new.name == "Mister Ed"
 
     def test_two_specifics_will_not_add(self):
-        new = Entity("Inimitable", generic=False) + Entity("Original", generic=False)
+        new = Entity(name="Inimitable", generic=False) + Entity(
+            name="Original", generic=False
+        )
         assert new is None
 
     def test_two_specifics_with_same_name_will_add(self):
-        new = Entity("Identical", generic=False) + Entity("Identical", generic=False)
+        new = Entity(name="Identical", generic=False) + Entity(
+            name="Identical", generic=False
+        )
         assert new.name == "Identical"

@@ -14,9 +14,9 @@ can be “matched” to one another.
 
     >>> from nettlesome import Statement, Entity
     >>> hades_curse = Statement("$deity cursed $target",
-    ...     terms=[Entity("Hades"), Entity("Persephone")])
+    ...     terms=[Entity(name="Hades"), Entity(name="Persephone")])
     >>> aphrodite_curse = Statement("$deity cursed $target",
-    ...     terms=[Entity("Aphrodite"), Entity("Narcissus")])
+    ...     terms=[Entity(name="Aphrodite"), Entity(name="Narcissus")])
     >>> print(aphrodite_curse)
     the statement that <Aphrodite> cursed <Narcissus>
 
@@ -63,7 +63,7 @@ Narcissus. The value returned by
 the :meth:`~nettlesome.terms.Comparable.means` method is now ``False``
 instead of ``True``.
 
-    >>> hades_curse.means(aphrodite_curse, context=([Entity("Hades")], [Entity("Narcissus")]))
+    >>> hades_curse.means(aphrodite_curse, context=([Entity(name="Hades")], [Entity(name="Narcissus")]))
     False
 
 Option 2: Context from a Dict
@@ -80,8 +80,8 @@ if you try to use an :class:`~nettlesome.entities.Entity` directly
 as a :py:class:`dict` key,
 and then try to retrieve the value stored under that key.
 
-    >>> myths = {Entity("Hades"): Entity("Narcissus")}
-    >>> myths[Entity("Hades")]
+    >>> myths = {Entity(name="Hades"): Entity(name="Narcissus")}
+    >>> myths[Entity(name="Hades")]
 
 ::
 
@@ -90,8 +90,8 @@ and then try to retrieve the value stored under that key.
     KeyError                                  Traceback (most recent call last)
 
     <ipython-input-5-75ea1b988416> in <module>
-          1 myths = {Entity("Hades"): Entity("Narcissus")}
-    ----> 2 myths[Entity("Hades")]
+          1 myths = {Entity(name="Hades"): Entity(name="Narcissus")}
+    ----> 2 myths[Entity(name="Hades")]
 
 
     KeyError: Entity(name="Hades", generic=True, plural=False)
@@ -103,7 +103,7 @@ property of the Entity.
 
     >>> hades_curse.means(
     ...     aphrodite_curse,
-    ...     context=({Entity("Hades").key: Entity("Narcissus")}))
+    ...     context=({Entity(name="Hades").key: Entity(name="Narcissus")}))
     False
 
 Option 3: Context from One List
@@ -131,7 +131,7 @@ will return ``True``.
 
     >>> hades_curse.means(
     ...     aphrodite_curse,
-    ...     context=([Entity("Aphrodite"), Entity("Narcissus")]))
+    ...     context=([Entity(name="Aphrodite"), Entity(name="Narcissus")]))
     True
 
 Comparing FactorGroups in Context
@@ -154,18 +154,18 @@ about whether one pair of Entities signed a treaty with each other.
     >>> from nettlesome import FactorGroup
     >>> nafta = FactorGroup([
     ...     Statement("$country1 signed a treaty with $country2",
-    ...               terms=[Entity("Mexico"), Entity("USA")]),
+    ...               terms=[Entity(name="Mexico"), Entity(name="USA")]),
     ...     Statement("$country2 signed a treaty with $country3",
-    ...               terms=[Entity("USA"), Entity("Canada")]),
+    ...               terms=[Entity(name="USA"), Entity(name="Canada")]),
     ...     Statement("$country3 signed a treaty with $country1",
-    ...           terms=[Entity("USA"), Entity("Canada")])])
+    ...           terms=[Entity(name="USA"), Entity(name="Canada")])])
     >>> brexit = FactorGroup([
     ...     Statement("$country1 signed a treaty with $country2",
-    ...               terms=[Entity("UK"), Entity("European Union")]),
+    ...               terms=[Entity(name="UK"), Entity(name="European Union")]),
     ...     Statement("$country2 signed a treaty with $country3",
-    ...               terms=[Entity("European Union"), Entity("Germany")]),
+    ...               terms=[Entity(name="European Union"), Entity(name="Germany")]),
     ...     Statement("$country3 signed a treaty with $country1",
-    ...          terms=[Entity("Germany"), Entity("UK")], truth=False)])
+    ...          terms=[Entity(name="Germany"), Entity(name="UK")], truth=False)])
     >>> nafta.contradicts(brexit)
     True
 
@@ -198,7 +198,7 @@ how a contradiction can exist.
 
     >>> explanations_usa_like_uk = list(nafta.explanations_contradiction(
     ...     brexit,
-    ...     context=([Entity("USA")], [Entity("UK")])))
+    ...     context=([Entity(name="USA")], [Entity(name="UK")])))
     >>> len(explanations_usa_like_uk)
     2
 

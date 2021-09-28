@@ -9,13 +9,13 @@ from nettlesome.statements import Statement
 class TestAssertion:
     namespaces = Statement(
         "$concept was one honking great idea",
-        terms=Entity("namespaces", plural=True),
+        terms=Entity(name="namespaces", plural=True),
     )
     generic_authority = Assertion(
-        statement=namespaces, authority=Entity("Twitter user")
+        statement=namespaces, authority=Entity(name="Twitter user")
     )
     specific_authority = Assertion(
-        statement=namespaces, authority=Entity("Tim Peters", generic=False)
+        statement=namespaces, authority=Entity(name="Tim Peters", generic=False)
     )
     no_authority = Assertion(statement=namespaces, authority=None)
 
@@ -23,8 +23,8 @@ class TestAssertion:
         assert "<namespaces> were one honking great idea" in str(self.generic_authority)
 
     def test_include_of_in_string(self):
-        fact = Statement("$suspect stole bread", terms=Entity("Valjean"))
-        accusation = Assertion(statement=fact, authority=Entity("Javert"))
+        fact = Statement("$suspect stole bread", terms=Entity(name="Valjean"))
+        accusation = Assertion(statement=fact, authority=Entity(name="Javert"))
         assert (
             "the assertion, by <Javert>, of the statement that <Valjean> stole bread"
             in str(accusation)
@@ -78,7 +78,8 @@ class TestAssertion:
     def test_new_context(self):
         context = ContextRegister()
         context.insert_pair(
-            Entity("Twitter user"), Entity("Python Software Foundation", generic=False)
+            Entity(name="Twitter user"),
+            Entity(name="Python Software Foundation", generic=False),
         )
         new = self.generic_authority.new_context(context)
         assert "by Python" in str(new)
@@ -87,11 +88,13 @@ class TestAssertion:
 class TestInterchangeable:
     identical = Statement(
         "$god1 was identical with $god2",
-        terms=[Entity("Dionysus"), Entity("Osiris")],
+        terms=[Entity(name="Dionysus"), Entity(name="Osiris")],
     )
-    generic_authority = Assertion(statement=identical, authority=Entity("a historian"))
+    generic_authority = Assertion(
+        statement=identical, authority=Entity(name="a historian")
+    )
     specific_authority = Assertion(
-        statement=identical, authority=Entity("Herodotus", generic=False)
+        statement=identical, authority=Entity(name="Herodotus", generic=False)
     )
     no_authority = Assertion(statement=identical, authority=None)
 

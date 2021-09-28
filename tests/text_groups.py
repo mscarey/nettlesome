@@ -64,7 +64,7 @@ class TestMakeGroup:
                 sign=">=",
                 expression="2 inches",
             ),
-            terms=[Entity("Ann"), Entity("Ben")],
+            terms=[Entity(name="Ann"), Entity(name="Ben")],
         )
         right = Statement(
             Comparison(
@@ -72,7 +72,7 @@ class TestMakeGroup:
                 sign=">=",
                 expression="2 feet",
             ),
-            terms=[Entity("Alice"), Entity("Bob")],
+            terms=[Entity(name="Alice"), Entity(name="Bob")],
         )
         group = FactorGroup([left, right])
         shorter = group.drop_implied_factors()
@@ -95,7 +95,7 @@ class TestMakeGroup:
 
     def test_cannot_add_entity(self):
         with pytest.raises(TypeError):
-            FactorGroup(Entity("Morning Star"))
+            FactorGroup(Entity(name="Morning Star"))
 
 
 class TestSameFactors:
@@ -173,8 +173,8 @@ class TestSameFactors:
         speed = "${person}'s speed was"
         comparison = Comparison(speed, sign=">", expression="36 kilometers per hour")
         other = Comparison(speed, sign=">", expression="10 meters per second")
-        left = FactorGroup(Statement(comparison, terms=Entity("Ann")))
-        right = Statement(other, terms=Entity("Bob"))
+        left = FactorGroup(Statement(comparison, terms=Entity(name="Ann")))
+        right = Statement(other, terms=Entity(name="Bob"))
         assert left.means(right)
 
     def test_list_instead_of_group(self):
@@ -184,8 +184,8 @@ class TestSameFactors:
         other_comparison = Comparison(
             "${person}'s speed was", sign=">", expression="10 meters per second"
         )
-        left = FactorGroup(Statement(comparison, terms=Entity("Ann")))
-        right = [Statement(other_comparison, terms=Entity("Bob"))]
+        left = FactorGroup(Statement(comparison, terms=Entity(name="Ann")))
+        right = [Statement(other_comparison, terms=Entity(name="Bob"))]
         assert left.means(right)
         assert "Because <Ann> is like <Bob>" in str(left.explain_same_meaning(right))
 
@@ -196,7 +196,7 @@ class TestSameFactors:
         other_comparison = Comparison(
             "${person}'s speed was", sign=">", expression="10 meters per second"
         )
-        left = FactorGroup(Statement(comparison, terms=Entity("Ann")))
+        left = FactorGroup(Statement(comparison, terms=Entity(name="Ann")))
         assert not left.means(other_comparison)
 
     def test_empty_factorgroup_is_falsy(self):
@@ -214,7 +214,7 @@ class TestSameFactors:
                     ),
                 ),
                 make_statement["more"],
-                Statement("$city was sunny", terms=Entity("Oakland")),
+                Statement("$city was sunny", terms=Entity(name="Oakland")),
             ]
         )
         right = FactorGroup(
@@ -227,7 +227,7 @@ class TestSameFactors:
                     ),
                 ),
                 make_statement["more"],
-                Statement("$city was sunny", terms=Entity("Oakland")),
+                Statement("$city was sunny", terms=Entity(name="Oakland")),
             ]
         )
         assert not left.shares_all_factors_with(right)
@@ -243,7 +243,7 @@ class TestSameFactors:
                     ),
                 ),
                 make_statement["more"],
-                Statement("$city was sunny", terms=Entity("Oakland")),
+                Statement("$city was sunny", terms=Entity(name="Oakland")),
             ]
         )
         right = FactorGroup(
@@ -256,7 +256,7 @@ class TestSameFactors:
                     ),
                 ),
                 make_statement["more"],
-                Statement("$city was sunny", terms=Entity("Oakland")),
+                Statement("$city was sunny", terms=Entity(name="Oakland")),
             ]
         )
         assert not left.means(right)
@@ -266,15 +266,15 @@ class TestSameFactors:
             [
                 Statement(
                     "$country1 signed a treaty with $country2",
-                    terms=[Entity("Mexico"), Entity("USA")],
+                    terms=[Entity(name="Mexico"), Entity(name="USA")],
                 ),
                 Statement(
                     "$country2 signed a treaty with $country3",
-                    terms=[Entity("USA"), Entity("Canada")],
+                    terms=[Entity(name="USA"), Entity(name="Canada")],
                 ),
                 Statement(
                     "$country3 signed a treaty with $country1",
-                    terms=[Entity("Canada"), Entity("Mexico")],
+                    terms=[Entity(name="Canada"), Entity(name="Mexico")],
                 ),
             ]
         )
@@ -282,22 +282,22 @@ class TestSameFactors:
             [
                 Statement(
                     "$country1 signed a treaty with $country2",
-                    terms=[Entity("USA"), Entity("UK")],
+                    terms=[Entity(name="USA"), Entity(name="UK")],
                 ),
                 Statement(
                     "$country2 signed a treaty with $country3",
-                    terms=[Entity("UK"), Entity("Germany")],
+                    terms=[Entity(name="UK"), Entity(name="Germany")],
                 ),
                 Statement(
                     "$country3 signed a treaty with $country1",
-                    terms=[Entity("Germany"), Entity("USA")],
+                    terms=[Entity(name="Germany"), Entity(name="USA")],
                 ),
             ]
         )
         assert nafta.means(nato)
         answers = list(
             nafta.explanations_same_meaning(
-                nato, context=([Entity("USA")], [Entity("UK")])
+                nato, context=([Entity(name="USA")], [Entity(name="UK")])
             )
         )
         assert len(answers) == 2
@@ -423,15 +423,15 @@ class TestImplication:
                 Statement(
                     more_than_100_yards,
                     terms=[
-                        Entity("the political convention"),
-                        Entity("the police cordon"),
+                        Entity(name="the political convention"),
+                        Entity(name="the police cordon"),
                     ],
                 ),
                 Statement(
                     less_than_1_mile,
                     terms=[
-                        Entity("the police cordon"),
-                        Entity("the political convention"),
+                        Entity(name="the police cordon"),
+                        Entity(name="the political convention"),
                     ],
                 ),
             ]
@@ -450,11 +450,17 @@ class TestImplication:
             [
                 Statement(
                     more_than_50_meters,
-                    terms=[Entity("the free speech zone"), Entity("the courthouse")],
+                    terms=[
+                        Entity(name="the free speech zone"),
+                        Entity(name="the courthouse"),
+                    ],
                 ),
                 Statement(
                     less_than_2_km,
-                    terms=[Entity("the free speech zone"), Entity("the courthouse")],
+                    terms=[
+                        Entity(name="the free speech zone"),
+                        Entity(name="the courthouse"),
+                    ],
                 ),
             ]
         )
@@ -469,8 +475,8 @@ class TestImplication:
         assert not left.implies(
             right,
             context=(
-                [Entity("Alice"), Entity("Bob")],
-                [Entity("Dan"), Entity("Craig")],
+                [Entity(name="Alice"), Entity(name="Bob")],
+                [Entity(name="Dan"), Entity(name="Craig")],
             ),
         )
 
@@ -481,7 +487,8 @@ class TestImplication:
         )
         assert left.implies(right)
         assert not left.implies(
-            right, context={"<Alice>": Entity("Dan"), "<Bob>": Entity("Craig")}
+            right,
+            context={"<Alice>": Entity(name="Dan"), "<Bob>": Entity(name="Craig")},
         )
 
 
@@ -515,29 +522,33 @@ class TestImpliedBy:
         left = FactorGroup(make_statement["more"])
         assert not left.implied_by(
             make_statement["way_more"],
-            context=(["<San Francisco>"], [Entity("Richmond")]),
+            context=(["<San Francisco>"], [Entity(name="Richmond")]),
         )
 
     def test_context_prevents_implied_by_factor_tuples_not_lists(self, make_statement):
         left = FactorGroup(make_statement["more"])
         assert not left.implied_by(
             make_statement["way_more"],
-            context=(("<San Francisco>",), (Entity("Richmond"),)),
+            context=(("<San Francisco>",), (Entity(name="Richmond"),)),
         )
 
 
 class TestContradiction:
     def test_contradiction_of_group(self):
         lived_at = Predicate(content="$person lived at $residence")
-        bob_lived = Statement(lived_at, terms=[Entity("Bob"), Entity("Bob's house")])
-        carl_lived = Statement(lived_at, terms=[Entity("Carl"), Entity("Carl's house")])
+        bob_lived = Statement(
+            lived_at, terms=[Entity(name="Bob"), Entity(name="Bob's house")]
+        )
+        carl_lived = Statement(
+            lived_at, terms=[Entity(name="Carl"), Entity(name="Carl's house")]
+        )
         distance_long = Comparison(
             "the distance from the center of $city to $residence was",
             sign=">=",
             expression="50 miles",
         )
         statement_long = Statement(
-            distance_long, terms=[Entity("Houston"), Entity("Bob's house")]
+            distance_long, terms=[Entity(name="Houston"), Entity(name="Bob's house")]
         )
         distance_short = Comparison(
             "the distance from the center of $city to $residence was",
@@ -545,7 +556,7 @@ class TestContradiction:
             expression="10 kilometers",
         )
         statement_short = Statement(
-            distance_short, terms=[Entity("El Paso"), Entity("Carl's house")]
+            distance_short, terms=[Entity(name="El Paso"), Entity(name="Carl's house")]
         )
         left = FactorGroup([bob_lived, statement_long])
         right = FactorGroup([carl_lived, statement_short])
@@ -558,15 +569,15 @@ class TestContradiction:
             [
                 Statement(
                     "$country1 signed a treaty with $country2",
-                    terms=[Entity("Mexico"), Entity("USA")],
+                    terms=[Entity(name="Mexico"), Entity(name="USA")],
                 ),
                 Statement(
                     "$country2 signed a treaty with $country3",
-                    terms=[Entity("USA"), Entity("Canada")],
+                    terms=[Entity(name="USA"), Entity(name="Canada")],
                 ),
                 Statement(
                     "$country3 signed a treaty with $country1",
-                    terms=[Entity("Canada"), Entity("Mexico")],
+                    terms=[Entity(name="Canada"), Entity(name="Mexico")],
                 ),
             ]
         )
@@ -574,15 +585,15 @@ class TestContradiction:
             [
                 Statement(
                     "$country1 signed a treaty with $country2",
-                    terms=[Entity("UK"), Entity("European Union")],
+                    terms=[Entity(name="UK"), Entity(name="European Union")],
                 ),
                 Statement(
                     "$country2 signed a treaty with $country3",
-                    terms=[Entity("European Union"), Entity("Germany")],
+                    terms=[Entity(name="European Union"), Entity(name="Germany")],
                 ),
                 Statement(
                     "$country3 signed a treaty with $country1",
-                    terms=[Entity("Germany"), Entity("UK")],
+                    terms=[Entity(name="Germany"), Entity(name="UK")],
                     truth=False,
                 ),
             ]
@@ -590,7 +601,7 @@ class TestContradiction:
         assert nafta.contradicts(brexit)
         answers = []
         explanations_usa_like_uk = nafta.explanations_contradiction(
-            brexit, context=([Entity("USA")], [Entity("UK")])
+            brexit, context=([Entity(name="USA")], [Entity(name="UK")])
         )
         for answer in explanations_usa_like_uk:
             answers.append(answer)
@@ -605,7 +616,7 @@ class TestContradiction:
                         sign=">",
                         expression=10000,
                     ),
-                    terms=[Entity("Alice"), Entity("Bob")],
+                    terms=[Entity(name="Alice"), Entity(name="Bob")],
                 ),
                 Statement(
                     Comparison(
@@ -613,7 +624,7 @@ class TestContradiction:
                         sign=">",
                         expression=1000,
                     ),
-                    terms=[Entity("Dan"), Entity("Eve")],
+                    terms=[Entity(name="Dan"), Entity(name="Eve")],
                 ),
             ]
         )
@@ -625,7 +636,7 @@ class TestContradiction:
                         sign=">",
                         expression=100,
                     ),
-                    terms={"payer": Entity("Fred"), "payee": Entity("Greg")},
+                    terms={"payer": Entity(name="Fred"), "payee": Entity(name="Greg")},
                 ),
                 Statement(
                     Comparison(
@@ -633,7 +644,7 @@ class TestContradiction:
                         sign=">",
                         expression=10,
                     ),
-                    terms={"payer": Entity("Jim"), "payee": Entity("Kim")},
+                    terms={"payer": Entity(name="Jim"), "payee": Entity(name="Kim")},
                 ),
             ]
         )
@@ -642,7 +653,7 @@ class TestContradiction:
         assert len(all_explanations) == 2
         limited_explanations = list(
             large_payments.explanations_implication(
-                small_payments, context=([Entity("Alice")], [Entity("Jim")])
+                small_payments, context=([Entity(name="Alice")], [Entity(name="Jim")])
             )
         )
         assert len(limited_explanations) == 1
@@ -652,15 +663,15 @@ class TestContradiction:
             [
                 Statement(
                     "$country1 signed a treaty with $country2",
-                    terms=[Entity("Mexico"), Entity("USA")],
+                    terms=[Entity(name="Mexico"), Entity(name="USA")],
                 ),
                 Statement(
                     "$country2 signed a treaty with $country3",
-                    terms=[Entity("USA"), Entity("Canada")],
+                    terms=[Entity(name="USA"), Entity(name="Canada")],
                 ),
                 Statement(
                     "$country3 signed a treaty with $country1",
-                    terms=[Entity("Canada"), Entity("Mexico")],
+                    terms=[Entity(name="Canada"), Entity(name="Mexico")],
                 ),
             ]
         )
@@ -668,15 +679,15 @@ class TestContradiction:
             [
                 Statement(
                     "$country1 signed a treaty with $country2",
-                    terms=[Entity("USA"), Entity("UK")],
+                    terms=[Entity(name="USA"), Entity(name="UK")],
                 ),
                 Statement(
                     "$country2 signed a treaty with $country3",
-                    terms=[Entity("UK"), Entity("Germany")],
+                    terms=[Entity(name="UK"), Entity(name="Germany")],
                 ),
                 Statement(
                     "$country3 signed a treaty with $country1",
-                    terms=[Entity("Germany"), Entity("USA")],
+                    terms=[Entity(name="Germany"), Entity(name="USA")],
                 ),
             ]
         )
@@ -686,7 +697,7 @@ class TestContradiction:
 
         limited_answers = list(
             nafta.explanations_implication(
-                nato, context=([Entity("USA")], [Entity("UK")])
+                nato, context=([Entity(name="USA")], [Entity(name="UK")])
             )
         )
         assert len(limited_answers) == 2
@@ -756,13 +767,13 @@ class TestUnion:
             Comparison(
                 "the number of bullets $person had was", sign=">=", expression=5
             ),
-            terms=Entity("Alice"),
+            terms=Entity(name="Alice"),
         )
         bob_had_bullets = Statement(
             Comparison(
                 "the number of bullets $person had was", sign=">=", expression=5
             ),
-            terms=Entity("Bob"),
+            terms=Entity(name="Bob"),
         )
         left = FactorGroup([make_statement["shooting"], alice_had_bullets])
         right = FactorGroup([make_statement["shooting"], bob_had_bullets])
@@ -794,30 +805,30 @@ class TestConsistent:
     )
     predicate_farm = Predicate(content="$person had a farm")
     slower_specific_statement = Statement(
-        predicate_less_specific, terms=Entity("the car")
+        predicate_less_specific, terms=Entity(name="the car")
     )
     slower_general_statement = Statement(
-        predicate_less_general, terms=Entity("the pickup")
+        predicate_less_general, terms=Entity(name="the pickup")
     )
-    faster_statement = Statement(predicate_more, terms=Entity("the pickup"))
-    farm_statement = Statement(predicate_farm, terms=Entity("Old MacDonald"))
+    faster_statement = Statement(predicate_more, terms=Entity(name="the pickup"))
+    farm_statement = Statement(predicate_farm, terms=Entity(name="Old MacDonald"))
 
     def test_group_contradicts_single_factor(self):
         group = FactorGroup([self.slower_specific_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair(Entity("the car"), Entity("the pickup"))
+        register.insert_pair(Entity(name="the car"), Entity(name="the pickup"))
         assert group.contradicts(self.faster_statement, context=register)
 
     def test_one_statement_does_not_contradict_group(self):
         group = FactorGroup([self.slower_general_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair(Entity("the pickup"), Entity("the pickup"))
+        register.insert_pair(Entity(name="the pickup"), Entity(name="the pickup"))
         assert not self.faster_statement.contradicts(group, context=register)
 
     def test_group_inconsistent_with_single_factor(self):
         group = FactorGroup([self.slower_specific_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair(Entity("the car"), Entity("the pickup"))
+        register.insert_pair(Entity(name="the car"), Entity(name="the pickup"))
         assert not group.consistent_with(self.faster_statement, context=register)
         assert not consistent_with(group, self.faster_statement, context=register)
         assert repr(group).startswith("FactorGroup([Statement")
@@ -832,7 +843,7 @@ class TestConsistent:
                         sign=">",
                         expression=10000,
                     ),
-                    terms=[Entity("Alice"), Entity("Bob")],
+                    terms=[Entity(name="Alice"), Entity(name="Bob")],
                 ),
                 Statement(
                     Comparison(
@@ -840,7 +851,7 @@ class TestConsistent:
                         sign=">",
                         expression=1000,
                     ),
-                    terms=[Entity("Dan"), Entity("Eve")],
+                    terms=[Entity(name="Dan"), Entity(name="Eve")],
                 ),
             ]
         )
@@ -852,7 +863,7 @@ class TestConsistent:
                         sign=">",
                         expression=100,
                     ),
-                    terms={"payer": Entity("Fred"), "payee": Entity("Greg")},
+                    terms={"payer": Entity(name="Fred"), "payee": Entity(name="Greg")},
                 ),
                 Statement(
                     Comparison(
@@ -860,7 +871,7 @@ class TestConsistent:
                         sign=">",
                         expression=10,
                     ),
-                    terms={"payer": Entity("Jim"), "payee": Entity("Kim")},
+                    terms={"payer": Entity(name="Jim"), "payee": Entity(name="Kim")},
                 ),
             ]
         )
@@ -871,7 +882,7 @@ class TestConsistent:
         assert len(all_explanations) == 24
         limited_explanations = list(
             large_payments.explanations_consistent_with(
-                small_payments, context=([Entity("Alice")], [Entity("Jim")])
+                small_payments, context=([Entity(name="Alice")], [Entity(name="Jim")])
             )
         )
         assert len(limited_explanations) == 6
@@ -885,19 +896,19 @@ class TestConsistent:
     def test_group_inconsistent_with_one_statement(self):
         group = FactorGroup([self.slower_specific_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair(Entity("the car"), Entity("the pickup"))
+        register.insert_pair(Entity(name="the car"), Entity(name="the pickup"))
         assert not group.consistent_with(self.faster_statement, context=register)
 
     def test_one_statement_inconsistent_with_group(self):
         group = FactorGroup([self.slower_specific_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair(Entity("the pickup"), Entity("the car"))
+        register.insert_pair(Entity(name="the pickup"), Entity(name="the car"))
         assert not self.faster_statement.consistent_with(group, context=register)
 
     def test_one_statement_consistent_with_group(self):
         group = FactorGroup([self.slower_general_statement, self.farm_statement])
         register = ContextRegister()
-        register.insert_pair(Entity("the pickup"), Entity("the pickup"))
+        register.insert_pair(Entity(name="the pickup"), Entity(name="the pickup"))
         assert self.faster_statement.consistent_with(group, context=register)
 
     def test_no_contradiction_of_none(self):
@@ -912,13 +923,13 @@ class TestConsistent:
         left = FactorGroup([self.slower_specific_statement])
         right = FactorGroup([self.faster_statement])
         context = ContextRegister()
-        context.insert_pair(Entity("the car"), Entity("the pickup"))
+        context.insert_pair(Entity(name="the car"), Entity(name="the pickup"))
         assert not left.consistent_with(right, context=context)
 
     def test_not_internally_consistent_with_context(self, make_statement):
         context = ContextRegister()
-        context.insert_pair(Entity("Alice"), Entity("Alice"))
-        context.insert_pair(Entity("Bob"), Entity("Bob"))
+        context.insert_pair(Entity(name="Alice"), Entity(name="Alice"))
+        context.insert_pair(Entity(name="Bob"), Entity(name="Bob"))
         group = FactorGroup([make_statement["shooting"], make_statement["no_shooting"]])
         with pytest.raises(ValueError):
             group.internally_consistent()
@@ -930,10 +941,10 @@ class TestConsistent:
 
     def test_all_generic_terms_match_in_statement(self):
         predicate = Predicate(content="the telescope pointed at $object")
-        morning = Statement(predicate=predicate, terms=Entity("Morning Star"))
-        evening = Statement(predicate=predicate, terms=Entity("Evening Star"))
+        morning = Statement(predicate=predicate, terms=Entity(name="Morning Star"))
+        evening = Statement(predicate=predicate, terms=Entity(name="Evening Star"))
         left = FactorGroup(morning)
         right = FactorGroup(evening)
         context = ContextRegister()
-        context.insert_pair(Entity("Morning Star"), Entity("Evening Star"))
+        context.insert_pair(Entity(name="Morning Star"), Entity(name="Evening Star"))
         assert left._all_generic_terms_match(right, context=context)

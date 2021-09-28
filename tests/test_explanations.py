@@ -19,26 +19,28 @@ from nettlesome.groups import FactorGroup
 
 class TestContext:
     sale = Predicate(content="$seller sold $product to $buyer")
-    fact_al = Statement(sale, terms=[Entity("Al"), Entity("the bull"), Entity("Betty")])
+    fact_al = Statement(
+        sale, terms=[Entity(name="Al"), Entity(name="the bull"), Entity(name="Betty")]
+    )
     fact_alice = Statement(
-        sale, terms=[Entity("Alice"), Entity("the cow"), Entity("Bob")]
+        sale, terms=[Entity(name="Alice"), Entity(name="the cow"), Entity(name="Bob")]
     )
 
     def test_impossible_register(self):
         context = ContextRegister()
-        context.insert_pair(Entity("Al"), Entity("Bob"))
+        context.insert_pair(Entity(name="Al"), Entity(name="Bob"))
         answers = self.fact_al.update_context_register(self.fact_alice, context, means)
         assert not any(answers)
 
     def test_possible_register(self):
         register = ContextRegister()
-        register.insert_pair(Entity("Al"), Entity("Alice"))
+        register.insert_pair(Entity(name="Al"), Entity(name="Alice"))
         answers = self.fact_al.update_context_register(self.fact_alice, register, means)
-        assert Entity("the bull").short_string in next(answers).keys()
+        assert Entity(name="the bull").short_string in next(answers).keys()
 
     def test_explain_consistency(self):
         register = ContextRegister()
-        register.insert_pair(Entity("Al"), Entity("Alice"))
+        register.insert_pair(Entity(name="Al"), Entity(name="Alice"))
         explanation = self.fact_al.explain_consistent_with(self.fact_alice, register)
 
         assert "<the bull> is like <the cow>" in explanation.context.reason
@@ -57,8 +59,12 @@ class TestMakeExplanation:
 class TestContinuedExplanation:
     def test_implication_and_contradiction(self):
         lived_at = Predicate(content="$person lived at $residence")
-        bob_lived = Statement(lived_at, terms=[Entity("Bob"), Entity("Bob's house")])
-        carl_lived = Statement(lived_at, terms=[Entity("Carl"), Entity("Carl's house")])
+        bob_lived = Statement(
+            lived_at, terms=[Entity(name="Bob"), Entity(name="Bob's house")]
+        )
+        carl_lived = Statement(
+            lived_at, terms=[Entity(name="Carl"), Entity(name="Carl's house")]
+        )
         explanation = bob_lived.explain_implication(carl_lived)
 
         distance_long = Comparison(
@@ -67,7 +73,7 @@ class TestContinuedExplanation:
             expression="50 miles",
         )
         statement_long = Statement(
-            distance_long, terms=[Entity("Houston"), Entity("Bob's house")]
+            distance_long, terms=[Entity(name="Houston"), Entity(name="Bob's house")]
         )
 
         distance_short = Comparison(
@@ -76,7 +82,7 @@ class TestContinuedExplanation:
             expression="10 kilometers",
         )
         statement_short = Statement(
-            distance_short, terms=[Entity("El Paso"), Entity("Carl's house")]
+            distance_short, terms=[Entity(name="El Paso"), Entity(name="Carl's house")]
         )
 
         left = FactorGroup(statement_long)

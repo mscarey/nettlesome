@@ -18,4 +18,5 @@ class Factor(Term):
     ) -> None:
         """Add "absent" attribute to Term's attributes."""
         self.absent = absent
-        super().__init__(name=name, generic=generic)
+        self.name = name
+        self.generic = generic

@@ -58,6 +58,7 @@ class TestCompareQuantities:
         with pytest.raises(TypeError):
             make_comparison["exact"].contradicts(
                 Statement(
-                    make_comparison["exact"], terms=[Entity("thing"), Entity("place")]
+                    make_comparison["exact"],
+                    terms=[Entity(name="thing"), Entity(name="place")],
                 )
             )

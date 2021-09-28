@@ -119,7 +119,7 @@ make the :class:`~nettlesome.statements.Statement` a complete phrase.
     >>> from nettlesome import Statement, Entity
     >>> statement = Statement(
     >>>     predicate=account_for_company,
-    >>>     terms=[Entity("Sarah"), Entity("Acme Corporation")])
+    >>>     terms=[Entity(name="Sarah"), Entity(name="Acme Corporation")])
     >>> str(statement)
     'the statement that <Sarah> opened a bank account for <Acme Corporation>'
 
@@ -137,10 +137,10 @@ the word “was” after the :class:`~nettlesome.entities.Entity` should be
 replaced with “were”.
 
     >>> not_at_school = Predicate(content="$group were at school", truth=False)
-    >>> plural_statement = Statement(not_at_school, terms=[Entity("the students", plural=True)])
+    >>> plural_statement = Statement(not_at_school, terms=[Entity(name="the students", plural=True)])
     >>> str(plural_statement)
     'the statement it was false that <the students> were at school'
-    >>> singular_statement = Statement(not_at_school, terms=[Entity("Lee", plural=False)])
+    >>> singular_statement = Statement(not_at_school, terms=[Entity(name="Lee", plural=False)])
     >>> str(singular_statement)
     'the statement it was false that <Lee> was at school'
 
@@ -175,7 +175,7 @@ to other, generic Entities. In that case, you can set the Entity’s
 ``generic`` attribute to False and it’ll no longer be found to have the
 same meaning as generic Entities.
 
-    >>> harry_statement = Statement(not_at_school, terms=Entity("Harry Potter", generic=False))
+    >>> harry_statement = Statement(not_at_school, terms=Entity(name="Harry Potter", generic=False))
     >>> harry_statement.means(singular_statement)
     False
 
@@ -200,7 +200,7 @@ using the `pint <https://pint.readthedocs.io/>`_ library.
     >>>     "the weight of ${driver}'s vehicle was",
     >>>     sign=">",
     >>>     expression="26000 pounds")
-    >>> pounds_statement = Statement(weight_in_pounds, terms=Entity("Alice"))
+    >>> pounds_statement = Statement(weight_in_pounds, terms=Entity(name="Alice"))
     >>> str(pounds_statement)
     "the statement that the weight of <Alice>'s vehicle was greater than 26000 pound"
 
@@ -213,7 +213,7 @@ or :meth:`~nettlesome.quantities.Comparison.contradicts`\.
     >>>     "the weight of ${driver}'s vehicle was",
     >>>     sign="<=",
     >>>     expression="3000 kilograms")
-    >>> kilos_statement = Statement(weight_in_kilos, terms=Entity("Alice"))
+    >>> kilos_statement = Statement(weight_in_kilos, terms=Entity(name="Alice"))
     >>>> str(kilos_statement)
     "the statement that the weight of <Alice>'s vehicle was no more than 3000 kilogram"
     >>> pounds_statement.contradicts(kilos_statement)
@@ -290,10 +290,10 @@ same distance away from ``site1``.)
     >>> protest_facts = FactorGroup(
     >>>     [Statement(
     >>>         more_than_100_yards,
-    >>>         terms=[Entity("the political convention"), Entity("the police cordon")]),
+    >>>         terms=[Entity(name="the political convention"), Entity(name="the police cordon")]),
     >>>      Statement(
     >>>         less_than_1_mile,
-    >>>         terms=[Entity("the police cordon"), Entity("the political convention")])])
+    >>>         terms=[Entity(name="the police cordon"), Entity(name="the political convention")])])
     >>> str(protest_facts)
     "FactorGroup(['the statement that the distance between <the political convention> and <the police cordon> was greater than 100 yard', 'the statement that the distance between <the police cordon> and <the political convention> was less than 1 mile'])"
 
@@ -308,9 +308,9 @@ same distance away from ``site1``.)
     >>> speech_zone_facts = FactorGroup(
     >>>     [Statement(
     >>>         more_than_50_meters,
-    >>>         terms=[Entity("the free speech zone"), Entity("the courthouse")]),
+    >>>         terms=[Entity(name="the free speech zone"), Entity(name="the courthouse")]),
     >>>      Statement(
     >>>         less_than_2_km,
-    >>>         terms=[Entity("the free speech zone"), Entity("the courthouse")])])
+    >>>         terms=[Entity(name="the free speech zone"), Entity(name="the courthouse")])])
     >>> protest_facts.implies(speech_zone_facts)
     True

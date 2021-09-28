@@ -3,10 +3,12 @@
 from __future__ import annotations
 from typing import Optional
 
+from pydantic import BaseModel
+
 from nettlesome.terms import Comparable, ContextRegister, Term
 
 
-class Entity(Term):
+class Entity(Term, BaseModel):
     r"""
     Things that can be referenced in a Statement.
 
@@ -31,12 +33,9 @@ class Entity(Term):
         to see whether a verb needs to be made plural.
     """
 
-    def __init__(
-        self, name: str = "", generic: bool = True, plural: bool = False
-    ) -> None:
-        """Save whether ``self`` is "generic" and "plural"."""
-        self.plural = plural
-        super().__init__(name=name, generic=generic)
+    name: str = ""
+    generic: bool = True
+    plural: bool = False
 
     def __str__(self):
         if self.generic:

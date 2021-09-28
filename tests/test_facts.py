@@ -15,16 +15,20 @@ from nettlesome.statements import Statement
 
 class TestFacts:
     def test_default_terms_for_fact(self, make_predicate):
-        f1 = Statement(make_predicate["shooting"], terms=[Entity("Al"), Entity("Ed")])
-        assert f1.terms[0].short_string == Entity("Al").short_string
+        f1 = Statement(
+            make_predicate["shooting"], terms=[Entity(name="Al"), Entity(name="Ed")]
+        )
+        assert f1.terms[0].short_string == Entity(name="Al").short_string
 
     def test_brackets_around_generic_terms(self, make_predicate):
         statement = Statement(
-            make_predicate["shooting"], terms=[Entity("Al"), Entity("Ed")]
+            make_predicate["shooting"], terms=[Entity(name="Al"), Entity(name="Ed")]
         )
         assert "<Al> shot <Ed>" in str(statement)
         absent = Statement(
-            make_predicate["shooting"], terms=[Entity("Al"), Entity("Ed")], absent=True
+            make_predicate["shooting"],
+            terms=[Entity(name="Al"), Entity(name="Ed")],
+            absent=True,
         )
         assert "absence of the statement" in str(absent).lower()
 
@@ -37,10 +41,13 @@ class TestFacts:
             content="$planner told $intermediary to hire $shooter"
         )
         statement_3 = Statement(
-            three_entities, terms=[Entity("Al"), Entity("Bob"), Entity("Cid")]
+            three_entities,
+            terms=[Entity(name="Al"), Entity(name="Bob"), Entity(name="Cid")],
         )
         two_entities = Predicate(content="$shooter told $intermediary to hire $shooter")
-        statement_2 = Statement(two_entities, terms=[Entity("Al"), Entity("Bob")])
+        statement_2 = Statement(
+            two_entities, terms=[Entity(name="Al"), Entity(name="Bob")]
+        )
         assert (
             "statement that <Al> told <Bob> to hire <Cid>".lower()
             in str(statement_3).lower()
@@ -62,7 +69,11 @@ class TestFacts:
         )
         statement_3 = Statement(
             three_entities,
-            terms=[Entity("Al", generic=False), Entity("Bob"), Entity("Cid")],
+            terms=[
+                Entity(name="Al", generic=False),
+                Entity(name="Bob"),
+                Entity(name="Cid"),
+            ],
         )
         assert (
             "statement that Al told <Bob> to hire <Cid>".lower()
@@ -70,8 +81,8 @@ class TestFacts:
         )
 
     def test_string_for_fact_with_identical_terms(self):
-        devon = Entity("Devon", generic=True)
-        elaine = Entity("Elaine", generic=True)
+        devon = Entity(name="Devon", generic=True)
+        elaine = Entity(name="Elaine", generic=True)
         opened_account = Statement(
             Predicate(
                 content="$applicant opened a bank account for $applicant and $cosigner"
@@ -84,12 +95,12 @@ class TestFacts:
 
     def test_new_context_replace_fact(self):
         changes = ContextRegister.from_lists(
-            [Entity("Death Star 3"), Entity("Kylo Ren")],
-            [Entity("Death Star 1"), Entity("Darth Vader")],
+            [Entity(name="Death Star 3"), Entity(name="Kylo Ren")],
+            [Entity(name="Death Star 1"), Entity(name="Darth Vader")],
         )
         statement = Statement(
             "$person blew up a planet with $weapon",
-            terms=[Entity("Kylo Ren"), Entity("Death Star 3")],
+            terms=[Entity(name="Kylo Ren"), Entity(name="Death Star 3")],
         )
         new = statement.new_context(changes)
 
@@ -102,7 +113,7 @@ class TestFacts:
 
     def test_new_context_from_factor(self, make_statement):
         crime = make_statement["crime"]
-        different = crime.new_context(Entity("Greg", generic=False))
+        different = crime.new_context(Entity(name="Greg", generic=False))
         assert "Greg committed a crime" in str(different)
 
     def test_type_of_terms(self, make_statement):
@@ -119,13 +130,15 @@ class TestFacts:
         assert len(make_statement["crime"]) == 1
 
     def test_predicate_with_entities(self, make_statement):
-        content = make_statement["crime"].predicate._content_with_terms([Entity("Jim")])
+        content = make_statement["crime"].predicate._content_with_terms(
+            [Entity(name="Jim")]
+        )
         assert "<Jim> committed" in content
 
     def test_reciprocal_with_wrong_number_of_entities(self, make_statement):
         with pytest.raises(ValueError):
             make_statement["crime"].predicate._content_with_terms(
-                (Entity("Al"), Entity("Ben"))
+                (Entity(name="Al"), Entity(name="Ben"))
             )
 
     def test_complex_string(self, make_complex_fact):
@@ -138,7 +151,10 @@ class TestFacts:
     def test_length_with_specific_term(self):
         statement = Statement(
             "$person paid tax to $state",
-            terms=[Entity("Alice"), Entity("the State of Texas", generic=False)],
+            terms=[
+                Entity(name="Alice"),
+                Entity(name="the State of Texas", generic=False),
+            ],
         )
         assert len(statement) == 1
 
@@ -146,7 +162,7 @@ class TestFacts:
         no_license = Statement(
             "$business was licensed as a money transmitting business",
             truth=False,
-            terms=Entity("Helix"),
+            terms=Entity(name="Helix"),
         )
         assert no_license.predicate.truth is False
 
@@ -179,15 +195,21 @@ class TestSameMeaning:
     def test_cannot_repeat_term_in_termsequence(self, make_predicate):
 
         with pytest.raises(DuplicateTermError):
-            Statement("$person1 shot $person2", terms=[Entity("Al"), Entity("Al")])
+            Statement(
+                "$person1 shot $person2", terms=[Entity(name="Al"), Entity(name="Al")]
+            )
 
     def test_factor_different_predicate_truth_unequal(self, make_statement):
         assert not make_statement["shooting"].means(make_statement["murder"])
 
     def test_unequal_because_one_factor_is_absent(self, make_predicate):
-        left = Statement(make_predicate["shooting"], terms=[Entity("Al"), Entity("Bo")])
+        left = Statement(
+            make_predicate["shooting"], terms=[Entity(name="Al"), Entity(name="Bo")]
+        )
         right = Statement(
-            make_predicate["shooting"], terms=[Entity("Al"), Entity("Bob")], absent=True
+            make_predicate["shooting"],
+            terms=[Entity(name="Al"), Entity(name="Bob")],
+            absent=True,
         )
         assert not left.means(right)
 
@@ -208,8 +230,8 @@ class TestSameMeaning:
 
     def test_interchangeable_concrete_terms(self):
         """Detect that placeholders differing only by a final digit are interchangeable."""
-        ann = Entity("Ann", generic=False)
-        bob = Entity("Bob", generic=False)
+        ann = Entity(name="Ann", generic=False)
+        bob = Entity(name="Bob", generic=False)
 
         ann_and_bob_were_family = Statement(
             Predicate(
@@ -227,8 +249,8 @@ class TestSameMeaning:
         assert ann_and_bob_were_family.means(bob_and_ann_were_family)
 
     def test_means_despite_plural(self):
-        directory = Entity("Rural's telephone directory", plural=False)
-        listings = Entity("Rural's telephone listings", plural=True)
+        directory = Entity(name="Rural's telephone directory", plural=False)
+        listings = Entity(name="Rural's telephone listings", plural=True)
         directory_original = Statement(
             Predicate(content="$thing was original"), terms=directory
         )
@@ -262,7 +284,7 @@ class TestImplication:
         assert make_statement["murder"] > make_statement["crime_generic"]
 
     def test_specific_fact_does_not_imply_generic_entity(self, make_statement):
-        assert not make_statement["crime"] > Entity("Bob")
+        assert not make_statement["crime"] > Entity(name="Bob")
 
     def test_factor_does_not_imply_predicate(self, make_statement, make_predicate):
         with pytest.raises(TypeError):
@@ -274,14 +296,14 @@ class TestImplication:
             sign=">=",
             expression=Q_("10 meters"),
         )
-        left = Statement(meters, terms=[Entity("Al"), Entity("Bob")])
+        left = Statement(meters, terms=[Entity(name="Al"), Entity(name="Bob")])
         more = Comparison(
             content="the distance between $place1 and $place2 was",
             truth=True,
             sign=">",
             expression=Q_("30 feet"),
         )
-        right = Statement(more, terms=[Entity("Al"), Entity("Bob")])
+        right = Statement(more, terms=[Entity(name="Al"), Entity(name="Bob")])
         assert left > right
 
     def test_int_factor_implies_float_factor(self, make_statement):
@@ -331,7 +353,7 @@ class TestImplication:
             make_context_register
         )
         explanation = complex_true.explain_implication(complex_whether)
-        assert str(Entity("Alice")), Entity("Craig") in explanation.items()
+        assert str(Entity(name="Alice")), Entity(name="Craig") in explanation.items()
 
     def test_implication_explain_keys_only_from_left(
         self, make_complex_fact, make_context_register
@@ -480,8 +502,8 @@ class TestContradiction:
             sign=">=",
             expression=Q_("100 kilograms"),
         )
-        alice = Entity("Alice")
-        bob = Entity("Bob")
+        alice = Entity(name="Alice")
+        bob = Entity(name="Bob")
         alice_rich = Statement(p_large_weight, terms=alice)
         bob_poor = Statement(p_small_weight, terms=bob)
         assert alice_rich.contradicts(bob_poor)
@@ -502,8 +524,8 @@ class TestContradiction:
             sign=">=",
             expression=Q_("100 kilograms"),
         )
-        alice = Entity("Alice")
-        bob = Entity("Bob")
+        alice = Entity(name="Alice")
+        bob = Entity(name="Bob")
         alice_rich = Statement(p_large_weight, terms=alice)
         bob_poor = Statement(p_small_weight, terms=bob)
         register = ContextRegister()
@@ -513,21 +535,23 @@ class TestContradiction:
     def test_check_entity_consistency_true(self, make_statement):
         left = make_statement["irrelevant_3"]
         right = make_statement["irrelevant_3_new_context"]
-        easy_register = ContextRegister.from_lists([Entity("Dan")], [Entity("Edgar")])
+        easy_register = ContextRegister.from_lists(
+            [Entity(name="Dan")], [Entity(name="Edgar")]
+        )
         easy_update = left.update_context_register(
             right, easy_register, comparison=means
         )
         assert any(register is not None for register in easy_update)
         harder_register = ContextRegister.from_lists(
             to_replace=[
-                Entity("Alice"),
-                Entity("Bob"),
-                Entity("Craig"),
+                Entity(name="Alice"),
+                Entity(name="Bob"),
+                Entity(name="Craig"),
             ],
             replacements=[
-                Entity("Bob"),
-                Entity("Alice"),
-                Entity("Craig"),
+                Entity(name="Bob"),
+                Entity(name="Alice"),
+                Entity(name="Craig"),
             ],
         )
         harder_update = left.update_context_register(
@@ -540,7 +564,7 @@ class TestContradiction:
 
     def test_check_entity_consistency_false(self, make_statement):
         context = ContextRegister()
-        context.insert_pair(key=Entity("circus"), value=Entity("Alice"))
+        context.insert_pair(key=Entity(name="circus"), value=Entity(name="Alice"))
         update = make_statement["irrelevant_3"].update_context_register(
             make_statement["irrelevant_3_new_context"],
             comparison=means,
@@ -551,7 +575,7 @@ class TestContradiction:
     def test_entity_consistency_identity_not_equality(self, make_statement):
 
         register = ContextRegister()
-        register.insert_pair(key=Entity("Dan"), value=Entity("Dan"))
+        register.insert_pair(key=Entity(name="Dan"), value=Entity(name="Dan"))
         update = make_statement["irrelevant_3"].update_context_register(
             make_statement["irrelevant_3_new_context"],
             context=register,
@@ -566,7 +590,7 @@ class TestContradiction:
         """
         update = make_statement["irrelevant_3"].update_context_register(
             make_predicate["shooting"],
-            {str(Entity("Dan")): Entity("Dan")},
+            {str(Entity(name="Dan")): Entity(name="Dan")},
             operator.gt,
         )
         with pytest.raises(TypeError):
@@ -592,15 +616,15 @@ class TestConsistent:
 
     def test_inconsistent(self, make_statement):
         context = ContextRegister()
-        context.insert_pair(Entity("Alice"), Entity("Alice"))
+        context.insert_pair(Entity(name="Alice"), Entity(name="Alice"))
         assert not make_statement["crime"].consistent_with(
             make_statement["no_crime"], context=context
         )
 
     def test_inconsistent_two_terms(self, make_statement):
         context = ContextRegister()
-        context.insert_pair(Entity("Alice"), Entity("Alice"))
-        context.insert_pair(Entity("Bob"), Entity("Bob"))
+        context.insert_pair(Entity(name="Alice"), Entity(name="Alice"))
+        context.insert_pair(Entity(name="Bob"), Entity(name="Bob"))
         assert not make_statement["shooting"].consistent_with(
             make_statement["no_shooting"], context=context
         )
@@ -626,7 +650,7 @@ class TestAddition:
         assert make_statement["murder"] + make_statement["crime"] is None
 
     def test_same_meaning_after_adding_implied(self):
-        dave = Entity("Dave")
+        dave = Entity(name="Dave")
         speed_template = "${driver}'s driving speed was"
         fast_fact = Statement(
             Comparison(

@@ -13,6 +13,8 @@ from typing import Any, Callable, ClassVar, Dict, Iterable, Iterator
 from typing import List, NamedTuple, Optional, Sequence, Tuple, Union
 from typing import KeysView, ValuesView, ItemsView
 
+from pydantic import BaseModel
+
 logger = logging.getLogger(__name__)
 
 
@@ -387,10 +389,10 @@ class Comparable(ABC):
             >>> from nettlesome import Statement, Entity
             >>> hades_curse = Statement(
             ...    "$deity cursed $target",
-            ...    terms=[Entity("Hades"), Entity("Persephone")])
+            ...    terms=[Entity(name="Hades"), Entity(name="Persephone")])
             >>> aphrodite_curse = Statement(
             ...    "$deity cursed $target",
-            ...    terms=[Entity("Aphrodite"), Entity("Narcissus")])
+            ...    terms=[Entity(name="Aphrodite"), Entity(name="Narcissus")])
             >>> print(hades_curse.explain_same_meaning(aphrodite_curse))
             Because <Hades> is like <Aphrodite>, and <Persephone> is like <Narcissus>,
               the statement that <Hades> cursed <Persephone>
@@ -435,18 +437,18 @@ class Comparable(ABC):
         >>> from nettlesome import Statement, Entity, FactorGroup
         >>> nafta = FactorGroup([
         ...     Statement("$country1 signed a treaty with $country2",
-        ...               terms=[Entity("Mexico"), Entity("USA")]),
+        ...               terms=[Entity(name="Mexico"), Entity(name="USA")]),
         ...     Statement("$country2 signed a treaty with $country3",
-        ...               terms=[Entity("USA"), Entity("Canada")]),
+        ...               terms=[Entity(name="USA"), Entity(name="Canada")]),
         ...     Statement("$country3 signed a treaty with $country1",
-        ...           terms=[Entity("USA"), Entity("Canada")])])
+        ...           terms=[Entity(name="USA"), Entity(name="Canada")])])
         >>> brexit = FactorGroup([
         ...     Statement("$country1 signed a treaty with $country2",
-        ...               terms=[Entity("UK"), Entity("European Union")]),
+        ...               terms=[Entity(name="UK"), Entity(name="European Union")]),
         ...     Statement("$country2 signed a treaty with $country3",
-        ...               terms=[Entity("European Union"), Entity("Germany")]),
+        ...               terms=[Entity(name="European Union"), Entity(name="Germany")]),
         ...     Statement("$country3 signed a treaty with $country1",
-        ...          terms=[Entity("Germany"), Entity("UK")], truth=False)])
+        ...          terms=[Entity(name="Germany"), Entity(name="UK")], truth=False)])
         >>> print(nafta.explain_contradiction(brexit))
         Because <Mexico> is like <Germany>, and <USA> is like <UK>,
           the statement that <Mexico> signed a treaty with <USA>
@@ -795,13 +797,13 @@ class Comparable(ABC):
             >>> over_100y = Comparison("the distance between $site1 and $site2 was", sign=">", expression="100 yards")
             >>> under_1mi = Comparison("the distance between $site1 and $site2 was", sign="<", expression="1 mile")
             >>> protest_facts = FactorGroup(
-            ...     [Statement(over_100y, terms=[Entity("the political convention"), Entity("the police cordon")]),
-            ...      Statement(under_1mi, terms=[Entity("the police cordon"), Entity("the political convention")])])
+            ...     [Statement(over_100y, terms=[Entity(name="the political convention"), Entity(name="the police cordon")]),
+            ...      Statement(under_1mi, terms=[Entity(name="the police cordon"), Entity(name="the political convention")])])
             >>> over_50m = Comparison("the distance between $site1 and $site2 was", sign=">", expression="50 meters")
             >>> under_2km = Comparison("the distance between $site1 and $site2 was", sign="<=", expression="2 km")
             >>> speech_zone_facts = FactorGroup(
-            ...     [Statement(over_50m, terms=[Entity("the free speech zone"), Entity("the courthouse")]),
-            ...      Statement(under_2km, terms=[Entity("the free speech zone"), Entity("the courthouse")])])
+            ...     [Statement(over_50m, terms=[Entity(name="the free speech zone"), Entity(name="the courthouse")]),
+            ...      Statement(under_2km, terms=[Entity(name="the free speech zone"), Entity(name="the courthouse")])])
             >>> protest_facts.implies(speech_zone_facts)
             True
 
@@ -941,9 +943,9 @@ class Comparable(ABC):
 
         >>> from nettlesome import Statement, Entity
         >>> hades_curse = Statement("$deity cursed $target",
-        ...    terms=[Entity("Hades"), Entity("Persephone")])
+        ...    terms=[Entity(name="Hades"), Entity(name="Persephone")])
         >>> aphrodite_curse = Statement("$deity cursed $target",
-        ...    terms=[Entity("Aphrodite"), Entity("Narcissus")])
+        ...    terms=[Entity(name="Aphrodite"), Entity(name="Narcissus")])
         >>> hades_curse.means(aphrodite_curse)
         True
         """
@@ -1219,7 +1221,7 @@ class ContextRegister:
         """Convert changes to ``factor``, expressed as built-in Python objects, to a ContextRegister."""
         if isinstance(changes, ContextRegister):
             return changes
-        if not isinstance(changes, Iterable):
+        if isinstance(changes, (str, Term)):
             changes = [changes]
         if isinstance(changes, Dict):
             return cls.from_lists(
@@ -1317,7 +1319,7 @@ class ContextRegister:
                     "'key' and 'value' must both be subclasses of 'Comparable'",
                     f"but {comp} was type {type(comp)}.",
                 )
-            if isinstance(comp, Iterable):
+            if isinstance(comp, Iterable) and not isinstance(comp, BaseModel):
                 raise TypeError("Iterable objects may not be added to ContextRegister")
         found_value = self.get_factor(key)
         if found_value and not self.check_match(key, value):
@@ -1538,25 +1540,11 @@ class Term(Comparable):
     a :class:`~nettlesome.predicates.StatementTemplate`\.
     """
 
-    def __init__(
-        self,
-        name: Optional[str] = None,
-        generic: bool = True,
-    ) -> None:
-        """
-        Determine self's name and whether it is generic.
+    name: Optional[str] = None
+    generic_value: bool = True
 
-        :param name:
-            An identifier.
-
-        :param generic:
-            Determines whether a change in the ``name`` of the
-            :class:`Term` would change the meaning of the
-            :class:`.Factor` in which the :class:`Term` is
-            embedded.
-        """
-        self.name = name
-        self.generic = generic
+    class Config:
+        fields = {"generic_value": "generic"}
 
     def _borrow_generic_context(self, other: Term) -> Term:
         self_factors = list(self.recursive_terms.values())
