@@ -7,7 +7,7 @@ the `pint <https://pint.readthedocs.io/en/>`_ library).
 """
 
 from __future__ import annotations
-
+from abc import ABCMeta, abstractmethod
 
 from itertools import product
 
@@ -168,7 +168,168 @@ class StatementTemplate(Template):
         return new_template.substitute(substitutions)
 
 
-class Predicate(BaseModel):
+class PhraseABC(metaclass=ABCMeta):
+    r"""Abstract base class for phrases that can be compared like Predicates."""
+
+    content: str
+    truth: Optional[bool]
+
+    @abstractmethod
+    def contradicts(self, other: Any) -> bool:
+        ...
+
+    @abstractmethod
+    def implies(self, other: Any) -> bool:
+        ...
+
+    @abstractmethod
+    def means(self, other: Any) -> bool:
+        ...
+
+    def __gt__(self, other: Any) -> bool:
+        r"""Alias for :meth:`~nettlesome.predicates.Predicate.implies`\."""
+        return self.implies(other)
+
+    def __ge__(self, other: Any) -> bool:
+        r"""
+        Test whether ``self`` either implies or has the same meaning as ``other``.
+
+        :param other:
+            an object to compare
+
+        :returns:
+            whether ``other`` is another Predicate that ``self`` either
+            :meth:`~nettlesome.predicates.Predicate.means`
+            or :meth:`~nettlesome.predicates.Predicate.implies`
+        """
+
+        if self.means(other):
+            return True
+        return self.implies(other)
+
+    def __len__(self):
+        r"""
+        Get the number of Terms expected.
+
+        Also called the linguistic valency, arity, or adicity.
+
+        :returns:
+            the number of :class:`~nettlesome.terms.Term`\s that can fit
+            in the placeholders
+            in the :class:`~nettlesome.predicates.StatementTemplate`\.
+        """
+
+        return len(set(self.template.placeholders))
+
+    @property
+    def template(self) -> StatementTemplate:
+        """
+        A text template for the predicate.
+
+        :returns:
+            a :class:`StatementTemplate` object
+        """
+        return StatementTemplate(self.content, make_singular=True)
+
+    def content_without_placeholders(self) -> str:
+        """
+        Get template text with placeholders replaced by identical bracket pairs.
+
+        Produces a string that will evaluate equal for two templates with
+        identical non-placedholder text.
+        """
+        changes = {p: "{}" for p in self.template.placeholders}
+        return self.template.substitute(**changes)
+
+    def _content_with_terms(self, terms: Sequence[Term]) -> str:
+        r"""
+        Make a sentence by filling in placeholders with names of Factors.
+
+        :param context:
+            terms to be mentioned in the context of
+            this Predicate. They do not need to be type :class:`.Entity`
+
+        :returns:
+            a sentence created by substituting string representations
+            of terms for the placeholders in the content template
+        """
+        return self.template.substitute_with_plurals(terms)
+
+    def same_content_meaning(self, other: Predicate) -> bool:
+        """
+        Test if :attr:`~Predicate.content` strings of ``self`` and ``other`` have same meaning.
+
+        :param other:
+            another :class:`Predicate` being compared to ``self``
+
+        :returns:
+            whether ``self`` and ``other`` have :attr:`~Predicate.content` strings
+            similar enough to be considered to have the same meaning.
+        """
+        return (
+            self.content_without_placeholders().lower()
+            == other.content_without_placeholders().lower()
+        )
+
+    def same_term_positions(self, other: Predicate) -> bool:
+        """Test if self and other have same positions for interchangeable Terms."""
+
+        return list(self.term_positions().values()) == list(
+            other.term_positions().values()
+        )
+
+    def _same_meaning_as_true_predicate(self, other: Predicate) -> bool:
+        """Test if self and other mean the same if they are both True."""
+        if not isinstance(other, PhraseABC):
+            raise TypeError(
+                f"Type {self.__class__.__name__} can't imply, contradict, or "
+                f"have same meaning as type {other.__class__.__name__}"
+            )
+
+        if not isinstance(other, self.__class__):
+            return False
+
+        if not self.same_content_meaning(other):
+            return False
+
+        return self.same_term_positions(other)
+
+    def term_positions(self) -> Dict[str, Set[int]]:
+        """
+        Create list of positions that each term could take without changing Predicate's meaning.
+
+        Assumes that if placeholders are the same except for a final digit, that means
+        they've been labeled as interchangeable with one another.
+        """
+
+        without_duplicates: List[str] = self.template.placeholders
+        result: Dict[str, Set[int]] = {p: {i} for i, p in enumerate(without_duplicates)}
+
+        for index, placeholder in enumerate(without_duplicates):
+            if placeholder[-1].isdigit:
+                for k in result.keys():
+                    if k[-1].isdigit() and k[:-1] == placeholder[:-1]:
+                        result[k].add(index)
+        return result
+
+    def term_index_permutations(self) -> List[Tuple[int, ...]]:
+        """Get the arrangements of all this Predicate's terms that preserve the same meaning."""
+        product_of_positions = product(*self.term_positions().values())
+        without_duplicates = [x for x in product_of_positions if len(set(x)) == len(x)]
+        return without_duplicates
+
+    def _add_truth_to_content(self, content: str) -> str:
+        """Get self's content with a prefix indicating the truth value."""
+        if self.truth is None:
+            truth_prefix = "whether "
+        elif self.truth is False:
+            truth_prefix = "it was false that "
+        else:
+            truth_prefix = "that "
+        return f"{truth_prefix}{content}"
+
+
+class Predicate(BaseModel, PhraseABC):
     r"""
     A statement about real events or about a legal conclusion.
 
@@ -213,45 +374,11 @@ class Predicate(BaseModel):
     content: str
     truth: Optional[bool] = True
 
-    @property
-    def template(self) -> StatementTemplate:
-        """
-        A text template for the predicate.
-
-        :returns:
-            a :class:`StatementTemplate` object
-        """
-        return StatementTemplate(self.content, make_singular=True)
-
     def __repr__(self):
         return (
             f"{self.__class__.__name__}(template='{self.template.template}', "
             f"truth={self.truth})"
         )
-
-    def content_without_placeholders(self) -> str:
-        """
-        Get template text with placeholders replaced by identical bracket pairs.
-
-        Produces a string that will evaluate equal for two templates with
-        identical non-placedholder text.
-        """
-        changes = {p: "{}" for p in self.template.placeholders}
-        return self.template.substitute(**changes)
-
-    def _content_with_terms(self, terms: Sequence[Term]) -> str:
-        r"""
-        Make a sentence by filling in placeholders with names of Factors.
-
-        :param context:
-            terms to be mentioned in the context of
-            this Predicate. They do not need to be type :class:`.Entity`
-
-        :returns:
-            a sentence created by substituting string representations
-            of terms for the placeholders in the content template
-        """
-        return self.template.substitute_with_plurals(terms)
 
     def contradicts(self, other: Any) -> bool:
         r"""
@@ -270,45 +397,6 @@ class Predicate(BaseModel):
             return False
 
         return self.truth != other.truth
-
-    def same_content_meaning(self, other: Predicate) -> bool:
-        """
-        Test if :attr:`~Predicate.content` strings of ``self`` and ``other`` have same meaning.
-
-        :param other:
-            another :class:`Predicate` being compared to ``self``
-
-        :returns:
-            whether ``self`` and ``other`` have :attr:`~Predicate.content` strings
-            similar enough to be considered to have the same meaning.
-        """
-        return (
-            self.content_without_placeholders().lower()
-            == other.content_without_placeholders().lower()
-        )
-
-    def same_term_positions(self, other: Predicate) -> bool:
-        """Test if self and other have same positions for interchangeable Terms."""
-
-        return list(self.term_positions().values()) == list(
-            other.term_positions().values()
-        )
-
-    def _same_meaning_as_true_predicate(self, other: Predicate) -> bool:
-        """Test if self and other mean the same if they are both True."""
-        if not isinstance(other, Predicate):
-            raise TypeError(
-                f"Type {self.__class__.__name__} can't imply, contradict, or "
-                f"have same meaning as type {other.__class__.__name__}"
-            )
-
-        if not isinstance(other, self.__class__):
-            return False
-
-        if not self.same_content_meaning(other):
-            return False
-
-        return self.same_term_positions(other)
 
     def means(self, other: Any) -> bool:
         """
@@ -343,10 +431,6 @@ class Predicate(BaseModel):
             return False
 
         return self.truth == other.truth
-
-    def __gt__(self, other: Any) -> bool:
-        r"""Alias for :meth:`~nettlesome.predicates.Predicate.implies`\."""
-        return self.implies(other)
 
     def implies(self, other: Any) -> bool:
         """
@@ -387,77 +471,12 @@ class Predicate(BaseModel):
             return True
         return self.truth == other.truth
 
-    def __ge__(self, other: Predicate) -> bool:
-        r"""
-        Test whether ``self`` either implies or has the same meaning as ``other``.
-
-        :param other:
-            an object to compare
-
-        :returns:
-            whether ``other`` is another Predicate that ``self`` either
-            :meth:`~nettlesome.predicates.Predicate.means`
-            or :meth:`~nettlesome.predicates.Predicate.implies`
-        """
-
-        if self.means(other):
-            return True
-        return self.implies(other)
-
-    def __len__(self):
-        r"""
-        Get the number of Terms expected.
-
-        Also called the linguistic valency, arity, or adicity.
-
-        :returns:
-            the number of :class:`~nettlesome.terms.Term`\s that can fit
-            in the placeholders
-            in the :class:`~nettlesome.predicates.StatementTemplate`\.
-        """
-
-        return len(set(self.template.placeholders))
-
     def negated(self) -> Predicate:
         """Copy ``self``, with the opposite truth value."""
         return Predicate(
             content=self.content,
             truth=not self.truth,
         )
-
-    def term_positions(self) -> Dict[str, Set[int]]:
-        """
-        Create list of positions that each term could take without changing Predicate's meaning.
-
-        Assumes that if placeholders are the same except for a final digit, that means
-        they've been labeled as interchangeable with one another.
-        """
-
-        without_duplicates: List[str] = self.template.placeholders
-        result: Dict[str, Set[int]] = {p: {i} for i, p in enumerate(without_duplicates)}
-
-        for index, placeholder in enumerate(without_duplicates):
-            if placeholder[-1].isdigit:
-                for k in result.keys():
-                    if k[-1].isdigit() and k[:-1] == placeholder[:-1]:
-                        result[k].add(index)
-        return result
-
-    def term_index_permutations(self) -> List[Tuple[int, ...]]:
-        """Get the arrangements of all this Predicate's terms that preserve the same meaning."""
-        product_of_positions = product(*self.term_positions().values())
-        without_duplicates = [x for x in product_of_positions if len(set(x)) == len(x)]
-        return without_duplicates
-
-    def _add_truth_to_content(self, content: str) -> str:
-        """Get self's content with a prefix indicating the truth value."""
-        if self.truth is None:
-            truth_prefix = "whether "
-        elif self.truth is False:
-            truth_prefix = "it was false that "
-        else:
-            truth_prefix = "that "
-        return f"{truth_prefix}{content}"
 
     def __str__(self):
         return self._add_truth_to_content(self.content)

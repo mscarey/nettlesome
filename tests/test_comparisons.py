@@ -395,12 +395,12 @@ class TestContradiction:
 
     def test_contradictory_date_ranges(self):
         later = Comparison(
-            "the date $dentist became a licensed dentist was",
+            content="the date $dentist became a licensed dentist was",
             sign=">",
             expression=date(2010, 1, 1),
         )
         earlier = Comparison(
-            "the date $dentist became a licensed dentist was",
+            content="the date $dentist became a licensed dentist was",
             sign="<",
             expression=date(1990, 1, 1),
         )
@@ -409,13 +409,13 @@ class TestContradiction:
 
     def test_no_contradiction_without_truth_value(self):
         later = Comparison(
-            "the date $dentist became a licensed dentist was",
+            content="the date $dentist became a licensed dentist was",
             sign=">",
             expression=date(2010, 1, 1),
             truth=None,
         )
         earlier = Comparison(
-            "the date $dentist became a licensed dentist was",
+            content="the date $dentist became a licensed dentist was",
             sign="<",
             expression=date(1990, 1, 1),
         )
@@ -424,12 +424,12 @@ class TestContradiction:
 
     def test_no_contradiction_date_and_time_period(self):
         later = Comparison(
-            "the date $dentist became a licensed dentist was",
+            content="the date $dentist became a licensed dentist was",
             sign=">",
             expression=date(2010, 1, 1),
         )
         earlier = Comparison(
-            "the date $dentist became a licensed dentist was",
+            content="the date $dentist became a licensed dentist was",
             sign="<",
             expression="2000 years",
         )
@@ -438,12 +438,12 @@ class TestContradiction:
 
     def test_no_contradiction_irrelevant_quantities(self):
         more_cows = Comparison(
-            "the number of cows $person owned was",
+            content="the number of cows $person owned was",
             sign=">",
             expression=10,
         )
         fewer_horses = Comparison(
-            "the number of horses $person owned was",
+            content="the number of horses $person owned was",
             sign="<",
             expression=3,
         )
@@ -452,7 +452,7 @@ class TestContradiction:
 
     def test_no_contradiction_of_predicate(self):
         more_cows = Comparison(
-            "the number of cows $person owned was",
+            content="the number of cows $person owned was",
             sign=">",
             expression=10,
         )
@@ -462,24 +462,32 @@ class TestContradiction:
 
     def test_contradiction_exact_different_unit(self):
         acres = Comparison(
-            "the size of the farm was", sign=">", expression=Q_("2000 acres")
+            content="the size of the farm was", sign=">", expression=Q_("2000 acres")
         )
         kilometers = Comparison(
-            "the size of the farm was", sign="=", expression=Q_("2 square kilometers")
+            content="the size of the farm was",
+            sign="=",
+            expression=Q_("2 square kilometers"),
         )
         assert acres.contradicts(kilometers)
 
     def test_no_contradiction_exact_different_unit(self):
         acres = Comparison(
-            "the size of the farm was", sign=">", expression=Q_("20 acres")
+            content="the size of the farm was", sign=">", expression=Q_("20 acres")
         )
         kilometers = Comparison(
-            "the size of the farm was", sign="=", expression=Q_("100 square kilometers")
+            content="the size of the farm was",
+            sign="=",
+            expression=Q_("100 square kilometers"),
         )
         assert not acres.contradicts(kilometers)
 
     def test_reuse_quantity_range_for_contradiction(self):
-        dogs = Comparison("the number of dogs was", sign=">", expression=3)
-        cats = Comparison("the number of cats was", quantity_range=dogs.quantity_range)
-        fewer_cats = Comparison("the number of cats was", sign="<", expression=3)
+        dogs = Comparison(content="the number of dogs was", sign=">", expression=3)
+        cats = Comparison(
+            content="the number of cats was", quantity_range=dogs.quantity_range
+        )
+        fewer_cats = Comparison(
+            content="the number of cats was", sign="<", expression=3
+        )
         assert cats.contradicts(fewer_cats)

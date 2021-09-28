@@ -12,7 +12,7 @@ import sympy
 from sympy import Eq, Interval, oo, S
 from sympy.sets import EmptySet, FiniteSet
 
-from nettlesome.predicates import Predicate
+from nettlesome.predicates import PhraseABC
 
 
 ureg = UnitRegistry()
@@ -239,11 +239,6 @@ class UnitRange(QuantityRange, BaseModel):
         return S.Reals
 
     @property
-    def magnitude(self) -> Union[int, float]:
-        """Get amount of max or minimum of the quantity range, without a unit."""
-        return self.quantity.magnitude
-
-    @property
     def pint_quantity(self) -> Quantity:
         """Get the Quantity as a Pint object."""
         return Q_(self.quantity)
@@ -252,7 +247,7 @@ class UnitRange(QuantityRange, BaseModel):
     def magnitude(self) -> Union[int, float]:
         """Get magnitude of pint Quantity."""
         super().magnitude  # for the coverage
-        return self.quantity.magnitude
+        return self.q.magnitude
 
     def consistent_dimensionality(self, other: QuantityRange) -> bool:
         """
@@ -270,7 +265,7 @@ class UnitRange(QuantityRange, BaseModel):
         """
         if not isinstance(other, self.__class__):
             return False
-        return self.quantity.dimensionality == other.quantity.dimensionality
+        return self.q.dimensionality == other.q.dimensionality
 
     def contradicts(self, other: Any) -> bool:
         """Check if ``self``'s quantity range has no overlap with ``other``'s."""
@@ -303,9 +298,9 @@ class UnitRange(QuantityRange, BaseModel):
             raise TypeError(
                 f"Unit coversions only available for type UnitRange, not {other.__class__}."
             )
-        if other.quantity.units == self.quantity.units:
+        if other.q.units == self.q.units:
             return other.interval
-        ratio_of_units = other.quantity.units / self.quantity.units
+        ratio_of_units = other.q.units / self.q.units
         return scale_ranges(other.interval, ratio_of_units)
 
     def means(self, other: Any) -> bool:
@@ -319,6 +314,10 @@ class UnitRange(QuantityRange, BaseModel):
 
     def _quantity_string(self) -> str:
         return super()._quantity_string() + str(self.quantity)
+
+    @property
+    def q(self) -> Quantity:
+        return Q_(self.quantity)
 
 
 class DateRange(QuantityRange, BaseModel):
@@ -337,6 +336,10 @@ class DateRange(QuantityRange, BaseModel):
     def magnitude(self) -> Union[int, float]:
         """Map dates to integers while preserving the order of the dates."""
         return int(self.quantity.strftime("%Y%m%d"))
+
+    @property
+    def q(self) -> date:
+        return self.quantity
 
     def _quantity_string(self) -> str:
         return str(self.quantity)
@@ -362,8 +365,12 @@ class NumberRange(QuantityRange, BaseModel):
     def _quantity_string(self) -> str:
         return str(self.quantity)
 
+    @property
+    def q(self) -> Union[int, float]:
+        return self.quantity
 
-class Comparison(BaseModel):
+
+class Comparison(BaseModel, PhraseABC):
     r"""
     A Predicate that compares a described quantity to a constant.
 
@@ -425,20 +432,16 @@ class Comparison(BaseModel):
     """
 
     content: str
-    sign: str = ""
-    expression: Union[date, int, float, str] = 0
+    quantity_range: Union[DateRange, NumberRange, UnitRange]
     truth: Optional[bool] = True
-    include_negatives: Optional[bool] = None
-    quantity_range: Optional[Union[DateRange, NumberRange, UnitRange]] = None
 
     @root_validator(pre=True)
     def set_quantity_range(cls, values):
         """Reverse the sign of a Comparison if necessary."""
         if not values.get("quantity_range"):
-            quantity = cls.expression_to_quantity(values["expression"])
-            sign = values.get("sign")
-            quantity = values.get("quantity")
-            include_negatives = values.get("include_negatives")
+            quantity = cls.expression_to_quantity(values.pop("expression", None))
+            sign = values.pop("sign", "")
+            include_negatives = values.pop("include_negatives", None)
             if isinstance(quantity, date):
                 values["quantity_range"] = DateRange(
                     sign=sign,
@@ -497,7 +500,9 @@ class Comparison(BaseModel):
             a Python number object or a :class:`pint.Quantity`
             object created with :class:`pint.UnitRegistry`.
         """
-        if isinstance(value, (int, float, Quantity, date)):
+        if isinstance(value, Quantity):
+            return str(value)
+        if isinstance(value, (int, float, date)):
             return value
         quantity = value.strip()
 
@@ -514,7 +519,7 @@ class Comparison(BaseModel):
             substring.isnumeric() for substring in float_parts
         ):
             return float(quantity)
-        return Q_(quantity)
+        return str(Q_(quantity))
 
     @property
     def interval(self) -> Union[FiniteSet, Interval, sympy.Union]:
@@ -532,7 +537,7 @@ class Comparison(BaseModel):
         return self.quantity_range.interval
 
     @property
-    def quantity(self) -> Union[int, float, Quantity, date]:
+    def quantity(self) -> Union[int, float, date, Quantity]:
         """
         Get the maximum or minimum of the range.
 
