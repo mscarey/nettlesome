@@ -90,27 +90,21 @@ class QuantityRange(BaseModel):
     }
     normalized_comparisons: ClassVar[Dict[str, str]] = {"=": "==", "<>": "!="}
 
-    @root_validator(pre=True)
-    def _check_sign(cls, values):
-        if values.get("sign") in cls.normalized_comparisons:
-            values["sign"] = cls.normalized_comparisons[values["sign"]]
-        if values["sign"] not in cls.opposite_comparisons.keys():
+    @validator("sign")
+    def _check_sign(cls, sign):
+        if sign in cls.normalized_comparisons:
+            sign = cls.normalized_comparisons[sign]
+        if sign not in cls.opposite_comparisons.keys():
             raise ValueError(
-                f'"sign" string parameter must be one of {cls.opposite_comparisons.keys()}, not {values["sign"]}.'
+                f'"sign" string parameter must be one of {cls.opposite_comparisons.keys()}, not {sign}.'
             )
-        return values
+        return sign
 
     @property
     def _include_negatives(self) -> bool:
         if self.include_negatives is None:
             return bool(self.magnitude < 0)
         return self.include_negatives
-
-    def __repr__(self):
-        return (
-            f'{self.__class__.__name__}(quantity="{self._quantity_string()}", '
-            f'sign="{self.sign}", include_negatives={self._include_negatives})'
-        )
 
     def __str__(self) -> str:
         return self.expression_comparison()
@@ -226,7 +220,7 @@ class UnitRange(QuantityRange, BaseModel):
     """A range defined relative to a pint Quantity."""
 
     quantity: str
-    sign: str = ""
+    sign: str = "=="
     include_negatives: Optional[bool] = None
 
     @validator("quantity", pre=True)
@@ -331,7 +325,7 @@ class DateRange(QuantityRange, BaseModel):
     """A range defined relative to a date."""
 
     quantity: date
-    sign: str = ""
+    sign: str = "=="
     include_negatives: Optional[bool] = None
 
     @property
@@ -356,7 +350,7 @@ class NumberRange(QuantityRange, BaseModel):
     """A range defined relative to an integer or float."""
 
     quantity: Union[int, float]
-    sign: str = ""
+    sign: str = "=="
     include_negatives: Optional[bool] = None
 
     @property
@@ -439,7 +433,7 @@ class Comparison(BaseModel, PhraseABC):
     """
 
     content: str
-    quantity_range: Union[DateRange, NumberRange, UnitRange]
+    quantity_range: Union[NumberRange, UnitRange, DateRange]
     truth: Optional[bool] = True
 
     @root_validator(pre=True)
@@ -484,10 +478,6 @@ class Comparison(BaseModel, PhraseABC):
                 f"The word 'was' is not the end of the string '{content}'."
             )
         return content
-
-    def __repr__(self):
-        result = super().__repr__()
-        return result.rstrip(")") + f", quantity_range={repr(self.quantity_range)})"
 
     @classmethod
     def expression_to_quantity(
@@ -559,7 +549,7 @@ class Comparison(BaseModel, PhraseABC):
             >>> weight.quantity
             <Quantity(10, 'gram')>
         """
-        return self.quantity_range.quantity
+        return self.quantity_range.q
 
     @property
     def sign(self) -> str:
@@ -670,3 +660,6 @@ class Comparison(BaseModel, PhraseABC):
             sign=self.quantity_range.sign,
             expression=self.quantity_range.quantity,
         )
+
+    def __str__(self):
+        return self._add_truth_to_content(self.content)

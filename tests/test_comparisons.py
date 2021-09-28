@@ -1,6 +1,7 @@
 from datetime import date
 
 from pint import Quantity
+from pydantic import ValidationError
 import pytest
 import sympy
 from sympy import Interval, oo
@@ -34,32 +35,32 @@ class TestQuantityInterval:
 
     def test_comparison_with_string_for_float(self):
         scones = Comparison(
-            "the number of scones $diner ate was", sign=">", expression="2.5"
+            content="the number of scones $diner ate was", sign=">", expression="2.5"
         )
         assert scones.interval == sympy.Interval(2.5, oo, left_open=True)
 
     def test_comparison_interval_does_not_include_negatives(self):
         party = Comparison(
-            "the number of people at the party was", sign="<", expression=25
+            content="the number of people at the party was", sign="<", expression=25
         )
         assert -5 not in party.interval
-        assert party.quantity_range.include_negatives is False
+        assert party.quantity_range._include_negatives is False
 
     def test_comparison_negative_magnitude(self):
         comparison = Comparison(
-            "the balance in the bank account was", sign="<=", expression=-100
+            content="the balance in the bank account was", sign="<=", expression=-100
         )
         assert comparison.quantity_range.magnitude == -100
-        assert comparison.quantity_range.include_negatives is True
+        assert comparison.quantity_range._include_negatives is True
 
     def test_comparison_interval(self):
         comparison = Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             sign=">",
             expression=Q_("20 miles"),
         )
         assert comparison.interval == Interval(20, oo, left_open=True)
-        assert 'quantity="20 mile' in repr(comparison)
+        assert "quantity='20 mile'" in repr(comparison)
 
     def test_negated_method(self, make_comparison):
         as_false = make_comparison["exact"].negated()
@@ -73,7 +74,7 @@ class TestQuantityInterval:
 
     def test_convert_false_statement_about_quantity_to_obverse(self):
         distance = Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             truth=False,
             sign=">",
             expression=Q_("35 feet"),
@@ -85,15 +86,15 @@ class TestQuantityInterval:
 
     def test_string_for_date_as_expression(self):
         copyright_date_range = Comparison(
-            "the date when $work was created was",
+            content="the date when $work was created was",
             sign=">=",
             expression=date(1978, 1, 1),
         )
-        assert str(copyright_date_range).endswith("1978-01-01")
+        assert "1978" in str(copyright_date_range)
 
     def test_comparison_not_equal(self):
         comparison = Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             sign="!=",
             expression=Q_("20 miles"),
         )
@@ -110,26 +111,28 @@ class TestQuantityInterval:
     def test_content_not_ending_with_was(self):
         with pytest.raises(ValueError):
             Comparison(
-                "$person drove for",
+                content="$person drove for",
                 sign=">=",
                 expression=Q_("20 miles"),
             )
 
     def test_cannot_reuse_quantity_range_for_number(self):
-        dogs = Comparison("the number of dogs was", sign=">", expression="3 gallons")
-        with pytest.raises(TypeError):
+        dogs = Comparison(
+            content="the number of dogs was", sign=">", expression="3 gallons"
+        )
+        with pytest.raises(ValidationError):
             NumberRange(quantity=dogs.quantity)
 
 
 class TestCompareQuantities:
     def test_does_not_exclude_other_quantity(self):
         comparison = Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             sign=">",
             expression=Q_("20 miles"),
         )
         comparison_opposite = Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             sign="<",
             expression=Q_("30 miles"),
         )
@@ -139,12 +142,12 @@ class TestCompareQuantities:
 
     def test_convert_quantity_of_Comparison(self):
         comparison = Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             sign=">",
             expression=Q_("20 miles"),
         )
         comparison_km = Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             sign=">",
             expression=Q_("30 kilometers"),
         )
@@ -155,12 +158,12 @@ class TestCompareQuantities:
 
     def test_cannot_convert_date_to_time_period(self):
         time = Comparison(
-            "the time $object took to biodegrade was",
+            content="the time $object took to biodegrade was",
             sign=">",
             expression=Q_("2000 years"),
         )
         day = Comparison(
-            "the day was",
+            content="the day was",
             sign="=",
             expression=date(2020, 1, 1),
         )
@@ -169,12 +172,12 @@ class TestCompareQuantities:
 
     def test_inconsistent_dimensionality_quantity(self):
         number = Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             sign=">",
             expression=20,
         )
         distance = Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             sign=">",
             expression=Q_("20 miles"),
         )
@@ -187,12 +190,12 @@ class TestCompareQuantities:
 
     def test_inconsistent_dimensionality_date(self):
         number = Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             sign=">",
             expression=20,
         )
         day = Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             sign=">",
             expression=date(2000, 1, 1),
         )
@@ -201,7 +204,7 @@ class TestCompareQuantities:
 
     def test_quantity_comparison_to_predicate(self):
         distance = Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             sign=">",
             expression="20 miles",
         )
@@ -209,8 +212,12 @@ class TestCompareQuantities:
         assert not distance.quantity_range.implies(predicate)
 
     def test_compare_intervals_different_units(self):
-        miles = Comparison("the distance was", sign="<", expression=Q_("30 miles"))
-        kilos = Comparison("the distance was", sign="<", expression=Q_("40 kilometers"))
+        miles = Comparison(
+            content="the distance was", sign="<", expression=Q_("30 miles")
+        )
+        kilos = Comparison(
+            content="the distance was", sign="<", expression=Q_("40 kilometers")
+        )
         assert kilos.quantity_range.implies(miles.quantity_range)
 
 
@@ -228,7 +235,7 @@ class TestSameMeaning:
 class TestImplication:
     def test_comparison_implies_predicate_false(self):
         distance = Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             sign=">",
             expression="20 miles",
         )
@@ -237,7 +244,7 @@ class TestImplication:
 
     def test_comparison_gte_predicate_false(self):
         distance = Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             sign=">",
             expression="20 miles",
         )
@@ -246,12 +253,12 @@ class TestImplication:
 
     def test_predicate_not_same_with_interchangeable_terms(self):
         interchangeable = Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             sign="<",
             expression=Q_("20 feet"),
         )
         not_interchangeable = Comparison(
-            "the distance between $west and $east was",
+            content="the distance between $west and $east was",
             sign="<",
             expression=Q_("20 feet"),
         )
@@ -273,14 +280,14 @@ class TestImplication:
         assert make_predicate["murder"] > make_predicate["murder_whether"]
         assert make_predicate["murder_false"] > make_predicate["murder_whether"]
 
-    def test_no_implication_by_exact_quantity(self, make_predicate):
-        assert not make_predicate["quantity=3"] > make_predicate["quantity>5"]
+    def test_no_implication_by_exact_quantity(self, make_comparison):
+        assert not make_comparison["quantity=3"] > make_comparison["quantity>5"]
 
-    def test_no_implication_of_exact_quantity(self, make_predicate):
-        assert not make_predicate["quantity>5"] > make_predicate["quantity=3"]
+    def test_no_implication_of_exact_quantity(self, make_comparison):
+        assert not make_comparison["quantity>5"] > make_comparison["quantity=3"]
 
-    def test_no_implication_by_greater_or_equal_quantity(self, make_predicate):
-        assert not make_predicate["quantity>=4"] > make_predicate["quantity>5"]
+    def test_no_implication_by_greater_or_equal_quantity(self, make_comparison):
+        assert not make_comparison["quantity>=4"] > make_comparison["quantity>5"]
 
     def test_no_implication_of_greater_or_equal_quantity(self):
         less = Comparison(content="The number of mice was", sign=">", expression=4)
@@ -289,10 +296,10 @@ class TestImplication:
 
     def test_no_contradiction_inconsistent_dimensions(self):
         equal = Comparison(
-            "${defendant}'s sentence was", sign="=", expression="8 years"
+            content="${defendant}'s sentence was", sign="=", expression="8 years"
         )
         less = Comparison(
-            "${defendant}'s sentence was", sign="<=", expression="10 parsecs"
+            content="${defendant}'s sentence was", sign="<=", expression="10 parsecs"
         )
         assert not equal.contradicts(less)
         assert not equal.implies(less)
@@ -309,12 +316,12 @@ class TestImplication:
 
     def test_implication_due_to_dates(self):
         copyright_date_range = Comparison(
-            "the date when $work was created was",
+            content="the date when $work was created was",
             sign=">=",
             expression="1978-01-01",
         )
         copyright_date_specific = Comparison(
-            "the date when $work was created was",
+            content="the date when $work was created was",
             sign="=",
             expression=date(1980, 6, 20),
         )
@@ -322,12 +329,12 @@ class TestImplication:
 
     def test_not_equal_does_not_imply(self):
         yards = Comparison(
-            "the length of the football field was",
+            content="the length of the football field was",
             sign="!=",
             expression="100 yards",
         )
         meters = Comparison(
-            "the length of the football field was",
+            content="the length of the football field was",
             sign="!=",
             expression="80 meters",
         )
@@ -335,12 +342,12 @@ class TestImplication:
 
     def test_not_equal_implies(self):
         meters = Comparison(
-            "the length of the football field was",
+            content="the length of the football field was",
             sign="!=",
             expression="1000 meter",
         )
         kilometers = Comparison(
-            "the length of the football field was",
+            content="the length of the football field was",
             sign="!=",
             expression="1 kilometer",
         )
@@ -348,10 +355,12 @@ class TestImplication:
 
     def test_same_volume(self):
         volume_in_liters = Comparison(
-            "the volume of fuel in the tank was", sign="=", expression="10 liters"
+            content="the volume of fuel in the tank was",
+            sign="=",
+            expression="10 liters",
         )
         volume_in_milliliters = Comparison(
-            "the volume of fuel in the tank was",
+            content="the volume of fuel in the tank was",
             sign="=",
             expression="10000 milliliters",
         )

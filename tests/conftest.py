@@ -50,93 +50,99 @@ def make_predicate() -> Dict[str, Predicate]:
 def make_comparison() -> Dict[str, Predicate]:
     return {
         "small_weight": Comparison(
-            "the amount of gold $person possessed was",
+            content="the amount of gold $person possessed was",
             sign=">=",
             expression=Q_("1 gram"),
         ),
         "large_weight": Comparison(
-            "the amount of gold $person possessed was",
+            content="the amount of gold $person possessed was",
             sign=">=",
             expression=Q_("100 kilograms"),
         ),
-        "quantity=3": Comparison("The number of mice was", sign="==", expression=3),
-        "quantity>=4": Comparison("The number of mice was", sign=">=", expression=4),
-        "quantity>5": Comparison("The number of mice was", sign=">", expression=5),
+        "quantity=3": Comparison(
+            content="The number of mice was", sign="==", expression=3
+        ),
+        "quantity>=4": Comparison(
+            content="The number of mice was", sign=">=", expression=4
+        ),
+        "quantity>5": Comparison(
+            content="The number of mice was", sign=">", expression=5
+        ),
         "acres": Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             sign=">=",
             expression=Q_("10 acres"),
         ),
         "exact": Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             sign="==",
             expression=Q_("25 feet"),
         ),
         "float_distance": Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             truth=True,
             sign="<",
             expression=20.0,
         ),
         "higher_int": Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             sign="<=",
             expression=30,
         ),
         "int_distance": Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             truth=True,
             sign="<",
             expression=20,
         ),
         "int_higher": Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             sign="<=",
             expression=30,
         ),
         "less": Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             truth=True,
             sign="<",
             expression=Q_("35 feet"),
         ),
         "less_whether": Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             truth=None,
             sign="<",
             expression=Q_("35 feet"),
         ),
         "less_than_20": Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             truth=True,
             sign="<",
             expression=Q_("20 feet"),
         ),
         "meters": Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             sign=">=",
             expression=Q_("10 meters"),
         ),
         "not_equal": Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             truth=True,
             sign="!=",
             expression=Q_("35 feet"),
         ),
         "more": Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             truth=True,
             sign=">=",
             expression=Q_("35 feet"),
         ),
         "not_more": Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             truth=False,
             sign=">",
             expression=Q_("35 feet"),
         ),
         "way_more": Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             truth=True,
             sign=">=",
             expression=Q_("30 miles"),

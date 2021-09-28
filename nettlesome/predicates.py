@@ -174,17 +174,96 @@ class PhraseABC(metaclass=ABCMeta):
     content: str
     truth: Optional[bool]
 
-    @abstractmethod
     def contradicts(self, other: Any) -> bool:
-        ...
+        r"""
+        Test whether ``other`` and ``self`` have contradictory meanings.
 
-    @abstractmethod
-    def implies(self, other: Any) -> bool:
-        ...
+        This is determined only by the ``truth`` value, the exact template
+        content, and whether the placeholders indicate interchangeable terms.
+        """
+        if not self._same_meaning_as_true_predicate(other):
+            return False
 
-    @abstractmethod
+        if self.truth is None or other.truth is None:
+            return False
+
+        if self.__class__.__name__ != other.__class__.__name__:
+            return False
+
+        return self.truth != other.truth
+
     def means(self, other: Any) -> bool:
-        ...
+        """
+        Test if ``self`` and ``other`` have identical meanings.
+
+        The means method will return False based on any difference in
+        the Predicate's template text, other than the placeholder names.
+
+        >>> talked = Predicate(content="$speaker talked to $listener")
+        >>> spoke = Predicate(content="$speaker spoke to $listener")
+        >>> talked.means(spoke)
+        False
+
+        The means method will also return False if there are differences in
+        which placeholders are marked as interchangeable.
+
+        >>> game_between_others = Predicate(
+        ...     "$organizer1 and $organizer2 planned for $player1 to play $game against $player2.")
+        >>> game_between_each_other = Predicate(
+        ...     "$organizer1 and $organizer2 planned for $organizer1 to play $game against $organizer2.")
+        >>> game_between_others.means(game_between_each_other)
+        False
+
+        :param other:
+            an object to compare
+        :returns:
+            whether ``other`` is another Predicate with the same text,
+            truth value, and pattern of interchangeable placeholders
+        """
+
+        if not self._same_meaning_as_true_predicate(other):
+            return False
+
+        return self.truth == other.truth
+
+    def implies(self, other: Any) -> bool:
+        """
+        Test whether ``self`` implies ``other``.
+
+        A Predicate implies another Predicate only if
+        it :meth:`~nettlesome.predicates.Predicate.means` the
+        other Predicate, or if the other Predicate has the same
+        text but a truth value of None.
+
+            >>> lived_at = Predicate(
+            ...     "$person lived at $place",
+            ...     truth=True)
+            >>> whether_lived_at = Predicate(
+            ...     "$person lived at $place",
+            ...     truth=None)
+            >>> str(whether_lived_at)
+            'whether $person lived at $place'
+            >>> lived_at.implies(whether_lived_at)
+            True
+            >>> whether_lived_at.implies(lived_at)
+            False
+
+        :param other:
+            an object to compare for implication.
+
+        :returns:
+            whether ``other`` is another Predicate with the
+            same text, and the same truth value or no truth value.
+        """
+        if self.truth is None:
+            return False
+        if not isinstance(other, self.__class__):
+            return False
+        if not self._same_meaning_as_true_predicate(other):
+            return False
+        if other.truth is None:
+            return True
+        return self.truth == other.truth
 
     def __gt__(self, other: Any) -> bool:
         r"""Alias for :meth:`~nettlesome.predicates.Predicate.implies`\."""
@@ -379,97 +458,6 @@ class Predicate(BaseModel, PhraseABC):
             f"{self.__class__.__name__}(template='{self.template.template}', "
             f"truth={self.truth})"
         )
-
-    def contradicts(self, other: Any) -> bool:
-        r"""
-        Test whether ``other`` and ``self`` have contradictory meanings.
-
-        This is determined only by the ``truth`` value, the exact template
-        content, and whether the placeholders indicate interchangeable terms.
-        """
-        if not self._same_meaning_as_true_predicate(other):
-            return False
-
-        if self.truth is None or other.truth is None:
-            return False
-
-        if self.__class__.__name__ != other.__class__.__name__:
-            return False
-
-        return self.truth != other.truth
-
-    def means(self, other: Any) -> bool:
-        """
-        Test if ``self`` and ``other`` have identical meanings.
-
-        The means method will return False based on any difference in
-        the Predicate's template text, other than the placeholder names.
-
-        >>> talked = Predicate(content="$speaker talked to $listener")
-        >>> spoke = Predicate(content="$speaker spoke to $listener")
-        >>> talked.means(spoke)
-        False
-
-        The means method will also return False if there are differences in
-        which placeholders are marked as interchangeable.
-
-        >>> game_between_others = Predicate(
-        ...     "$organizer1 and $organizer2 planned for $player1 to play $game against $player2.")
-        >>> game_between_each_other = Predicate(
-        ...     "$organizer1 and $organizer2 planned for $organizer1 to play $game against $organizer2.")
-        >>> game_between_others.means(game_between_each_other)
-        False
-
-        :param other:
-            an object to compare
-        :returns:
-            whether ``other`` is another Predicate with the same text,
-            truth value, and pattern of interchangeable placeholders
-        """
-
-        if not self._same_meaning_as_true_predicate(other):
-            return False
-
-        return self.truth == other.truth
-
-    def implies(self, other: Any) -> bool:
-        """
-        Test whether ``self`` implies ``other``.
-
-        A Predicate implies another Predicate only if
-        it :meth:`~nettlesome.predicates.Predicate.means` the
-        other Predicate, or if the other Predicate has the same
-        text but a truth value of None.
-
-            >>> lived_at = Predicate(
-            ...     "$person lived at $place",
-            ...     truth=True)
-            >>> whether_lived_at = Predicate(
-            ...     "$person lived at $place",
-            ...     truth=None)
-            >>> str(whether_lived_at)
-            'whether $person lived at $place'
-            >>> lived_at.implies(whether_lived_at)
-            True
-            >>> whether_lived_at.implies(lived_at)
-            False
-
-        :param other:
-            an object to compare for implication.
-
-        :returns:
-            whether ``other`` is another Predicate with the
-            same text, and the same truth value or no truth value.
-        """
-        if self.truth is None:
-            return False
-        if not isinstance(other, self.__class__):
-            return False
-        if not self._same_meaning_as_true_predicate(other):
-            return False
-        if other.truth is None:
-            return True
-        return self.truth == other.truth
 
     def negated(self) -> Predicate:
         """Copy ``self``, with the opposite truth value."""
