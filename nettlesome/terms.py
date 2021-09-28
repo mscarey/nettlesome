@@ -436,18 +436,18 @@ class Comparable(ABC):
 
         >>> from nettlesome import Statement, Entity, FactorGroup
         >>> nafta = FactorGroup([
-        ...     Statement("$country1 signed a treaty with $country2",
+        ...     Statement(predicate="$country1 signed a treaty with $country2",
         ...               terms=[Entity(name="Mexico"), Entity(name="USA")]),
-        ...     Statement("$country2 signed a treaty with $country3",
+        ...     Statement(predicate="$country2 signed a treaty with $country3",
         ...               terms=[Entity(name="USA"), Entity(name="Canada")]),
-        ...     Statement("$country3 signed a treaty with $country1",
+        ...     Statement(predicate="$country3 signed a treaty with $country1",
         ...           terms=[Entity(name="USA"), Entity(name="Canada")])])
         >>> brexit = FactorGroup([
-        ...     Statement("$country1 signed a treaty with $country2",
+        ...     Statement(predicate="$country1 signed a treaty with $country2",
         ...               terms=[Entity(name="UK"), Entity(name="European Union")]),
-        ...     Statement("$country2 signed a treaty with $country3",
+        ...     Statement(predicate="$country2 signed a treaty with $country3",
         ...               terms=[Entity(name="European Union"), Entity(name="Germany")]),
-        ...     Statement("$country3 signed a treaty with $country1",
+        ...     Statement(predicate="$country3 signed a treaty with $country1",
         ...          terms=[Entity(name="Germany"), Entity(name="UK")], truth=False)])
         >>> print(nafta.explain_contradiction(brexit))
         Because <Mexico> is like <Germany>, and <USA> is like <UK>,
@@ -549,7 +549,7 @@ class Comparable(ABC):
                         yield new_explanation.with_context(
                             new_explanation.context.reversed()
                         )
-        elif isinstance(other, Iterable):
+        elif not isinstance(other, Term):
             explanation_reversed = explanation.reversed_context()
             yield from other._explanations_contradiction(
                 self, explanation=explanation_reversed
@@ -942,9 +942,9 @@ class Comparable(ABC):
         and compares them.
 
         >>> from nettlesome import Statement, Entity
-        >>> hades_curse = Statement("$deity cursed $target",
+        >>> hades_curse = Statement(predicate="$deity cursed $target",
         ...    terms=[Entity(name="Hades"), Entity(name="Persephone")])
-        >>> aphrodite_curse = Statement("$deity cursed $target",
+        >>> aphrodite_curse = Statement(predicate="$deity cursed $target",
         ...    terms=[Entity(name="Aphrodite"), Entity(name="Narcissus")])
         >>> hades_curse.means(aphrodite_curse)
         True

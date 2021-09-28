@@ -6,6 +6,9 @@ import operator
 from typing import Dict, Iterator, List, Mapping
 from typing import Optional, Sequence, Union
 
+from pydantic import BaseModel, validator, root_validator
+from slugify import slugify
+
 from nettlesome.terms import (
     Comparable,
     Explanation,
@@ -17,78 +20,79 @@ from nettlesome.terms import (
 from nettlesome.factors import Factor
 from nettlesome.formatting import indented, wrapped
 from nettlesome.predicates import Predicate
-from slugify import slugify
 
 
-class Statement(Factor):
-    r"""An assertion that can be accepted as factual and compared to other Statements."""
+class Statement(BaseModel, Factor):
+    r"""
+    An assertion that can be accepted as factual and compared to other Statements.
 
-    def __init__(
-        self,
-        predicate: Union[Predicate, str],
-        terms: Optional[
-            Union[TermSequence, Term, Sequence[Term], Mapping[str, Term]]
-        ] = None,
-        name: str = "",
-        absent: bool = False,
-        generic: bool = False,
-        truth: Optional[bool] = None,
-    ):
-        """
-        Normalize ``terms`` to initialize Statement.
+    :param predicate:
+        a natural-language clause with zero or more slots
+        to insert ``terms`` that are typically the
+        subject and objects of the clause.
 
-        :param predicate:
-            a natural-language clause with zero or more slots
-            to insert ``terms`` that are typically the
-            subject and objects of the clause.
+    :param terms:
+        a series of :class:`~nettlesome.factors.Factor` objects that fill in
+        the blank spaces in the ``predicate`` statement.
 
-        :param terms:
-            a series of :class:`~nettlesome.factors.Factor` objects that fill in
-            the blank spaces in the ``predicate`` statement.
+    :param name:
+        an identifier for this object, often used if the object needs
+        to be referred to multiple times in the process of composing
+        other :class:`~nettlesome.factors.Factor` objects.
 
-        :param name:
-            an identifier for this object, often used if the object needs
-            to be referred to multiple times in the process of composing
-            other :class:`~nettlesome.factors.Factor` objects.
+    :param absent:
+        whether the absence, rather than the presence, of the legal
+        fact described above is being asserted.
 
-        :param absent:
-            whether the absence, rather than the presence, of the legal
-            fact described above is being asserted.
+    :param generic:
+        whether this object could be replaced by another generic
+        object of the same class without changing the truth of a
+        :class:`:class:`~nettlesome.predicates.Predicate`` in
+        which it is mentioned.
 
-        :param generic:
-            whether this object could be replaced by another generic
-            object of the same class without changing the truth of a
-            :class:`:class:`~nettlesome.predicates.Predicate`` in
-            which it is mentioned.
+    :param truth:
+        a new "truth" attribute for the "predicate", if needed.
+    """
 
-        :param truth:
-            a new "truth" attribute for the "predicate", if needed.
-        """
-        terms = terms or TermSequence()
+    predicate: Union[Predicate, str]
+    terms_value: TermSequence
+    name: str = ""
+    absent: bool = False
+    generic: bool = False
+    truth: Optional[bool] = None
 
-        if isinstance(predicate, str):
-            predicate = Predicate(content=predicate)
-        if truth is not None:
-            predicate.truth = truth
-        self.predicate = predicate
+    class Config:
+        fields = {"terms_value": "terms"}
 
-        if isinstance(terms, Mapping):
-            terms = predicate.template.get_term_sequence_from_mapping(terms)
+    @root_validator(pre=True)
+    def move_truth_to_predicate(cls, values):
+        if isinstance(values["predicate"], str):
+            values["predicate"] = Predicate(content=values["predicate"])
+        if "truth" in values:
+            values["predicate"].truth = values["truth"]
+            del values["truth"]
+        if isinstance(values.get("terms"), Mapping):
+            values["terms"] = values[
+                "predicate"
+            ].template.get_term_sequence_from_mapping(values["terms"])
+        if not values.get("terms"):
+            values["terms"] = TermSequence()
+        elif not isinstance(values["terms"], TermSequence):
+            values["terms"] = TermSequence(values["terms"])
+        return values
 
-        if not isinstance(terms, TermSequence):
-            terms = TermSequence(terms)
+    @root_validator
+    def _validate_terms(cls, values):
+        """Normalize ``terms`` to initialize Statement."""
 
-        self._terms = terms
-
-        if len(self.terms) != len(self.predicate):
+        if len(values["terms_value"]) != len(values["predicate"]):
             message = (
                 "The number of items in 'terms' must be "
-                + f"{len(self.predicate)}, not {len(self.terms)}, "
-                + f"to match predicate.context_slots for '{self.predicate.content}'"
+                + f"{len(values['predicate'])}, not {len(values['terms'])}, "
+                + f"to match predicate.context_slots for '{values['predicate'].content}'"
             )
             raise ValueError(message)
-
-        super().__init__(name=name, generic=generic, absent=absent)
+        return values
 
     @property
     def short_string(self) -> str:
@@ -109,7 +113,7 @@ class Statement(Factor):
     @property
     def terms(self) -> TermSequence:
         """Get Terms used to fill placeholders in ``self``'s StatementTemplate."""
-        return self._terms
+        return self.terms_value
 
     @property
     def terms_without_nulls(self) -> Sequence[Term]:
@@ -119,7 +123,7 @@ class Statement(Factor):
         No Terms should be None for the Statement class, so this method is like an
         assertion for type checking.
         """
-        return [term for term in self._terms if term is not None]
+        return [term for term in self.terms_value if term is not None]
 
     @property
     def wrapped_string(self):

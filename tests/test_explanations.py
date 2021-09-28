@@ -20,10 +20,12 @@ from nettlesome.groups import FactorGroup
 class TestContext:
     sale = Predicate(content="$seller sold $product to $buyer")
     fact_al = Statement(
-        sale, terms=[Entity(name="Al"), Entity(name="the bull"), Entity(name="Betty")]
+        predicate=sale,
+        terms=[Entity(name="Al"), Entity(name="the bull"), Entity(name="Betty")],
     )
     fact_alice = Statement(
-        sale, terms=[Entity(name="Alice"), Entity(name="the cow"), Entity(name="Bob")]
+        predicate=sale,
+        terms=[Entity(name="Alice"), Entity(name="the cow"), Entity(name="Bob")],
     )
 
     def test_impossible_register(self):

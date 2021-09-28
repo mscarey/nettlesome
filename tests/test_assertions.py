@@ -8,7 +8,7 @@ from nettlesome.statements import Statement
 
 class TestAssertion:
     namespaces = Statement(
-        "$concept was one honking great idea",
+        predicate="$concept was one honking great idea",
         terms=Entity(name="namespaces", plural=True),
     )
     generic_authority = Assertion(
@@ -23,7 +23,7 @@ class TestAssertion:
         assert "<namespaces> were one honking great idea" in str(self.generic_authority)
 
     def test_include_of_in_string(self):
-        fact = Statement("$suspect stole bread", terms=Entity(name="Valjean"))
+        fact = Statement(predicate="$suspect stole bread", terms=Entity(name="Valjean"))
         accusation = Assertion(statement=fact, authority=Entity(name="Javert"))
         assert (
             "the assertion, by <Javert>, of the statement that <Valjean> stole bread"
@@ -87,7 +87,7 @@ class TestAssertion:
 
 class TestInterchangeable:
     identical = Statement(
-        "$god1 was identical with $god2",
+        predicate="$god1 was identical with $god2",
         terms=[Entity(name="Dionysus"), Entity(name="Osiris")],
     )
     generic_authority = Assertion(

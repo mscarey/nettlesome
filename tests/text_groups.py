@@ -214,7 +214,7 @@ class TestSameFactors:
                     ),
                 ),
                 make_statement["more"],
-                Statement("$city was sunny", terms=Entity(name="Oakland")),
+                Statement(predicate="$city was sunny", terms=Entity(name="Oakland")),
             ]
         )
         right = FactorGroup(
@@ -227,7 +227,7 @@ class TestSameFactors:
                     ),
                 ),
                 make_statement["more"],
-                Statement("$city was sunny", terms=Entity(name="Oakland")),
+                Statement(predicate="$city was sunny", terms=Entity(name="Oakland")),
             ]
         )
         assert not left.shares_all_factors_with(right)
@@ -243,7 +243,7 @@ class TestSameFactors:
                     ),
                 ),
                 make_statement["more"],
-                Statement("$city was sunny", terms=Entity(name="Oakland")),
+                Statement(predicate="$city was sunny", terms=Entity(name="Oakland")),
             ]
         )
         right = FactorGroup(
@@ -256,7 +256,7 @@ class TestSameFactors:
                     ),
                 ),
                 make_statement["more"],
-                Statement("$city was sunny", terms=Entity(name="Oakland")),
+                Statement(predicate="$city was sunny", terms=Entity(name="Oakland")),
             ]
         )
         assert not left.means(right)

@@ -180,7 +180,7 @@ class TestSameMeaning:
         )
 
     def test_generic_terms_equal(self):
-        generic = Statement("something happened", generic=True)
+        generic = Statement(predicate="something happened", generic=True)
         generic_false = Statement(
             Predicate(content="something happened", truth=False), generic=True
         )
@@ -188,8 +188,8 @@ class TestSameMeaning:
         assert generic_false.means(generic)
 
     def test_generic_and_specific_factors_unequal(self):
-        generic = Statement("something happened", generic=True)
-        specific = Statement("something happened", generic=False)
+        generic = Statement(predicate="something happened", generic=True)
+        specific = Statement(predicate="something happened", generic=False)
         assert not generic.means(specific)
 
     def test_cannot_repeat_term_in_termsequence(self, make_predicate):
@@ -234,13 +234,13 @@ class TestSameMeaning:
         bob = Entity(name="Bob", generic=False)
 
         ann_and_bob_were_family = Statement(
-            Predicate(
+            predicate=Predicate(
                 content="$relative1 and $relative2 both were members of the same family"
             ),
             terms=(ann, bob),
         )
         bob_and_ann_were_family = Statement(
-            Predicate(
+            predicate=Predicate(
                 content="$relative1 and $relative2 both were members of the same family"
             ),
             terms=(bob, ann),
@@ -252,10 +252,10 @@ class TestSameMeaning:
         directory = Entity(name="Rural's telephone directory", plural=False)
         listings = Entity(name="Rural's telephone listings", plural=True)
         directory_original = Statement(
-            Predicate(content="$thing was original"), terms=directory
+            predicate=Predicate(content="$thing was original"), terms=directory
         )
         listings_original = Statement(
-            Predicate(content="$thing were original"), terms=listings
+            predicate=Predicate(content="$thing were original"), terms=listings
         )
         assert directory_original.means(listings_original)
 
@@ -504,8 +504,8 @@ class TestContradiction:
         )
         alice = Entity(name="Alice")
         bob = Entity(name="Bob")
-        alice_rich = Statement(p_large_weight, terms=alice)
-        bob_poor = Statement(p_small_weight, terms=bob)
+        alice_rich = Statement(predicate=p_large_weight, terms=alice)
+        bob_poor = Statement(predicate=p_small_weight, terms=bob)
         assert alice_rich.contradicts(bob_poor)
 
     def test_inconsistent_statements_about_corresponding_entities(self):

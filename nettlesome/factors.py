@@ -13,10 +13,6 @@ class Factor(Term):
     :class:`~nettlesome.term.Term`\s that are not Factors.
     """
 
-    def __init__(
-        self, name: Optional[str] = None, generic: bool = False, absent: bool = False
-    ) -> None:
-        """Add "absent" attribute to Term's attributes."""
-        self.absent = absent
-        self.name = name
-        self.generic = generic
+    name: Optional[str] = None
+    generic: bool = False
+    absent: bool = False

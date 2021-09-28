@@ -138,7 +138,7 @@ class TestCompare:
 
     def test_error_predicate_imply_factor(self):
         assert not self.same > Statement(
-            "$animal was a cat", terms=Entity(name="Mittens")
+            predicate="$animal was a cat", terms=Entity(name="Mittens")
         )
 
     def test_same_does_not_contradict(self):

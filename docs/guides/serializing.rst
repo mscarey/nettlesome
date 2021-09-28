@@ -117,7 +117,7 @@ creating a Nettlesome :class:`~nettlesome.assertions.Assertion` object using Pyt
 it to JSON.
 
     >>> from nettlesome import Assertion, Statement, Entity
-    >>> fact = Statement("$suspect stole bread", terms=Entity(name="Valjean"))
+    >>> fact = Statement(predicate="$suspect stole bread", terms=Entity(name="Valjean"))
     >>> accusation = Assertion(statement=fact, authority=Entity(name="Javert"))
     >>> print(accusation)
     the assertion, by <Javert>, of the statement that <Valjean> stole bread

@@ -72,7 +72,9 @@ class TestContextRegisters:
         Yields no context_register because the Term in f1 doesn't imply
         the Fact in f_relevant_murder.
         """
-        statement = Statement("$person was a defendant", terms=Entity(name="Alice"))
+        statement = Statement(
+            predicate="$person was a defendant", terms=Entity(name="Alice")
+        )
         complex_statement = make_complex_fact["relevant_murder"]
         gen = statement._context_registers(complex_statement, operator.ge)
         with pytest.raises(StopIteration):
@@ -239,7 +241,9 @@ class TestLikelyContext:
         )
         left = FactorGroup([copyrightable, copyright_registered])
         right = FactorGroup(
-            Statement("$work was copyrightable", terms=Entity(name="the Java API"))
+            Statement(
+                predicate="$work was copyrightable", terms=Entity(name="the Java API")
+            )
         )
         context = next(left.likely_contexts(right))
         assert (

@@ -13,9 +13,9 @@ considered to have the same meaning because the Terms of each Statement
 can be “matched” to one another.
 
     >>> from nettlesome import Statement, Entity
-    >>> hades_curse = Statement("$deity cursed $target",
+    >>> hades_curse = Statement(predicate="$deity cursed $target",
     ...     terms=[Entity(name="Hades"), Entity(name="Persephone")])
-    >>> aphrodite_curse = Statement("$deity cursed $target",
+    >>> aphrodite_curse = Statement(predicate="$deity cursed $target",
     ...     terms=[Entity(name="Aphrodite"), Entity(name="Narcissus")])
     >>> print(aphrodite_curse)
     the statement that <Aphrodite> cursed <Narcissus>
@@ -153,18 +153,18 @@ about whether one pair of Entities signed a treaty with each other.
 
     >>> from nettlesome import FactorGroup
     >>> nafta = FactorGroup([
-    ...     Statement("$country1 signed a treaty with $country2",
+    ...     Statement(predicate="$country1 signed a treaty with $country2",
     ...               terms=[Entity(name="Mexico"), Entity(name="USA")]),
-    ...     Statement("$country2 signed a treaty with $country3",
+    ...     Statement(predicate="$country2 signed a treaty with $country3",
     ...               terms=[Entity(name="USA"), Entity(name="Canada")]),
-    ...     Statement("$country3 signed a treaty with $country1",
+    ...     Statement(predicate="$country3 signed a treaty with $country1",
     ...           terms=[Entity(name="USA"), Entity(name="Canada")])])
     >>> brexit = FactorGroup([
-    ...     Statement("$country1 signed a treaty with $country2",
+    ...     Statement(predicate="$country1 signed a treaty with $country2",
     ...               terms=[Entity(name="UK"), Entity(name="European Union")]),
-    ...     Statement("$country2 signed a treaty with $country3",
+    ...     Statement(predicate="$country2 signed a treaty with $country3",
     ...               terms=[Entity(name="European Union"), Entity(name="Germany")]),
-    ...     Statement("$country3 signed a treaty with $country1",
+    ...     Statement(predicate="$country3 signed a treaty with $country1",
     ...          terms=[Entity(name="Germany"), Entity(name="UK")], truth=False)])
     >>> nafta.contradicts(brexit)
     True

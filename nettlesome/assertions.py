@@ -2,30 +2,24 @@
 Assertions, or Statements associated with speakers or endorsers.
 """
 
-from typing import Optional
+from typing import ClassVar, Optional, Tuple
+
+from pydantic import BaseModel
 
 from nettlesome.entities import Entity
 from nettlesome.statements import Statement
 from nettlesome.factors import Factor
 
 
-class Assertion(Factor):
+class Assertion(BaseModel, Factor):
     """A Statement identified with the authority of an Entity."""
 
-    context_factor_names = ("statement", "authority")
-
-    def __init__(
-        self,
-        statement: Statement,
-        authority: Optional[Entity] = None,
-        name: str = "",
-        absent: bool = False,
-        generic: bool = False,
-    ) -> None:
-        """Identify Entity's endorsement of a Statement."""
-        self.authority = authority
-        self.statement = statement
-        super().__init__(name=name, absent=absent, generic=generic)
+    statement: Statement
+    authority: Optional[Entity] = None
+    name: str = ""
+    absent: bool = False
+    generic: bool = False
+    context_factor_names: ClassVar[Tuple[str, str]] = ("statement", "authority")
 
     def __str__(self):
         content = f"of {self.statement.short_string}"

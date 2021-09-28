@@ -266,7 +266,7 @@ class TestImplication:
 
     def test_error_predicate_means_statement(self, make_predicate):
         with pytest.raises(TypeError):
-            make_predicate["crime"].means(Statement("any text"))
+            make_predicate["crime"].means(Statement(predicate="any text"))
 
     def test_greater_than_because_of_quantity(self, make_comparison):
         assert make_comparison["less_than_20"] > make_comparison["less"]
