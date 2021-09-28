@@ -39,7 +39,7 @@ for a data model about determining whether an individual is an owner or
 employee of a company:
 
     >>> from nettlesome import Predicate
-    >>> account_for_company = Predicate("$applicant opened a bank account for $company")
+    >>> account_for_company = Predicate(content="$applicant opened a bank account for $company")
 
 Because ``$applicant`` and ``$company`` are marked as placeholders for
 :class:`~nettlesome.terms.Term`\s, you’ll be able to add more data about
@@ -87,7 +87,7 @@ different meanings. The example below demonstrates this using
 the :meth:`~nettlesome.predicates.Predicate.means` method, which tests
 whether two Nettlesome objects have the same meaning.
 
-    >>> account_for_partnership = Predicate("$applicant opened a bank account for $partnership")
+    >>> account_for_partnership = Predicate(content="$applicant opened a bank account for $partnership")
     >>> account_for_company.means(account_for_partnership)
     True
 
@@ -104,7 +104,7 @@ Even though the rest  of the text is the same, the
 reuse of the same :class:`~nettlesome.terms.Term` means that
 the :class:`~nettlesome.predicates.Predicate` has a different meaning.
 
-    >>> account_for_self = Predicate("$applicant opened a bank account for $applicant")
+    >>> account_for_self = Predicate(content="$applicant opened a bank account for $applicant")
     >>> account_for_self.means(account_for_company)
     False
 
@@ -136,7 +136,7 @@ the :class:`~nettlesome.entities.Entity` should be considered
 the word “was” after the :class:`~nettlesome.entities.Entity` should be
 replaced with “were”.
 
-    >>> not_at_school = Predicate("$group were at school", truth=False)
+    >>> not_at_school = Predicate(content="$group were at school", truth=False)
     >>> plural_statement = Statement(not_at_school, terms=[Entity("the students", plural=True)])
     >>> str(plural_statement)
     'the statement it was false that <the students> were at school'

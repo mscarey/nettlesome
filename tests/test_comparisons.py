@@ -14,20 +14,21 @@ class TestQuantityInterval:
     def test_comparison_with_wrong_comparison_symbol(self):
         with pytest.raises(ValueError):
             _ = Comparison(
-                "the height of {} was {}",
+                content="the height of {} was {}",
                 sign=">>",
                 expression=Q_("160 centimeters"),
             )
 
-    @pytest.mark.xfail(reason="Passing QuantityRanges directly not implemented.")
-    def test_comparison_with_int(self):
-        value = NumberRange(sign="<", quantity=5)
-        scones = Comparison("the number of scones $diner ate was", value=value)
-        assert scones.interval == sympy.Interval(0, 5, right_open=True)
-
     def test_make_comparison_with_string_for_int(self):
         scones = Comparison(
-            "the number of scones $diner ate was", sign="<", expression="5"
+            content="the number of scones $diner ate was", sign="<", expression="5"
+        )
+        assert scones.interval == sympy.Interval(0, 5, right_open=True)
+
+    def test_comparison_with_int(self):
+        value = NumberRange(sign="<", quantity=5)
+        scones = Comparison(
+            content="the number of scones $diner ate was", quantity_range=value
         )
         assert scones.interval == sympy.Interval(0, 5, right_open=True)
 
@@ -204,7 +205,7 @@ class TestCompareQuantities:
             sign=">",
             expression="20 miles",
         )
-        predicate = Predicate("the distance between $place1 and $place2 was")
+        predicate = Predicate(content="the distance between $place1 and $place2 was")
         assert not distance.quantity_range.implies(predicate)
 
     def test_compare_intervals_different_units(self):
@@ -231,7 +232,7 @@ class TestImplication:
             sign=">",
             expression="20 miles",
         )
-        predicate = Predicate("the distance between $place1 and $place2 was")
+        predicate = Predicate(content="the distance between $place1 and $place2 was")
         assert not distance.implies(predicate)
 
     def test_comparison_gte_predicate_false(self):
@@ -240,7 +241,7 @@ class TestImplication:
             sign=">",
             expression="20 miles",
         )
-        predicate = Predicate("the distance between $place1 and $place2 was")
+        predicate = Predicate(content="the distance between $place1 and $place2 was")
         assert not distance >= predicate
 
     def test_predicate_not_same_with_interchangeable_terms(self):
@@ -362,7 +363,7 @@ class TestContradiction:
         assert not make_comparison["not_more"].contradicts(make_comparison["less"])
 
     def test_predicate_does_not_contradict(self, make_comparison):
-        irrelevant = Predicate("things happened")
+        irrelevant = Predicate(content="things happened")
         assert not irrelevant.contradicts(make_comparison["less"])
 
     def test_contradiction_by_exact(self, make_comparison):
@@ -455,7 +456,7 @@ class TestContradiction:
             sign=">",
             expression=10,
         )
-        no_cows = Predicate("the number of cows $person owned was", truth=False)
+        no_cows = Predicate(content="the number of cows $person owned was", truth=False)
         assert not more_cows.contradicts(no_cows)
         assert not no_cows.contradicts(more_cows)
 

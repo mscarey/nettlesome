@@ -44,7 +44,7 @@ class PredicateSchema(Schema):
         validate=validate.OneOf([""] + list(QuantityRange.opposite_comparisons.keys())),
     )
     expression = fields.Function(
-        dump_quantity, deserialize=Comparison.read_quantity, missing=None
+        dump_quantity, deserialize=Comparison.expression_to_quantity, missing=None
     )
 
     @post_load

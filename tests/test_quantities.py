@@ -1,6 +1,6 @@
 from datetime import date
 
-from nettlesome import predicates
+
 from nettlesome.quantities import UnitRange, NumberRange, DateRange, Q_
 
 
@@ -24,3 +24,37 @@ class TestQuantities:
         left = DateRange(quantity=date(2000, 1, 1), sign="<")
         right = DateRange(quantity=date(2020, 12, 12), sign=">")
         assert left.contradicts(right)
+
+
+class TestCompareQuantities:
+    def test_expression_comparison(self, make_comparison):
+        assert (
+            make_comparison["meters"].quantity_range.expression_comparison()
+            == "at least 10 meter"
+        )
+        assert "20 foot" in repr(make_comparison["less_than_20"])
+        assert (
+            str(make_comparison["less_than_20"].quantity_range) == "less than 20 foot"
+        )
+
+    def test_context_slots(self, make_comparison):
+        assert len(make_comparison["meters"]) == 2
+
+    def test_str_for_predicate_with_number_quantity(self, make_comparison):
+        assert "distance between $place1 and $place2 was less than 20" in str(
+            make_comparison["int_distance"]
+        )
+        assert "distance between $place1 and $place2 was less than 20.0" in str(
+            make_comparison["float_distance"]
+        )
+        assert "distance between $place1 and $place2 was less than 20 foot" in str(
+            make_comparison["less_than_20"]
+        )
+
+    def test_error_predicate_contradict_factor(self, make_comparison):
+        with pytest.raises(TypeError):
+            make_comparison["exact"].contradicts(
+                Statement(
+                    make_comparison["exact"], terms=[Entity("thing"), Entity("place")]
+                )
+            )

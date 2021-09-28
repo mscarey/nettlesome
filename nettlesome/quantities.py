@@ -99,15 +99,6 @@ class QuantityRange(ABC):
             values["include_negatives"] = bool(self.magnitude < 0)
         return values
 
-    def __init__(self, sign: str, include_negatives: Optional[bool] = None) -> None:
-        """Normalize operator sign and exclude negatives, if needed."""
-        if sign in self.normalized_comparisons:
-            sign = self.normalized_comparisons[sign]
-        if sign not in self.opposite_comparisons.keys():
-            raise ValueError(
-                f'"sign" string parameter must be one of {self.opposite_comparisons.keys()}.'
-            )
-
     def __repr__(self):
         return (
             f'{self.__class__.__name__}(quantity="{self._quantity_string()}", '
@@ -444,7 +435,7 @@ class Comparison(BaseModel):
     def set_quantity_range(cls, values):
         """Reverse the sign of a Comparison if necessary."""
         if not values.get("quantity_range"):
-            quantity = cls.read_quantity(values["expression"])
+            quantity = cls.expression_to_quantity(values["expression"])
             sign = values.get("sign")
             quantity = values.get("quantity")
             include_negatives = values.get("include_negatives")
@@ -489,7 +480,7 @@ class Comparison(BaseModel):
         return result.rstrip(")") + f", quantity_range={repr(self.quantity_range)})"
 
     @classmethod
-    def read_quantity(
+    def expression_to_quantity(
         cls, value: Union[date, float, int, str]
     ) -> Union[date, float, int, Quantity]:
         r"""

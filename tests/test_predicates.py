@@ -70,36 +70,12 @@ class TestCompare:
         also_lived_at = Predicate(content="$resident lived at $house")
         assert lived_at.content == also_lived_at.content
 
-    def test_expression_comparison(self, make_comparison):
-        assert (
-            make_comparison["meters"].quantity_range.expression_comparison()
-            == "at least 10 meter"
-        )
-        assert "20 foot" in repr(make_comparison["less_than_20"])
-        assert (
-            str(make_comparison["less_than_20"].quantity_range) == "less than 20 foot"
-        )
-
     def test_predicate_has_no_expression_comparison(self):
         with pytest.raises(AttributeError):
             self.same.expression_comparison() == ""
 
-    def test_context_slots(self, make_comparison):
-        assert len(make_comparison["meters"]) == 2
-
-    def test_str_for_predicate_with_number_quantity(self, make_comparison):
-        assert "distance between $place1 and $place2 was less than 20" in str(
-            make_comparison["int_distance"]
-        )
-        assert "distance between $place1 and $place2 was less than 20.0" in str(
-            make_comparison["float_distance"]
-        )
-        assert "distance between $place1 and $place2 was less than 20 foot" in str(
-            make_comparison["less_than_20"]
-        )
-
     def test_template_singular_by_default(self):
-        predicate = Predicate("$people were in $city")
+        predicate = Predicate(content="$people were in $city")
         assert str(predicate.template) == 'StatementTemplate("$people was in $city")'
 
     @pytest.mark.parametrize(
@@ -119,12 +95,12 @@ class TestCompare:
         phrase = (
             "$thing were names, towns, and telephone numbers of telephone subscribers"
         )
-        predicate = Predicate(phrase)
+        predicate = Predicate(content=phrase)
         with_context = predicate._content_with_terms(context)
         assert with_context.startswith(expected)
 
     def test_negated_method(self, make_predicate):
-        predicate = Predicate("$person owned $object")
+        predicate = Predicate(content="$person owned $object")
         negated = predicate.negated()
         assert str(negated).lower() == "it was false that $person owned $object"
 
@@ -164,16 +140,8 @@ class TestCompare:
         assert not self.same > Statement("$animal was a cat", terms=Entity("Mittens"))
 
     def test_same_does_not_contradict(self):
-        again = Predicate("$thing was an apple")
+        again = Predicate(content="$thing was an apple")
         assert not self.same.contradicts(again)
-
-    def test_error_predicate_contradict_factor(self, make_comparison):
-        with pytest.raises(TypeError):
-            make_comparison["exact"].contradicts(
-                Statement(
-                    make_comparison["exact"], terms=[Entity("thing"), Entity("place")]
-                )
-            )
 
     def test_no_contradiction_with_no_truth_value(self):
         assert not self.whether_lived_at.contradicts(self.lived_at)

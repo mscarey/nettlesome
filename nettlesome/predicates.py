@@ -186,7 +186,7 @@ class Predicate(BaseModel):
     term once.
 
         >>> # the template has two placeholders referring to the identical term
-        >>> opened = Predicate("$applicant opened a bank account for $applicant and $cosigner")
+        >>> opened = Predicate(content="$applicant opened a bank account for $applicant and $cosigner")
 
     Sometimes, a Predicate or Comparison needs to mention two terms that are
     different from each other, but that have interchangeable positions in that
@@ -195,7 +195,7 @@ class Predicate(BaseModel):
     except that the different placeholders should each end with a different digit.
 
         >>> # the template has two placeholders referring to different but interchangeable terms
-        >>> members = Predicate("$relative1 and $relative2 both were members of the same family")
+        >>> members = Predicate(content="$relative1 and $relative2 both were members of the same family")
 
     :param template:
         a clause containing an assertion in English in the past tense, with
@@ -317,8 +317,8 @@ class Predicate(BaseModel):
         The means method will return False based on any difference in
         the Predicate's template text, other than the placeholder names.
 
-        >>> talked = Predicate("$speaker talked to $listener")
-        >>> spoke = Predicate("$speaker spoke to $listener")
+        >>> talked = Predicate(content="$speaker talked to $listener")
+        >>> spoke = Predicate(content="$speaker spoke to $listener")
         >>> talked.means(spoke)
         False
 

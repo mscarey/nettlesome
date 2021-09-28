@@ -56,7 +56,7 @@ class TestMakeExplanation:
 
 class TestContinuedExplanation:
     def test_implication_and_contradiction(self):
-        lived_at = Predicate("$person lived at $residence")
+        lived_at = Predicate(content="$person lived at $residence")
         bob_lived = Statement(lived_at, terms=[Entity("Bob"), Entity("Bob's house")])
         carl_lived = Statement(lived_at, terms=[Entity("Carl"), Entity("Carl's house")])
         explanation = bob_lived.explain_implication(carl_lived)

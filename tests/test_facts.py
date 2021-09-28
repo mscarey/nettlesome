@@ -29,15 +29,17 @@ class TestFacts:
         assert "absence of the statement" in str(absent).lower()
 
     def test_string_no_truth_value(self):
-        factor = Predicate("things happened", truth=None)
+        factor = Predicate(content="things happened", truth=None)
         assert "whether" in str(factor)
 
     def test_repeating_entity_string(self):
-        three_entities = Predicate("$planner told $intermediary to hire $shooter")
+        three_entities = Predicate(
+            content="$planner told $intermediary to hire $shooter"
+        )
         statement_3 = Statement(
             three_entities, terms=[Entity("Al"), Entity("Bob"), Entity("Cid")]
         )
-        two_entities = Predicate("$shooter told $intermediary to hire $shooter")
+        two_entities = Predicate(content="$shooter told $intermediary to hire $shooter")
         statement_2 = Statement(two_entities, terms=[Entity("Al"), Entity("Bob")])
         assert (
             "statement that <Al> told <Bob> to hire <Cid>".lower()
@@ -55,7 +57,9 @@ class TestFacts:
         replaced by another Term object without changing the meaning
         of the Statement.
         """
-        three_entities = Predicate("$planner told $intermediary to hire $shooter")
+        three_entities = Predicate(
+            content="$planner told $intermediary to hire $shooter"
+        )
         statement_3 = Statement(
             three_entities,
             terms=[Entity("Al", generic=False), Entity("Bob"), Entity("Cid")],
@@ -69,7 +73,9 @@ class TestFacts:
         devon = Entity("Devon", generic=True)
         elaine = Entity("Elaine", generic=True)
         opened_account = Statement(
-            Predicate("$applicant opened a bank account for $applicant and $cosigner"),
+            Predicate(
+                content="$applicant opened a bank account for $applicant and $cosigner"
+            ),
             terms=(devon, elaine),
         )
         assert "<Devon> opened a bank account for <Devon> and <Elaine>" in str(
@@ -160,7 +166,7 @@ class TestSameMeaning:
     def test_generic_terms_equal(self):
         generic = Statement("something happened", generic=True)
         generic_false = Statement(
-            Predicate("something happened", truth=False), generic=True
+            Predicate(content="something happened", truth=False), generic=True
         )
         assert generic.means(generic_false)
         assert generic_false.means(generic)
@@ -206,11 +212,15 @@ class TestSameMeaning:
         bob = Entity("Bob", generic=False)
 
         ann_and_bob_were_family = Statement(
-            Predicate("$relative1 and $relative2 both were members of the same family"),
+            Predicate(
+                content="$relative1 and $relative2 both were members of the same family"
+            ),
             terms=(ann, bob),
         )
         bob_and_ann_were_family = Statement(
-            Predicate("$relative1 and $relative2 both were members of the same family"),
+            Predicate(
+                content="$relative1 and $relative2 both were members of the same family"
+            ),
             terms=(bob, ann),
         )
 
@@ -220,9 +230,11 @@ class TestSameMeaning:
         directory = Entity("Rural's telephone directory", plural=False)
         listings = Entity("Rural's telephone listings", plural=True)
         directory_original = Statement(
-            Predicate("$thing was original"), terms=directory
+            Predicate(content="$thing was original"), terms=directory
         )
-        listings_original = Statement(Predicate("$thing were original"), terms=listings)
+        listings_original = Statement(
+            Predicate(content="$thing were original"), terms=listings
+        )
         assert directory_original.means(listings_original)
 
     def test_same_meaning_no_terms(self, make_statement):

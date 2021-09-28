@@ -14,31 +14,41 @@ from nettlesome.entities import Entity
 def make_predicate() -> Dict[str, Predicate]:
 
     return {
-        "make_predicate": Predicate("$person committed a crime"),
-        "murder": Predicate("$shooter murdered $victim"),
-        "murder_whether": Predicate("$shooter murdered $victim", truth=None),
-        "murder_false": Predicate("$shooter murdered $victim", truth=False),
-        "irrelevant": Predicate("$evidence is relevant to show $fact", truth=False),
-        "relevant": Predicate("$evidence is relevant to show $fact"),
-        "relevant_whether": Predicate(
-            "$evidence is relevant to show $fact", truth=None
+        "make_predicate": Predicate(content="$person committed a crime"),
+        "murder": Predicate(content="$shooter murdered $victim"),
+        "murder_whether": Predicate(content="$shooter murdered $victim", truth=None),
+        "murder_false": Predicate(content="$shooter murdered $victim", truth=False),
+        "irrelevant": Predicate(
+            content="$evidence is relevant to show $fact", truth=False
         ),
-        "shooting": Predicate("$shooter shot $victim"),
-        "shooting_self": Predicate("$shooter shot $shooter"),
-        "no_shooting": Predicate("$shooter shot $victim", truth=False),
-        "shooting_whether": Predicate("$shooter shot $victim", truth=None),
-        "plotted": Predicate("$plotter1 plotted with $plotter2"),
-        "crime": Predicate("$person1 committed a crime"),
-        "no_crime": Predicate("$person1 committed a crime", truth=False),
-        "three_entities": Predicate("$planner told $intermediary to hire $shooter"),
-        "friends": Predicate("$person1 and $person2 were friends"),
-        "reliable": Predicate("$evidence was reliable"),
-        "no_context": Predicate("context was included", truth=False),
+        "relevant": Predicate(content="$evidence is relevant to show $fact"),
+        "relevant_whether": Predicate(
+            content="$evidence is relevant to show $fact", truth=None
+        ),
+        "shooting": Predicate(content="$shooter shot $victim"),
+        "shooting_self": Predicate(content="$shooter shot $shooter"),
+        "no_shooting": Predicate(content="$shooter shot $victim", truth=False),
+        "shooting_whether": Predicate(content="$shooter shot $victim", truth=None),
+        "plotted": Predicate(content="$plotter1 plotted with $plotter2"),
+        "crime": Predicate(content="$person1 committed a crime"),
+        "no_crime": Predicate(content="$person1 committed a crime", truth=False),
+        "three_entities": Predicate(
+            content="$planner told $intermediary to hire $shooter"
+        ),
+        "friends": Predicate(content="$person1 and $person2 were friends"),
+        "reliable": Predicate(content="$evidence was reliable"),
+        "no_context": Predicate(content="context was included", truth=False),
         # Use the irrelevant predicates/factors to make sure they don't affect an outcome.
-        "irrelevant_0": Predicate("$person was a clown"),
-        "irrelevant_1": Predicate("$person was a bear"),
-        "irrelevant_2": Predicate("$place was a circus"),
-        "irrelevant_3": Predicate("$person performed at $place"),
+        "irrelevant_0": Predicate(content="$person was a clown"),
+        "irrelevant_1": Predicate(content="$person was a bear"),
+        "irrelevant_2": Predicate(content="$place was a circus"),
+        "irrelevant_3": Predicate(content="$person performed at $place"),
+    }
+
+
+@pytest.fixture(scope="class")
+def make_comparison() -> Dict[str, Predicate]:
+    return {
         "small_weight": Comparison(
             "the amount of gold $person possessed was",
             sign=">=",
@@ -52,12 +62,6 @@ def make_predicate() -> Dict[str, Predicate]:
         "quantity=3": Comparison("The number of mice was", sign="==", expression=3),
         "quantity>=4": Comparison("The number of mice was", sign=">=", expression=4),
         "quantity>5": Comparison("The number of mice was", sign=">", expression=5),
-    }
-
-
-@pytest.fixture(scope="class")
-def make_comparison() -> Dict[str, Predicate]:
-    return {
         "acres": Comparison(
             "the distance between $place1 and $place2 was",
             sign=">=",

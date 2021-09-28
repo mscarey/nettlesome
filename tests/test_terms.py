@@ -108,7 +108,7 @@ class TestImplication:
 class TestContradiction:
     def test_error_contradiction_with_non_factor(self):
         with pytest.raises(TypeError):
-            assert Entity("Al").contradicts(Predicate("any text"))
+            assert Entity("Al").contradicts(Predicate(content="any text"))
 
     def test_no_contradiction_of_other_entity(self):
         assert not Entity("Al").contradicts(Entity("Ed"))

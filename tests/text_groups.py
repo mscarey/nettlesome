@@ -528,7 +528,7 @@ class TestImpliedBy:
 
 class TestContradiction:
     def test_contradiction_of_group(self):
-        lived_at = Predicate("$person lived at $residence")
+        lived_at = Predicate(content="$person lived at $residence")
         bob_lived = Statement(lived_at, terms=[Entity("Bob"), Entity("Bob's house")])
         carl_lived = Statement(lived_at, terms=[Entity("Carl"), Entity("Carl's house")])
         distance_long = Comparison(
@@ -929,7 +929,7 @@ class TestConsistent:
             group.internally_consistent()
 
     def test_all_generic_terms_match_in_statement(self):
-        predicate = Predicate("the telescope pointed at $object")
+        predicate = Predicate(content="the telescope pointed at $object")
         morning = Statement(predicate=predicate, terms=Entity("Morning Star"))
         evening = Statement(predicate=predicate, terms=Entity("Evening Star"))
         left = FactorGroup(morning)

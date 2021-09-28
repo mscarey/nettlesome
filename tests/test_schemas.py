@@ -45,13 +45,13 @@ class TestPredicateDump:
     schema = PredicateSchema()
 
     def test_dump_predicate(self):
-        predicate = Predicate("$defendant stole ${victim}'s car")
+        predicate = Predicate(content="$defendant stole ${victim}'s car")
         dumped = self.schema.dump(predicate)
         assert dumped["truth"] is True
 
     def test_dump_to_dict_with_units(self):
         predicate = Comparison(
-            "the distance between $place1 and $place2 was",
+            content="the distance between $place1 and $place2 was",
             truth=True,
             sign="<>",
             expression=Q_("35 feet"),
@@ -69,7 +69,7 @@ class TestPredicateDump:
 
     def test_dump_comparison_with_date_expression(self):
         copyright_date_range = Comparison(
-            "the date when $work was created was",
+            content="the date when $work was created was",
             sign=">=",
             expression=date(1978, 1, 1),
         )
