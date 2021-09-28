@@ -370,20 +370,20 @@ class TestContradiction:
         assert make_comparison["exact"].contradicts(make_comparison["less_than_20"])
         assert make_comparison["less_than_20"].contradicts(make_comparison["exact"])
 
-    def test_contradiction_by_equal_quantity(self, make_predicate):
-        assert make_predicate["quantity=3"].contradicts(make_predicate["quantity>5"])
+    def test_contradiction_by_equal_quantity(self, make_comparison):
+        assert make_comparison["quantity=3"].contradicts(make_comparison["quantity>5"])
 
-    def test_contradiction_of_equal_quantity(self, make_predicate):
-        assert make_predicate["quantity>5"].contradicts(make_predicate["quantity=3"])
+    def test_contradiction_of_equal_quantity(self, make_comparison):
+        assert make_comparison["quantity>5"].contradicts(make_comparison["quantity=3"])
 
-    def test_no_contradiction_by_greater_or_equal_quantity(self, make_predicate):
-        assert not make_predicate["quantity>=4"].contradicts(
-            make_predicate["quantity>5"]
+    def test_no_contradiction_by_greater_or_equal_quantity(self, make_comparison):
+        assert not make_comparison["quantity>=4"].contradicts(
+            make_comparison["quantity>5"]
         )
 
-    def test_no_contradiction_of_greater_or_equal_quantity(self, make_predicate):
-        assert not make_predicate["quantity>5"].contradicts(
-            make_predicate["quantity>=4"]
+    def test_no_contradiction_of_greater_or_equal_quantity(self, make_comparison):
+        assert not make_comparison["quantity>5"].contradicts(
+            make_comparison["quantity>=4"]
         )
 
     def test_no_contradiction_with_inconsistent_dimensionality(self, make_comparison):
