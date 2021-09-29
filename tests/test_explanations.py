@@ -46,7 +46,7 @@ class TestContext:
         explanation = self.fact_al.explain_consistent_with(self.fact_alice, register)
 
         assert "<the bull> is like <the cow>" in explanation.context.reason
-        assert "=(Entity(name='Al'" in repr(explanation)
+        assert "=[Entity(name='Al'" in repr(explanation)
 
 
 class TestMakeExplanation:

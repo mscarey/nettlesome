@@ -17,6 +17,7 @@ from nettlesome.terms import (
     TermSequence,
     ContextRegister,
     new_context_helper,
+    DuplicateTermError,
 )
 from nettlesome.entities import Entity
 from nettlesome.factors import Factor
@@ -86,7 +87,23 @@ class Statement(Factor, BaseModel):
     @root_validator
     def _validate_terms(cls, values):
         """Normalize ``terms`` to initialize Statement."""
-
+        seen: List[str] = []
+        for term in values["terms_value"]:
+            if term and not isinstance(term, Term):
+                raise TypeError(
+                    f"'{term}' cannot be included in TermSequence because it is not type Term."
+                )
+        for term in values["terms_value"]:
+            if term:
+                if term.key in seen:
+                    raise DuplicateTermError(
+                        f"Term '{term}' may not appear more than once in TermSequence. "
+                        "If you need to refer to the same term more than once in a Predicate, "
+                        "please use the same placeholder text instead of including the "
+                        "Term in the TermSequence more than once. If more than one distinct "
+                        "Term shares the same key text, please change one of them."
+                    )
+                seen.append(term.key)
         if len(values["terms_value"]) != len(values["predicate"]):
             message = (
                 "The number of items in 'terms' must be "
@@ -95,6 +112,11 @@ class Statement(Factor, BaseModel):
             )
             raise ValueError(message)
         return values
+
+    @property
+    def term_sequence(self) -> TermSequence:
+        """Return a TermSequence of the terms in this Statement."""
+        return TermSequence(self.terms)
 
     @property
     def short_string(self) -> str:
