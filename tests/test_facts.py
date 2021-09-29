@@ -16,17 +16,19 @@ from nettlesome.statements import Statement
 class TestFacts:
     def test_default_terms_for_fact(self, make_predicate):
         f1 = Statement(
-            make_predicate["shooting"], terms=[Entity(name="Al"), Entity(name="Ed")]
+            predicate=make_predicate["shooting"],
+            terms=[Entity(name="Al"), Entity(name="Ed")],
         )
         assert f1.terms[0].short_string == Entity(name="Al").short_string
 
     def test_brackets_around_generic_terms(self, make_predicate):
         statement = Statement(
-            make_predicate["shooting"], terms=[Entity(name="Al"), Entity(name="Ed")]
+            predicate=make_predicate["shooting"],
+            terms=[Entity(name="Al"), Entity(name="Ed")],
         )
         assert "<Al> shot <Ed>" in str(statement)
         absent = Statement(
-            make_predicate["shooting"],
+            predicate=make_predicate["shooting"],
             terms=[Entity(name="Al"), Entity(name="Ed")],
             absent=True,
         )
@@ -41,12 +43,12 @@ class TestFacts:
             content="$planner told $intermediary to hire $shooter"
         )
         statement_3 = Statement(
-            three_entities,
+            predicate=three_entities,
             terms=[Entity(name="Al"), Entity(name="Bob"), Entity(name="Cid")],
         )
         two_entities = Predicate(content="$shooter told $intermediary to hire $shooter")
         statement_2 = Statement(
-            two_entities, terms=[Entity(name="Al"), Entity(name="Bob")]
+            predicate=two_entities, terms=[Entity(name="Al"), Entity(name="Bob")]
         )
         assert (
             "statement that <Al> told <Bob> to hire <Cid>".lower()
@@ -68,7 +70,7 @@ class TestFacts:
             content="$planner told $intermediary to hire $shooter"
         )
         statement_3 = Statement(
-            three_entities,
+            predicate=three_entities,
             terms=[
                 Entity(name="Al", generic=False),
                 Entity(name="Bob"),
@@ -84,7 +86,7 @@ class TestFacts:
         devon = Entity(name="Devon", generic=True)
         elaine = Entity(name="Elaine", generic=True)
         opened_account = Statement(
-            Predicate(
+            predicate=Predicate(
                 content="$applicant opened a bank account for $applicant and $cosigner"
             ),
             terms=(devon, elaine),
@@ -99,7 +101,7 @@ class TestFacts:
             [Entity(name="Death Star 1"), Entity(name="Darth Vader")],
         )
         statement = Statement(
-            "$person blew up a planet with $weapon",
+            predicate="$person blew up a planet with $weapon",
             terms=[Entity(name="Kylo Ren"), Entity(name="Death Star 3")],
         )
         new = statement.new_context(changes)
@@ -150,7 +152,7 @@ class TestFacts:
 
     def test_length_with_specific_term(self):
         statement = Statement(
-            "$person paid tax to $state",
+            predicate="$person paid tax to $state",
             terms=[
                 Entity(name="Alice"),
                 Entity(name="the State of Texas", generic=False),
@@ -160,7 +162,7 @@ class TestFacts:
 
     def test_truth_param(self):
         no_license = Statement(
-            "$business was licensed as a money transmitting business",
+            predicate="$business was licensed as a money transmitting business",
             truth=False,
             terms=Entity(name="Helix"),
         )
@@ -182,7 +184,7 @@ class TestSameMeaning:
     def test_generic_terms_equal(self):
         generic = Statement(predicate="something happened", generic=True)
         generic_false = Statement(
-            Predicate(content="something happened", truth=False), generic=True
+            predicate=Predicate(content="something happened", truth=False), generic=True
         )
         assert generic.means(generic_false)
         assert generic_false.means(generic)
@@ -298,14 +300,16 @@ class TestImplication:
             sign=">=",
             expression=Q_("10 meters"),
         )
-        left = Statement(meters, terms=[Entity(name="Al"), Entity(name="Bob")])
+        left = Statement(
+            predicate=meters, terms=[Entity(name="Al"), Entity(name="Bob")]
+        )
         more = Comparison(
             content="the distance between $place1 and $place2 was",
             truth=True,
             sign=">",
             expression=Q_("30 feet"),
         )
-        right = Statement(more, terms=[Entity(name="Al"), Entity(name="Bob")])
+        right = Statement(predicate=more, terms=[Entity(name="Al"), Entity(name="Bob")])
         assert left > right
 
     def test_int_factor_implies_float_factor(self, make_statement):

@@ -20,6 +20,7 @@ from nettlesome.terms import (
 from nettlesome.factors import Factor
 from nettlesome.formatting import indented, wrapped
 from nettlesome.predicates import Predicate
+from nettlesome.quantities import Comparison
 
 
 class Statement(Factor, BaseModel):
@@ -54,7 +55,7 @@ class Statement(Factor, BaseModel):
         a new "truth" attribute for the "predicate", if needed.
     """
 
-    predicate: Union[Predicate, str]
+    predicate: Union[Predicate, Comparison]
     terms_value: TermSequence
     name: str = ""
     absent: bool = False
