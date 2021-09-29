@@ -3,7 +3,7 @@
 from __future__ import annotations
 from typing import ClassVar, Optional, Tuple
 
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel, Extra, Field, validator, ValidationError
 
 from nettlesome.terms import Comparable, ContextRegister, Term
 

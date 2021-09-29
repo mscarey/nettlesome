@@ -2,15 +2,13 @@ from datetime import date
 
 from nettlesome.predicates import Predicate
 from nettlesome.quantities import Comparison, Q_
-from nettlesome.schemas import PredicateSchema, FactorSchema
+from nettlesome.statements import Assertion
 
 
 class TestPredicateLoad:
-    schema = PredicateSchema()
-
     def test_load_predicate(self):
-        p7 = self.schema.load(
-            {
+        p7 = Predicate(
+            **{
                 "content": "$defendant stole ${victim}'s car",
                 "truth": False,
             }
@@ -18,8 +16,8 @@ class TestPredicateLoad:
         assert p7.template.placeholders == ["defendant", "victim"]
 
     def test_load_comparison(self):
-        p7 = self.schema.load(
-            {
+        p7 = Comparison(
+            **{
                 "content": "the distance between $place1 and $place2 was",
                 "truth": True,
                 "sign": "!=",
@@ -29,24 +27,20 @@ class TestPredicateLoad:
         assert p7.sign == "!="
 
     def test_load_and_normalize_comparison(self):
-        p7 = self.schema.load(
-            data={
-                "content": "the distance between $place1 and $place2 was",
-                "truth": True,
-                "sign": "!=",
-                "expression": "35 feet",
-            }
-        )
+        data = {
+            "content": "the distance between $place1 and $place2 was",
+            "truth": True,
+            "sign": "!=",
+            "expression": "35 feet",
+        }
+        p7 = Comparison(**data)
         assert p7.sign == "!="
 
 
 class TestPredicateDump:
-
-    schema = PredicateSchema()
-
     def test_dump_predicate(self):
         predicate = Predicate(content="$defendant stole ${victim}'s car")
-        dumped = self.schema.dump(predicate)
+        dumped = predicate.dict()
         assert dumped["truth"] is True
 
     def test_dump_to_dict_with_units(self):
@@ -56,8 +50,8 @@ class TestPredicateDump:
             sign="<>",
             expression=Q_("35 feet"),
         )
-        dumped = self.schema.dump(predicate)
-        assert dumped["expression"] == "35 foot"
+        dumped = predicate.dict()
+        assert dumped["quantity_range"]["quantity"] == "35 foot"
 
     def test_round_trip(self):
         predicate = Comparison(
@@ -73,23 +67,21 @@ class TestPredicateDump:
             sign=">=",
             expression=date(1978, 1, 1),
         )
-        dumped = self.schema.dump(copyright_date_range)
-        assert dumped["expression"] == "1978-01-01"
+        dumped = copyright_date_range.dict()
+        assert dumped["quantity_range"]["quantity"] == date(1978, 1, 1)
 
 
 class TestFactorLoad:
-    schema = FactorSchema()
-
     def test_round_trip_assertion(self):
         data = {
             "type": "Assertion",
             "statement": {
                 "predicate": {"content": "$defendant jaywalked"},
-                "terms": [{"type": "Entity", "name": "Alice"}],
+                "terms": [{"name": "Alice"}],
             },
             "authority": {"name": "Bob"},
         }
-        loaded = self.schema.load(data)
+        loaded = Assertion(**data)
         assert loaded.statement.terms[0].name == "Alice"
-        dumped = self.schema.dump(loaded)
+        dumped = loaded.dict()
         assert dumped["authority"]["name"] == "Bob"
