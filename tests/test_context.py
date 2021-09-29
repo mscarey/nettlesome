@@ -14,21 +14,23 @@ class TestContextRegisters:
     paid = Predicate(content="$employer paid $employee")
 
     def test_possible_context_without_empty_spaces(self):
-        left = Statement(self.bird, terms=Entity(name="Owl"))
-        right = Statement(self.bird, terms=Entity(name="Owl"))
+        left = Statement(predicate=self.bird, terms=Entity(name="Owl"))
+        right = Statement(predicate=self.bird, terms=Entity(name="Owl"))
         contexts = list(left.possible_contexts(right))
         assert len(contexts) == 1
         assert contexts[0].check_match(Entity(name="Owl"), Entity(name="Owl"))
 
     def test_possible_context_different_terms(self):
-        left = Statement(self.bird, terms=Entity(name="Foghorn"))
-        right = Statement(self.bird, terms=Entity(name="Woody"))
+        left = Statement(predicate=self.bird, terms=Entity(name="Foghorn"))
+        right = Statement(predicate=self.bird, terms=Entity(name="Woody"))
         contexts = list(left.possible_contexts(right))
         assert len(contexts) == 1
         assert contexts[0].check_match(Entity(name="Foghorn"), Entity(name="Woody"))
 
     def test_all_possible_contexts_identical_factor(self):
-        left = Statement(self.paid, terms=[Entity(name="Irene"), Entity(name="Bob")])
+        left = Statement(
+            predicate=self.paid, terms=[Entity(name="Irene"), Entity(name="Bob")]
+        )
         contexts = list(left.possible_contexts(left))
         assert len(contexts) == 2
         assert any(
@@ -45,10 +47,12 @@ class TestContextRegisters:
 
     def test_cannot_update_context_register_from_lists(self):
         left = Statement(
-            "$shooter shot $victim", terms=[Entity(name="Alice"), Entity(name="Bob")]
+            predicate="$shooter shot $victim",
+            terms=[Entity(name="Alice"), Entity(name="Bob")],
         )
         right = Statement(
-            "$shooter shot $victim", terms=[Entity(name="Craig"), Entity(name="Dan")]
+            predicate="$shooter shot $victim",
+            terms=[Entity(name="Craig"), Entity(name="Dan")],
         )
         update = left.update_context_register(
             right,
@@ -59,7 +63,9 @@ class TestContextRegisters:
             next(update)
 
     def test_limited_possible_contexts_identical_factor(self):
-        statement = Statement(self.paid, terms=[Entity(name="Al"), Entity(name="Xu")])
+        statement = Statement(
+            predicate=self.paid, terms=[Entity(name="Al"), Entity(name="Xu")]
+        )
         context = ContextRegister()
         context.insert_pair(Entity(name="Al"), Entity(name="Xu"))
         contexts = list(statement.possible_contexts(statement, context=context))
@@ -154,7 +160,7 @@ class TestContextRegisters:
         items in the ContextRegister
         """
         factor = Statement(
-            "$person1 and $person2 met with each other",
+            predicate="$person1 and $person2 met with each other",
             terms=[Entity(name="Al"), Entity(name="Ed")],
         )
         first_pattern, second_pattern = list(factor.term_permutations())
@@ -176,12 +182,12 @@ class TestContextRegisters:
 
     def test_no_duplicate_context_interchangeable_terms(self):
         left = Statement(
-            Predicate(content="$country1 signed a treaty with $country2"),
+            predicate=Predicate(content="$country1 signed a treaty with $country2"),
             terms=(Entity(name="Mexico"), Entity(name="USA")),
         )
 
         right = Statement(
-            Predicate(content="$country3 signed a treaty with $country1"),
+            predicate=Predicate(content="$country3 signed a treaty with $country1"),
             terms=(Entity(name="Germany"), Entity(name="UK")),
         )
 
@@ -229,14 +235,14 @@ class TestLikelyContext:
 
     def test_likely_context_different_terms(self):
         copyright_registered = Statement(
-            "$entity registered a copyright covering $work",
+            predicate="$entity registered a copyright covering $work",
             terms=[
                 Entity(name="Lotus Development Corporation"),
                 Entity(name="the Lotus menu command hierarchy"),
             ],
         )
         copyrightable = Statement(
-            "$work was copyrightable",
+            predicate="$work was copyrightable",
             terms=Entity(name="the Lotus menu command hierarchy"),
         )
         left = FactorGroup([copyrightable, copyright_registered])
@@ -255,11 +261,11 @@ class TestLikelyContext:
 
     def test_likely_context_from_factor_meaning(self):
         left = Statement(
-            "$part provided the means by which users controlled and operated $whole",
+            predicate="$part provided the means by which users controlled and operated $whole",
             terms=[Entity(name="the Java API"), Entity(name="the Java language")],
         )
         right = Statement(
-            "$part provided the means by which users controlled and operated $whole",
+            predicate="$part provided the means by which users controlled and operated $whole",
             terms=[
                 Entity(name="the Lotus menu command hierarchy"),
                 Entity(name="Lotus 1-2-3"),
@@ -284,21 +290,23 @@ class TestLikelyContext:
         Tests that Factors from "left" should be keys and Factors from "right" values.
         """
         language_program = Statement(
-            "$program was a computer program", terms=Entity(name="the Java language")
+            predicate="$program was a computer program",
+            terms=Entity(name="the Java language"),
         )
         lotus_program = Statement(
-            "$program was a computer program", terms=Entity(name="Lotus 1-2-3")
+            predicate="$program was a computer program",
+            terms=Entity(name="Lotus 1-2-3"),
         )
 
         controlled = Statement(
-            "$part provided the means by which users controlled and operated $whole",
+            predicate="$part provided the means by which users controlled and operated $whole",
             terms=[
                 Entity(name="the Lotus menu command hierarchy"),
                 Entity(name="Lotus 1-2-3"),
             ],
         )
         part = Statement(
-            "$part was a literal element of $whole",
+            predicate="$part was a literal element of $whole",
             terms=[Entity(name="the Java API"), Entity(name="the Java language")],
         )
 

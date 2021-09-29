@@ -46,7 +46,7 @@ class TestContext:
         explanation = self.fact_al.explain_consistent_with(self.fact_alice, register)
 
         assert "<the bull> is like <the cow>" in explanation.context.reason
-        assert "terms=(Entity(name='Al'" in repr(explanation)
+        assert "=(Entity(name='Al'" in repr(explanation)
 
 
 class TestMakeExplanation:
@@ -62,10 +62,10 @@ class TestContinuedExplanation:
     def test_implication_and_contradiction(self):
         lived_at = Predicate(content="$person lived at $residence")
         bob_lived = Statement(
-            lived_at, terms=[Entity(name="Bob"), Entity(name="Bob's house")]
+            predicate=lived_at, terms=[Entity(name="Bob"), Entity(name="Bob's house")]
         )
         carl_lived = Statement(
-            lived_at, terms=[Entity(name="Carl"), Entity(name="Carl's house")]
+            predicate=lived_at, terms=[Entity(name="Carl"), Entity(name="Carl's house")]
         )
         explanation = bob_lived.explain_implication(carl_lived)
 
@@ -75,7 +75,8 @@ class TestContinuedExplanation:
             expression="50 miles",
         )
         statement_long = Statement(
-            distance_long, terms=[Entity(name="Houston"), Entity(name="Bob's house")]
+            predicate=distance_long,
+            terms=[Entity(name="Houston"), Entity(name="Bob's house")],
         )
 
         distance_short = Comparison(
@@ -84,7 +85,8 @@ class TestContinuedExplanation:
             expression="10 kilometers",
         )
         statement_short = Statement(
-            distance_short, terms=[Entity(name="El Paso"), Entity(name="Carl's house")]
+            predicate=distance_short,
+            terms=[Entity(name="El Paso"), Entity(name="Carl's house")],
         )
 
         left = FactorGroup(statement_long)

@@ -214,7 +214,7 @@ class Statement(Factor, BaseModel):
             a version of ``self`` with the new context.
         """
         result = deepcopy(self)
-        result._terms = TermSequence(
+        result.terms_value = TermSequence(
             [factor.new_context(changes) for factor in self.terms_without_nulls]
         )
         return result
@@ -239,7 +239,7 @@ class Statement(Factor, BaseModel):
         already_returned: List[ContextRegister] = [matches]
 
         for term_permutation in gen:
-            left = [term for term in self._terms if term is not None]
+            left = [term for term in self.terms_value if term is not None]
             right = [term for term in term_permutation if term is not None]
             changes = ContextRegister.from_lists(left, right)
             changed_registry = matches.replace_keys(changes)
