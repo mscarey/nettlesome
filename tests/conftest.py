@@ -155,143 +155,170 @@ def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
     p = make_predicate
     c = make_comparison
     return {
-        "irrelevant_0": Statement(p["irrelevant_0"], [Entity(name="Craig")]),
-        "irrelevant_1": Statement(p["irrelevant_1"], [Entity(name="Dan")]),
-        "irrelevant_2": Statement(p["irrelevant_2"], Entity(name="Dan")),
+        "irrelevant_0": Statement(
+            predicate=p["irrelevant_0"], terms=[Entity(name="Craig")]
+        ),
+        "irrelevant_1": Statement(
+            predicate=p["irrelevant_1"], terms=[Entity(name="Dan")]
+        ),
+        "irrelevant_2": Statement(
+            predicate=p["irrelevant_2"], terms=Entity(name="Dan")
+        ),
         "irrelevant_3": Statement(
-            p["irrelevant_3"], [Entity(name="Craig"), Entity(name="circus")]
+            predicate=p["irrelevant_3"],
+            terms=[Entity(name="Craig"), Entity(name="circus")],
         ),
         "irrelevant_3_new_context": Statement(
-            p["irrelevant_3"], [Entity(name="Craig"), Entity(name="Dan")]
+            predicate=p["irrelevant_3"],
+            terms=[Entity(name="Craig"), Entity(name="Dan")],
         ),
         "irrelevant_3_context_0": Statement(
-            p["irrelevant_3"], [Entity(name="Craig"), Entity(name="Alice")]
+            predicate=p["irrelevant_3"],
+            terms=[Entity(name="Craig"), Entity(name="Alice")],
         ),
-        "crime": Statement(p["crime"], Entity(name="Alice")),
-        "crime_bob": Statement(p["crime"], Entity(name="Bob")),
-        "crime_craig": Statement(p["crime"], Entity(name="Craig")),
-        "crime_generic": Statement(p["crime"], Entity(name="Alice"), generic=True),
+        "crime": Statement(predicate=p["crime"], terms=Entity(name="Alice")),
+        "crime_bob": Statement(predicate=p["crime"], terms=Entity(name="Bob")),
+        "crime_craig": Statement(predicate=p["crime"], terms=Entity(name="Craig")),
+        "crime_generic": Statement(
+            predicate=p["crime"], terms=Entity(name="Alice"), generic=True
+        ),
         "crime_specific_person": Statement(
-            p["crime"], Entity(name="Alice", generic=False)
+            predicate=p["crime"], terms=Entity(name="Alice", generic=False)
         ),
-        "absent_no_crime": Statement(p["no_crime"], Entity(name="Alice"), absent=True),
-        "no_crime": Statement(p["no_crime"], Entity(name="Alice")),
-        "no_crime_entity_order": Statement(p["no_crime"], [Entity(name="Bob")]),
+        "absent_no_crime": Statement(
+            predicate=p["no_crime"], terms=Entity(name="Alice"), absent=True
+        ),
+        "no_crime": Statement(predicate=p["no_crime"], terms=Entity(name="Alice")),
+        "no_crime_entity_order": Statement(
+            predicate=p["no_crime"], terms=[Entity(name="Bob")]
+        ),
         "murder": Statement(
-            p["murder"], terms=[Entity(name="Alice"), Entity(name="Bob")]
+            predicate=p["murder"], terms=[Entity(name="Alice"), Entity(name="Bob")]
         ),
         "murder_false": Statement(
-            p["murder_false"], terms=[Entity(name="Alice"), Entity(name="Bob")]
+            predicate=p["murder_false"],
+            terms=[Entity(name="Alice"), Entity(name="Bob")],
         ),
         "murder_entity_order": Statement(
-            p["murder"], [Entity(name="Bob"), Entity(name="Alice")]
+            predicate=p["murder"], terms=[Entity(name="Bob"), Entity(name="Alice")]
         ),
         "murder_craig": Statement(
-            p["murder"], [Entity(name="Craig"), Entity(name="Dan")]
+            predicate=p["murder"], terms=[Entity(name="Craig"), Entity(name="Dan")]
         ),
         "murder_whether": Statement(
-            p["murder_whether"], terms=[Entity(name="Alice"), Entity(name="Bob")]
+            predicate=p["murder_whether"],
+            terms=[Entity(name="Alice"), Entity(name="Bob")],
         ),
         "shooting": Statement(
-            p["shooting"], terms=[Entity(name="Alice"), Entity(name="Bob")]
+            predicate=p["shooting"], terms=[Entity(name="Alice"), Entity(name="Bob")]
         ),
-        "shooting_self": Statement(p["shooting_self"], terms=[Entity(name="Alice")]),
+        "shooting_self": Statement(
+            predicate=p["shooting_self"], terms=[Entity(name="Alice")]
+        ),
         "shooting_craig": Statement(
-            p["shooting"], [Entity(name="Craig"), Entity(name="Dan")]
+            predicate=p["shooting"], terms=[Entity(name="Craig"), Entity(name="Dan")]
         ),
         "shooting_entity_order": Statement(
-            p["shooting"], [Entity(name="Bob"), Entity(name="Alice")]
+            predicate=p["shooting"], terms=[Entity(name="Bob"), Entity(name="Alice")]
         ),
         "no_shooting": Statement(
-            p["no_shooting"], terms=[Entity(name="Alice"), Entity(name="Bob")]
+            predicate=p["no_shooting"], terms=[Entity(name="Alice"), Entity(name="Bob")]
         ),
         "shooting_whether": Statement(
-            p["shooting_whether"], terms=[Entity(name="Alice"), Entity(name="Bob")]
+            predicate=p["shooting_whether"],
+            terms=[Entity(name="Alice"), Entity(name="Bob")],
         ),
         "no_shooting_entity_order": Statement(
-            p["no_shooting"], [Entity(name="Bob"), Entity(name="Alice")]
+            predicate=p["no_shooting"], terms=[Entity(name="Bob"), Entity(name="Alice")]
         ),
         "plotted": Statement(
-            p["plotted"], [Entity(name="Alice"), Entity(name="Craig")]
+            predicate=p["plotted"], terms=[Entity(name="Alice"), Entity(name="Craig")]
         ),
         "plotted_reversed": Statement(
-            p["plotted"], [Entity(name="Alice"), Entity(name="Craig")]
+            predicate=p["plotted"], terms=[Entity(name="Alice"), Entity(name="Craig")]
         ),
         "three_entities": Statement(
-            p["three_entities"],
-            [Entity(name="Alice"), Entity(name="Bob"), Entity(name="Craig")],
+            predicate=p["three_entities"],
+            terms=[Entity(name="Alice"), Entity(name="Bob"), Entity(name="Craig")],
         ),
         "large_weight": Statement(
-            c["large_weight"],
-            Entity(name="Alice"),
+            predicate=c["large_weight"],
+            terms=Entity(name="Alice"),
         ),
         "large_weight_craig": Statement(
-            c["large_weight"],
-            Entity(name="Craig"),
+            predicate=c["large_weight"],
+            terms=Entity(name="Craig"),
         ),
         "small_weight": Statement(
-            c["small_weight"],
-            Entity(name="Alice"),
+            predicate=c["small_weight"],
+            terms=Entity(name="Alice"),
         ),
         "small_weight_bob": Statement(
-            c["small_weight"],
-            Entity(name="Bob"),
+            predicate=c["small_weight"],
+            terms=Entity(name="Bob"),
         ),
-        "friends": Statement(p["friends"], [Entity(name="Alice"), Entity(name="Bob")]),
-        "no_context": Statement(p["no_context"]),
+        "friends": Statement(
+            predicate=p["friends"], terms=[Entity(name="Alice"), Entity(name="Bob")]
+        ),
+        "no_context": Statement(predicate=p["no_context"]),
         "exact": Statement(
-            c["exact"], terms=[Entity(name="San Francisco"), Entity(name="Oakland")]
+            predicate=c["exact"],
+            terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
         ),
         "less": Statement(
-            c["less"], terms=[Entity(name="San Francisco"), Entity(name="Oakland")]
+            predicate=c["less"],
+            terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
         ),
         "less_than_20": Statement(
-            c["less_than_20"],
+            predicate=c["less_than_20"],
             terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
         ),
         "less_whether": Statement(
-            c["less_whether"],
+            predicate=c["less_whether"],
             terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
         ),
         "more": Statement(
             c["more"], terms=[Entity(name="San Francisco"), Entity(name="Oakland")]
         ),
         "more_atlanta": Statement(
-            c["more"], terms=[Entity(name="Atlanta"), Entity(name="Marietta")]
+            predicate=c["more"], terms=[Entity(name="Atlanta"), Entity(name="Marietta")]
         ),
         "more_meters": Statement(
-            c["meters"], terms=[Entity(name="San Francisco"), Entity(name="Oakland")]
+            predicate=c["meters"],
+            terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
         ),
         "not_more": Statement(
-            c["not_more"], terms=[Entity(name="San Francisco"), Entity(name="Oakland")]
+            predicate=c["not_more"],
+            terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
         ),
         "float_distance": Statement(
-            c["float_distance"],
+            predicate=c["float_distance"],
             terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
         ),
         "int_distance": Statement(
-            c["int_distance"],
+            predicate=c["int_distance"],
             terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
         ),
         "higher_int": Statement(
-            c["higher_int"],
+            predicate=c["higher_int"],
             terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
         ),
         "way_more": Statement(
-            c["way_more"], terms=[Entity(name="San Francisco"), Entity(name="Oakland")]
+            predicate=c["way_more"],
+            terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
         ),
         "absent_less": Statement(
-            c["less"],
+            predicate=c["less"],
             terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
             absent=True,
         ),
         "absent_more": Statement(
-            c["more"],
+            predicate=c["more"],
             terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
             absent=True,
         ),
         "absent_way_more": Statement(
-            c["way_more"],
+            predicate=c["way_more"],
             terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
             absent=True,
         ),
@@ -304,34 +331,39 @@ def make_complex_fact(make_predicate, make_statement) -> Dict[str, Statement]:
     f = make_statement
 
     return {
-        "irrelevant_murder": Statement(p["irrelevant"], (f["shooting"], f["murder"])),
-        "relevant_murder": Statement(p["relevant"], (f["shooting"], f["murder"])),
+        "irrelevant_murder": Statement(
+            predicate=p["irrelevant"], terms=(f["shooting"], f["murder"])
+        ),
+        "relevant_murder": Statement(
+            predicate=p["relevant"], terms=(f["shooting"], f["murder"])
+        ),
         "relevant_murder_swap_entities": Statement(
-            p["relevant"], (f["shooting"], f["murder"])
+            predicate=p["relevant"], terms=(f["shooting"], f["murder"])
         ),
         "relevant_murder_nested_swap": Statement(
-            p["relevant"], (f["shooting_entity_order"], f["murder_entity_order"])
+            predicate=p["relevant"],
+            terms=(f["shooting_entity_order"], f["murder_entity_order"]),
         ),
         "relevant_murder_whether": Statement(
-            p["relevant"], (f["shooting"], f["murder_whether"])
+            predicate=p["relevant"], terms=(f["shooting"], f["murder_whether"])
         ),
         "whether_relevant_murder_whether": Statement(
-            p["relevant"], (f["shooting_whether"], f["murder_whether"])
+            predicate=p["relevant"], terms=(f["shooting_whether"], f["murder_whether"])
         ),
         "relevant_murder_swap": Statement(
-            p["relevant"], (f["shooting"], f["murder_entity_order"])
+            predicate=p["relevant"], terms=(f["shooting"], f["murder_entity_order"])
         ),
         "relevant_murder_craig": Statement(
-            p["relevant"], (f["shooting_craig"], f["murder_craig"])
+            predicate=p["relevant"], terms=(f["shooting_craig"], f["murder_craig"])
         ),
         "relevant_murder_alice_craig": Statement(
-            p["relevant"], (f["shooting"], f["murder_craig"])
+            predicate=p["relevant"], terms=(f["shooting"], f["murder_craig"])
         ),
         "relevant_plotted_murder": Statement(
-            p["relevant"], (f["plotted"], f["murder"])
+            predicate=p["relevant"], terms=(f["plotted"], f["murder"])
         ),
         "relevant_plotted_reversed_murder": Statement(
-            p["relevant"], (f["plotted_reversed"], f["murder"])
+            predicate=p["relevant"], terms=(f["plotted_reversed"], f["murder"])
         ),
     }
 

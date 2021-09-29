@@ -196,7 +196,8 @@ class TestSameMeaning:
 
         with pytest.raises(DuplicateTermError):
             Statement(
-                "$person1 shot $person2", terms=[Entity(name="Al"), Entity(name="Al")]
+                predicate="$person1 shot $person2",
+                terms=[Entity(name="Al"), Entity(name="Al")],
             )
 
     def test_factor_different_predicate_truth_unequal(self, make_statement):
@@ -204,10 +205,11 @@ class TestSameMeaning:
 
     def test_unequal_because_one_factor_is_absent(self, make_predicate):
         left = Statement(
-            make_predicate["shooting"], terms=[Entity(name="Al"), Entity(name="Bo")]
+            predicate=make_predicate["shooting"],
+            terms=[Entity(name="Al"), Entity(name="Bo")],
         )
         right = Statement(
-            make_predicate["shooting"],
+            predicate=make_predicate["shooting"],
             terms=[Entity(name="Al"), Entity(name="Bob")],
             absent=True,
         )
@@ -526,8 +528,8 @@ class TestContradiction:
         )
         alice = Entity(name="Alice")
         bob = Entity(name="Bob")
-        alice_rich = Statement(p_large_weight, terms=alice)
-        bob_poor = Statement(p_small_weight, terms=bob)
+        alice_rich = Statement(predicate=p_large_weight, terms=alice)
+        bob_poor = Statement(predicate=p_small_weight, terms=bob)
         register = ContextRegister()
         register.insert_pair(alice, alice)
         assert not alice_rich.contradicts(bob_poor, context=register)
@@ -653,13 +655,13 @@ class TestAddition:
         dave = Entity(name="Dave")
         speed_template = "${driver}'s driving speed was"
         fast_fact = Statement(
-            Comparison(
+            predicate=Comparison(
                 content=speed_template, sign=">=", expression="100 miles per hour"
             ),
             terms=dave,
         )
         slow_fact = Statement(
-            Comparison(
+            predicate=Comparison(
                 content=speed_template,
                 sign=">=",
                 expression="20 miles per hour",
