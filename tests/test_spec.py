@@ -1,9 +1,10 @@
-from nettlesome.spec import make_spec
-from nettlesome.schemas import AssertionSchema
+from nettlesome.statements import Assertion
 
 
 class TestSpec:
-    def test_make_yaml_spec(self):
-        spec = make_spec(AssertionSchema)
-        as_yaml = spec.to_yaml()
-        assert "$ref: '#/components/schemas/Predicate'" in as_yaml
+    def test_make_json_spec(self):
+        schema = Assertion.schema()
+        ref = schema["definitions"]["Assertion"]["properties"]["statement"]["$ref"]
+        ent_ref = schema["definitions"]["Assertion"]["properties"]["authority"]["$ref"]
+        assert ref == "#/definitions/Statement"
+        assert ent_ref == "#/definitions/Entity"

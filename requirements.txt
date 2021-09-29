@@ -1,8 +1,4 @@
-apispec[validation]~=4.3.0
-apispec-oneofschema
-marshmallow>=3.10
-marshmallow-oneofschema
 pint>=0.15
 python-slugify
 pydantic
-sympy~=1.7
+sympy~=1.8

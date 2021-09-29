@@ -281,7 +281,7 @@ class Statement(Factor, BaseModel):
 
 
 class Assertion(Factor, BaseModel):
-    """A Statement identified with the authority of an Entity."""
+    """A Statement identified with the authority of a speaker or endorser."""
 
     statement: "Statement"
     authority: Optional[Entity] = None
