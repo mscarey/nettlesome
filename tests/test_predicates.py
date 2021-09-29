@@ -1,5 +1,6 @@
 from datetime import date
 
+from pydantic import ValidationError
 import pytest
 
 from nettlesome.entities import Entity
@@ -9,7 +10,7 @@ from nettlesome.statements import Statement
 
 class TestPredicates:
     def test_no_sign_allowed_for_predicate(self):
-        with pytest.raises(TypeError):
+        with pytest.raises(ValidationError):
             Predicate(
                 content="the date when $work was created was",
                 sign=">=",

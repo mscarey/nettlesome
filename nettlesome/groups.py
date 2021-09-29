@@ -6,7 +6,7 @@ from copy import deepcopy
 import functools
 import operator
 import textwrap
-from typing import Callable, Dict, Iterable, Iterator, List
+from typing import Callable, ClassVar, Dict, Iterable, Iterator, List
 from typing import Optional, Sequence, Tuple, Union
 
 from pydantic import BaseModel
@@ -43,6 +43,8 @@ class FactorGroup(Comparable):
     r"""Terms to be used together in a comparison."""
 
     term_class = Factor
+    generic: bool = False
+    context_factor_names: ClassVar[Tuple[str, ...]] = ()
 
     def __init__(self, factors: Union[FactorGroup, Sequence[Factor], Factor] = ()):
         """Normalize ``factors`` as sequence attribute."""

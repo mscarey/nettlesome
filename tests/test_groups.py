@@ -429,14 +429,14 @@ class TestImplication:
         protest_facts = FactorGroup(
             [
                 Statement(
-                    content=more_than_100_yards,
+                    predicate=more_than_100_yards,
                     terms=[
                         Entity(name="the political convention"),
                         Entity(name="the police cordon"),
                     ],
                 ),
                 Statement(
-                    content=less_than_1_mile,
+                    predicate=less_than_1_mile,
                     terms=[
                         Entity(name="the police cordon"),
                         Entity(name="the political convention"),
@@ -446,25 +446,27 @@ class TestImplication:
         )
         assert "between <the political convention> and " in str(protest_facts)
         more_than_50_meters = Comparison(
-            "the distance between $site1 and $site2 was",
+            content="the distance between $site1 and $site2 was",
             sign=">",
             expression="50 meters",
         )
         less_than_2_km = Comparison(
-            "the distance between $site1 and $site2 was", sign="<=", expression="2 km"
+            content="the distance between $site1 and $site2 was",
+            sign="<=",
+            expression="2 km",
         )
 
         speech_zone_facts = FactorGroup(
             [
                 Statement(
-                    more_than_50_meters,
+                    predicate=more_than_50_meters,
                     terms=[
                         Entity(name="the free speech zone"),
                         Entity(name="the courthouse"),
                     ],
                 ),
                 Statement(
-                    less_than_2_km,
+                    predicate=less_than_2_km,
                     terms=[
                         Entity(name="the free speech zone"),
                         Entity(name="the courthouse"),
@@ -848,22 +850,22 @@ class TestConsistent:
         assert not group.consistent_with(self.faster_statement, context=register)
         assert not consistent_with(group, self.faster_statement, context=register)
         assert repr(group).startswith("FactorGroup([Statement")
-        assert '"30.0 mile / hour"' in repr(group)
+        assert "30.0 mile / hour" in repr(group)
 
     def test_no_duplicate_explanations_consistent(self):
         large_payments = FactorGroup(
             [
                 Statement(
-                    Comparison(
-                        "the number of dollars that $payer paid to $payee was",
+                    predicate=Comparison(
+                        content="the number of dollars that $payer paid to $payee was",
                         sign=">",
                         expression=10000,
                     ),
                     terms=[Entity(name="Alice"), Entity(name="Bob")],
                 ),
                 Statement(
-                    Comparison(
-                        "the number of dollars that $payer paid to $payee was",
+                    predicate=Comparison(
+                        content="the number of dollars that $payer paid to $payee was",
                         sign=">",
                         expression=1000,
                     ),
@@ -874,16 +876,16 @@ class TestConsistent:
         small_payments = FactorGroup(
             [
                 Statement(
-                    Comparison(
-                        "the number of dollars that $payer paid to $payee was",
+                    predicate=Comparison(
+                        content="the number of dollars that $payer paid to $payee was",
                         sign=">",
                         expression=100,
                     ),
                     terms={"payer": Entity(name="Fred"), "payee": Entity(name="Greg")},
                 ),
                 Statement(
-                    Comparison(
-                        "the number of dollars that $payer paid to $payee was",
+                    predicate=Comparison(
+                        content="the number of dollars that $payer paid to $payee was",
                         sign=">",
                         expression=10,
                     ),
