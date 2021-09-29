@@ -3,10 +3,9 @@ from typing import Dict
 import pytest
 
 from nettlesome.terms import ContextRegister
-from nettlesome.assertions import Assertion
 from nettlesome.predicates import Predicate
 from nettlesome.quantities import Comparison, Q_
-from nettlesome.statements import Statement
+from nettlesome.statements import Statement, Assertion
 from nettlesome.entities import Entity
 
 

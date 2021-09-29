@@ -1,14 +1,14 @@
 """:class:`.Comparable` subclass for things that can be referenced in a Statement."""
 
 from __future__ import annotations
-from typing import Optional
+from typing import ClassVar, Optional, Tuple
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Extra
 
 from nettlesome.terms import Comparable, ContextRegister, Term
 
 
-class Entity(Term, BaseModel):
+class Entity(Term, BaseModel, extra=Extra.forbid):
     r"""
     Things that can be referenced in a Statement.
 
@@ -36,6 +36,7 @@ class Entity(Term, BaseModel):
     name: str = ""
     generic: bool = True
     plural: bool = False
+    context_factor_names: ClassVar[Tuple[str, ...]] = ()
 
     def __str__(self):
         if self.generic:

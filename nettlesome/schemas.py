@@ -1,7 +1,6 @@
 """Marshmallow schemas for loading and dumping data."""
 
 from datetime import date
-from nettlesome.assertions import Assertion
 from typing import Any, Dict, Optional, Sequence, Type, Union
 
 from apispec import APISpec
@@ -13,7 +12,7 @@ from nettlesome.entities import Entity
 from nettlesome.factors import Factor
 from nettlesome.predicates import Predicate
 from nettlesome.quantities import Comparison, QuantityRange
-from nettlesome.statements import Statement
+from nettlesome.statements import Statement, Assertion
 
 
 RawPredicate = Dict[str, Union[str, bool]]

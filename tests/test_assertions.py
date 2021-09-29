@@ -1,9 +1,8 @@
 import pytest
 
 from nettlesome.terms import ContextRegister
-from nettlesome.assertions import Assertion
 from nettlesome.entities import Entity
-from nettlesome.statements import Statement
+from nettlesome.statements import Statement, Assertion
 
 
 class TestAssertion:

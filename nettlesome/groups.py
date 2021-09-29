@@ -9,8 +9,9 @@ import textwrap
 from typing import Callable, Dict, Iterable, Iterator, List
 from typing import Optional, Sequence, Tuple, Union
 
-from nettlesome.factors import Factor
+from pydantic import BaseModel
 
+from nettlesome.factors import Factor
 from nettlesome.terms import (
     Comparable,
     ContextMemo,

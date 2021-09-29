@@ -1,12 +1,13 @@
 """Statements, similar to AuthoritySpoke Facts but without a "standard of proof"."""
 
+
 from copy import deepcopy
 import operator
 
-from typing import Dict, Iterator, List, Mapping
-from typing import Optional, Sequence, Union
+from typing import ClassVar, Dict, Iterator, List, Mapping
+from typing import Optional, Sequence, Tuple, Union
 
-from pydantic import BaseModel, validator, root_validator
+from pydantic import BaseModel, Field, validator, root_validator
 from slugify import slugify
 
 from nettlesome.terms import (
@@ -17,6 +18,7 @@ from nettlesome.terms import (
     ContextRegister,
     new_context_helper,
 )
+from nettlesome.entities import Entity
 from nettlesome.factors import Factor
 from nettlesome.formatting import indented, wrapped
 from nettlesome.predicates import Predicate
@@ -56,14 +58,13 @@ class Statement(Factor, BaseModel):
     """
 
     predicate: Union[Predicate, Comparison]
-    terms_value: TermSequence
+    terms_value: List[Union[Entity, "Statement", "Assertion"]] = Field(
+        [], alias="terms"
+    )
     name: str = ""
     absent: bool = False
     generic: bool = False
     truth: Optional[bool] = None
-
-    class Config:
-        fields = {"terms_value": "terms"}
 
     @root_validator(pre=True)
     def move_truth_to_predicate(cls, values):
@@ -77,9 +78,9 @@ class Statement(Factor, BaseModel):
                 "predicate"
             ].template.get_term_sequence_from_mapping(values["terms"])
         if not values.get("terms"):
-            values["terms"] = TermSequence()
-        elif not isinstance(values["terms"], TermSequence):
-            values["terms"] = TermSequence(values["terms"])
+            values["terms"] = []
+        elif isinstance(values["terms"], Term):
+            values["terms"] = [values["terms"]]
         return values
 
     @root_validator
@@ -89,7 +90,7 @@ class Statement(Factor, BaseModel):
         if len(values["terms_value"]) != len(values["predicate"]):
             message = (
                 "The number of items in 'terms' must be "
-                + f"{len(values['predicate'])}, not {len(values['terms'])}, "
+                + f"{len(values['predicate'])}, not {len(values['terms_value'])}, "
                 + f"to match predicate.context_slots for '{values['predicate'].content}'"
             )
             raise ValueError(message)
@@ -255,3 +256,37 @@ class Statement(Factor, BaseModel):
         for pattern in self.predicate.term_index_permutations():
             sorted_terms = [x for _, x in sorted(zip(pattern, self.terms))]
             yield TermSequence(sorted_terms)
+
+
+class Assertion(Factor, BaseModel):
+    """A Statement identified with the authority of an Entity."""
+
+    statement: "Statement"
+    authority: Optional[Entity] = None
+    name: str = ""
+    absent: bool = False
+    generic: bool = False
+    context_factor_names: ClassVar[Tuple[str, str]] = ("statement", "authority")
+
+    def base_string(self):
+        text = f"the {self.__class__.__name__.lower()}" + " {}"
+        if self.generic:
+            text = f"<{text}>"
+        if self.absent:
+            text = "absence of " + text
+        return text
+
+    def __str__(self):
+        content = f"of {self.statement.short_string}"
+
+        formatted = self.base_string().format(content)
+        if self.authority:
+            formatted = formatted.replace(
+                "the assertion of", f"the assertion, by {self.authority}, of", 1
+            )
+        return formatted
+
+
+Statement.update_forward_refs()
+
+Assertion.update_forward_refs()

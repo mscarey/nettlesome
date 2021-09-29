@@ -12,7 +12,3 @@ class Factor(Term):
     in :class:`~nettlesome.groups.FactorGroup`\s, unlike
     :class:`~nettlesome.term.Term`\s that are not Factors.
     """
-
-    name: Optional[str] = None
-    generic: bool = False
-    absent: bool = False

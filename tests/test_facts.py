@@ -108,6 +108,14 @@ class TestFacts:
 
         assert "<Darth Vader> blew up" in new.short_string
 
+    def test_make_new_complex_fact(self, make_predicate, make_statement):
+        shooting = make_statement["shooting"]
+        murder = make_statement["murder"]
+        relevant = make_predicate["relevant"]
+
+        fact = Statement(predicate=relevant, terms=(shooting, murder))
+        assert fact.terms[0].name == ""
+
     def test_get_factor_from_recursive_search(self, make_complex_fact):
         complex = make_complex_fact["relevant_murder"]
         factor_list = list(complex.recursive_terms.values())
@@ -115,11 +123,13 @@ class TestFacts:
 
     def test_new_context_from_factor(self, make_statement):
         crime = make_statement["crime"]
-        different = crime.new_context(Entity(name="Greg", generic=False))
+        greg = Entity(name="Greg")
+        different = crime.new_context(greg, generic=False)
         assert "Greg committed a crime" in str(different)
 
     def test_type_of_terms(self, make_statement):
-        assert isinstance(make_statement["crime"].terms, TermSequence)
+        assert isinstance(make_statement["crime"].terms, list)
+        assert isinstance(make_statement["crime"].term_sequence, TermSequence)
 
     def test_concrete_to_abstract(self, make_statement):
         assert (

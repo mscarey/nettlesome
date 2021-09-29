@@ -13,7 +13,7 @@ from typing import Any, Callable, ClassVar, Dict, Iterable, Iterator
 from typing import List, NamedTuple, Optional, Sequence, Tuple, Union
 from typing import KeysView, ValuesView, ItemsView
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
@@ -156,12 +156,6 @@ class Comparable(ABC):
     :attr plural:
         Indicates whether the object refers to multiple things.
     """
-
-    generic: bool = False
-    absent: bool = False
-    name: Optional[str] = None
-    plural: bool = False
-    context_factor_names: ClassVar[Tuple[str, ...]] = ()
 
     def __repr__(self) -> str:
         attrs = ", ".join(f"{k}={repr(v)}" for k, v in self.__dict__.items())
@@ -1539,12 +1533,6 @@ class Term(Comparable):
     The name of a Term can replace the placeholder in
     a :class:`~nettlesome.predicates.StatementTemplate`\.
     """
-
-    name: Optional[str] = None
-    generic_value: bool = True
-
-    class Config:
-        fields = {"generic_value": "generic"}
 
     def _borrow_generic_context(self, other: Term) -> Term:
         self_factors = list(self.recursive_terms.values())
