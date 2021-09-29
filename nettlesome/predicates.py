@@ -408,7 +408,7 @@ class PhraseABC(metaclass=ABCMeta):
         return f"{truth_prefix}{content}"
 
 
-class Predicate(BaseModel, PhraseABC):
+class Predicate(PhraseABC, BaseModel):
     r"""
     A statement about real events or about a legal conclusion.
 

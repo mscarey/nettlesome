@@ -22,7 +22,7 @@ from nettlesome.formatting import indented, wrapped
 from nettlesome.predicates import Predicate
 
 
-class Statement(BaseModel, Factor):
+class Statement(Factor, BaseModel):
     r"""
     An assertion that can be accepted as factual and compared to other Statements.
 
