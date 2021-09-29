@@ -201,7 +201,7 @@ class FactorGroup(Comparable):
 
         explanation.operation = contradicts
 
-        if isinstance(other, Iterable):
+        if isinstance(other, FactorGroup):
             for other_factor in other:
                 yield from self._explain_contradicts_factor(
                     other_factor, explanation=explanation

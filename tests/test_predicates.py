@@ -11,7 +11,7 @@ class TestPredicates:
     def test_no_sign_allowed_for_predicate(self):
         with pytest.raises(TypeError):
             Predicate(
-                "the date when $work was created was",
+                content="the date when $work was created was",
                 sign=">=",
                 expression=date(1978, 1, 1),
             )
