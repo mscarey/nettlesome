@@ -26,11 +26,20 @@ class TestStatements:
         )
         assert isinstance(shooting.terms, list)
 
+    def test_cannot_use_string_for_term(self):
+        predicate = Predicate(content="$person visited $place")
+        entity = Entity(name="Austin")
+        with pytest.raises(TypeError):
+            Statement(
+                predicate=predicate,
+                terms=[entity, "Dallas as a string"],
+            )
+
     def test_string_representation_of_factor(self):
         city = Predicate(content="$place was a city")
         statement = Statement(predicate=city, terms=Entity(name="New York"))
         assert "<New York> was a city" in str(statement)
-        assert ", terms_value=[Entity(name='New York')]," in repr(statement)
+        assert ", terms=[Entity(name='New York')]," in repr(statement)
 
     def test_get_terms(self, make_statement):
         terms = make_statement["friends"].terms
@@ -240,7 +249,8 @@ class TestStatements:
             [Entity(name="Darth Vader"), Entity(name="the Death Star")]
         )
         assert "<Darth Vader> managed" in str(different)
-        assert isinstance(different.terms, TermSequence)
+        assert isinstance(different.terms, list)
+        assert isinstance(different.term_sequence, TermSequence)
 
     def test_term_cannot_be_string(self):
         city = Predicate(content="$place was a city")

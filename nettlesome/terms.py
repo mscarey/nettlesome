@@ -187,13 +187,13 @@ class Comparable(ABC):
         """
         answers: Dict[str, Term] = {}
 
-        for context in self.terms:
+        for context in self.term_sequence:
             if context is not None:
                 answers.update(context.recursive_terms)
         return answers
 
     @property
-    def terms(self) -> TermSequence:
+    def term_sequence(self) -> TermSequence:
         r"""
         Get :class:`Factor`\s used in comparisons with other :class:`Factor`\s.
 
@@ -712,7 +712,7 @@ class Comparable(ABC):
             themselves as values.
         """
         generics: Dict[str, Comparable] = {}
-        for factor in self.terms:
+        for factor in self.term_sequence:
             if factor is not None:
                 for generic in factor.generic_terms():
                     generics[generic.short_string] = generic
@@ -1045,7 +1045,7 @@ class Comparable(ABC):
 
     def term_permutations(self) -> Iterator[TermSequence]:
         """Generate permutations of context factors that preserve same meaning."""
-        yield self.terms
+        yield self.term_sequence
 
     def _update_context_from_factors(
         self, other: Comparable, context: ContextRegister

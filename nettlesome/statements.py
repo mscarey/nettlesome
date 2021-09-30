@@ -59,9 +59,7 @@ class Statement(Factor, BaseModel):
     """
 
     predicate: Union[Predicate, Comparison]
-    terms_value: List[Union[Entity, "Statement", "Assertion"]] = Field(
-        [], alias="terms"
-    )
+    terms: List[Union[Entity, "Statement", "Assertion"]]
     name: str = ""
     absent: bool = False
     generic: bool = False
@@ -89,12 +87,12 @@ class Statement(Factor, BaseModel):
         """Normalize ``terms`` to initialize Statement."""
 
         # make TermSequence for validation, then ignore it
-        TermSequence(values["terms_value"])
+        TermSequence(values["terms"])
 
-        if len(values["terms_value"]) != len(values["predicate"]):
+        if len(values["terms"]) != len(values["predicate"]):
             message = (
                 "The number of items in 'terms' must be "
-                + f"{len(values['predicate'])}, not {len(values['terms_value'])}, "
+                + f"{len(values['predicate'])}, not {len(values['terms'])}, "
                 + f"to match predicate.context_slots for '{values['predicate'].content}'"
             )
             raise ValueError(message)
@@ -122,11 +120,6 @@ class Statement(Factor, BaseModel):
         return slugify(subject)
 
     @property
-    def terms(self) -> TermSequence:
-        """Get Terms used to fill placeholders in ``self``'s StatementTemplate."""
-        return self.terms_value
-
-    @property
     def terms_without_nulls(self) -> Sequence[Term]:
         """
         Get Terms that are not None.
@@ -134,7 +127,7 @@ class Statement(Factor, BaseModel):
         No Terms should be None for the Statement class, so this method is like an
         assertion for type checking.
         """
-        return [term for term in self.terms_value if term is not None]
+        return [term for term in self.terms if term is not None]
 
     @property
     def wrapped_string(self):
@@ -225,9 +218,10 @@ class Statement(Factor, BaseModel):
             a version of ``self`` with the new context.
         """
         result = deepcopy(self)
-        result.terms_value = TermSequence(
+        new_terms = TermSequence(
             [factor.new_context(changes) for factor in self.terms_without_nulls]
         )
+        result.terms = list(new_terms)
         return result
 
     def _registers_for_interchangeable_context(
@@ -250,7 +244,7 @@ class Statement(Factor, BaseModel):
         already_returned: List[ContextRegister] = [matches]
 
         for term_permutation in gen:
-            left = [term for term in self.terms_value if term is not None]
+            left = [term for term in self.terms if term is not None]
             right = [term for term in term_permutation if term is not None]
             changes = ContextRegister.from_lists(left, right)
             changed_registry = matches.replace_keys(changes)
