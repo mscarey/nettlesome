@@ -309,8 +309,8 @@ class Comparable(ABC):
         second ordering "<Bob> and <Ann> both were members of the same family".
         """
         for i, self_factor in enumerate(ordering):
-            if not (self_factor is other.terms[i] is None):
-                if not (self_factor and relation(self_factor, other.terms[i])):
+            if not (self_factor is other.term_sequence[i] is None):
+                if not (self_factor and relation(self_factor, other.term_sequence[i])):
                     return False
         return True
 
