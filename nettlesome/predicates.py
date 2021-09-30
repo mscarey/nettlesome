@@ -205,9 +205,9 @@ class PhraseABC(metaclass=ABCMeta):
         which placeholders are marked as interchangeable.
 
         >>> game_between_others = Predicate(
-        ...     "$organizer1 and $organizer2 planned for $player1 to play $game against $player2.")
+        ...     content="$organizer1 and $organizer2 planned for $player1 to play $game against $player2.")
         >>> game_between_each_other = Predicate(
-        ...     "$organizer1 and $organizer2 planned for $organizer1 to play $game against $organizer2.")
+        ...     content="$organizer1 and $organizer2 planned for $organizer1 to play $game against $organizer2.")
         >>> game_between_others.means(game_between_each_other)
         False
 
@@ -233,10 +233,10 @@ class PhraseABC(metaclass=ABCMeta):
         text but a truth value of None.
 
             >>> lived_at = Predicate(
-            ...     "$person lived at $place",
+            ...     content="$person lived at $place",
             ...     truth=True)
             >>> whether_lived_at = Predicate(
-            ...     "$person lived at $place",
+            ...     content="$person lived at $place",
             ...     truth=None)
             >>> str(whether_lived_at)
             'whether $person lived at $place'

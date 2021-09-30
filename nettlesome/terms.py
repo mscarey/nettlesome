@@ -382,10 +382,10 @@ class Comparable(ABC):
 
             >>> from nettlesome import Statement, Entity
             >>> hades_curse = Statement(
-            ...    "$deity cursed $target",
+            ...    predicate="$deity cursed $target",
             ...    terms=[Entity(name="Hades"), Entity(name="Persephone")])
             >>> aphrodite_curse = Statement(
-            ...    "$deity cursed $target",
+            ...    predicate="$deity cursed $target",
             ...    terms=[Entity(name="Aphrodite"), Entity(name="Narcissus")])
             >>> print(hades_curse.explain_same_meaning(aphrodite_curse))
             Because <Hades> is like <Aphrodite>, and <Persephone> is like <Narcissus>,
@@ -788,16 +788,16 @@ class Comparable(ABC):
         is implied by some Statement in ``self``.
 
             >>> from nettlesome import Entity, Comparison, Statement, FactorGroup
-            >>> over_100y = Comparison("the distance between $site1 and $site2 was", sign=">", expression="100 yards")
-            >>> under_1mi = Comparison("the distance between $site1 and $site2 was", sign="<", expression="1 mile")
+            >>> over_100y = Comparison(content="the distance between $site1 and $site2 was", sign=">", expression="100 yards")
+            >>> under_1mi = Comparison(content="the distance between $site1 and $site2 was", sign="<", expression="1 mile")
             >>> protest_facts = FactorGroup(
-            ...     [Statement(over_100y, terms=[Entity(name="the political convention"), Entity(name="the police cordon")]),
-            ...      Statement(under_1mi, terms=[Entity(name="the police cordon"), Entity(name="the political convention")])])
-            >>> over_50m = Comparison("the distance between $site1 and $site2 was", sign=">", expression="50 meters")
-            >>> under_2km = Comparison("the distance between $site1 and $site2 was", sign="<=", expression="2 km")
+            ...     [Statement(predicate=over_100y, terms=[Entity(name="the political convention"), Entity(name="the police cordon")]),
+            ...      Statement(predicate=under_1mi, terms=[Entity(name="the police cordon"), Entity(name="the political convention")])])
+            >>> over_50m = Comparison(content="the distance between $site1 and $site2 was", sign=">", expression="50 meters")
+            >>> under_2km = Comparison(content="the distance between $site1 and $site2 was", sign="<=", expression="2 km")
             >>> speech_zone_facts = FactorGroup(
-            ...     [Statement(over_50m, terms=[Entity(name="the free speech zone"), Entity(name="the courthouse")]),
-            ...      Statement(under_2km, terms=[Entity(name="the free speech zone"), Entity(name="the courthouse")])])
+            ...     [Statement(predicate=over_50m, terms=[Entity(name="the free speech zone"), Entity(name="the courthouse")]),
+            ...      Statement(predicate=under_2km, terms=[Entity(name="the free speech zone"), Entity(name="the courthouse")])])
             >>> protest_facts.implies(speech_zone_facts)
             True
 

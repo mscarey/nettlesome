@@ -421,7 +421,7 @@ class Comparison(BaseModel, PhraseABC):
 
         >>> # example comparing a pint Quantity
         >>> drug_comparison_with_upper_bound = Comparison(
-        ...     "the weight of marijuana that $defendant possessed was",
+        ...     content="the weight of marijuana that $defendant possessed was",
         ...     sign=">",
         ...     expression="10 grams",
         ...     truth=False)
@@ -436,7 +436,7 @@ class Comparison(BaseModel, PhraseABC):
 
         >>> # example comparing an integer
         >>> three_children = Comparison(
-        ...     "the number of children in ${taxpayer}'s household was",
+        ...     content="the number of children in ${taxpayer}'s household was",
         ...     sign="=",
         ...     expression=3)
         >>> str(three_children)
@@ -556,7 +556,7 @@ class Comparison(BaseModel, PhraseABC):
         Get the range of numbers covered by the UnitInterval.
 
         >>> weight=Comparison(
-        ...     "the amount of gold $person possessed was",
+        ...     content="the amount of gold $person possessed was",
         ...     sign=">=",
         ...     expression="10 grams")
         >>> weight.interval
@@ -575,7 +575,7 @@ class Comparison(BaseModel, PhraseABC):
             the range
 
             >>> weight=Comparison(
-            ...     "the amount of gold $person possessed was",
+            ...     content="the amount of gold $person possessed was",
             ...     sign=">=",
             ...     expression="10 grams")
             >>> weight.quantity
@@ -589,7 +589,7 @@ class Comparison(BaseModel, PhraseABC):
         Get operator describing the relationship between the quantity and the range.
 
             >>> weight=Comparison(
-            ...     "the amount of gold $person possessed was",
+            ...     content="the amount of gold $person possessed was",
             ...     sign=">=",
             ...     expression="10 grams")
             >>> str(weight.quantity_range)
@@ -611,11 +611,11 @@ class Comparison(BaseModel, PhraseABC):
         May be based on template text, truth values, and :class:`.QuantityRange`\s.
 
         >>> small_weight=Comparison(
-        ...     "the amount of gold $person possessed was",
+        ...     content="the amount of gold $person possessed was",
         ...     sign=">=",
         ...     expression=Q_("1 gram"))
         >>> large_weight=Comparison(
-        ...     "the amount of gold $person possessed was",
+        ...     content="the amount of gold $person possessed was",
         ...     sign=">=",
         ...     expression=Q_("100 kilograms"))
         >>> str(large_weight)
@@ -639,10 +639,10 @@ class Comparison(BaseModel, PhraseABC):
         refer to the same :class:`~.quantities.QuantityRange`\.
 
         >>> volume_in_liters = Comparison(
-        ...     "the volume of fuel in the tank was",
+        ...     content="the volume of fuel in the tank was",
         ...     sign="=", expression="10 liters")
         >>> volume_in_milliliters = Comparison(
-        ...     "the volume of fuel in the tank was",
+        ...     content="the volume of fuel in the tank was",
         ...     sign="=", expression="10000 milliliters")
         >>> volume_in_liters.means(volume_in_milliliters)
         True
@@ -661,10 +661,10 @@ class Comparison(BaseModel, PhraseABC):
         numeric range of the :class:`~.QuantityRange`\s for ``self`` and ``other``.
 
             >>> earlier = Comparison(
-            ...     "the date $dentist became a licensed dentist was",
+            ...     content="the date $dentist became a licensed dentist was",
             ...     sign="<", expression=date(1990, 1, 1))
             >>> later = Comparison(
-            ...     "the date $dentist became a licensed dentist was",
+            ...     content="the date $dentist became a licensed dentist was",
             ...     sign=">", expression=date(2010, 1, 1))
             >>> str(earlier)
             'that the date $dentist became a licensed dentist was less than 1990-01-01'
