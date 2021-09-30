@@ -52,6 +52,15 @@ class TestQuantityInterval:
         )
         assert comparison.quantity_range.magnitude == -100
         assert comparison.quantity_range._include_negatives is True
+        assert comparison.interval.end == -100
+
+    def test_comparison_negative_attr(self):
+        comparison = Comparison(
+            content="the balance in the bank account was", sign="<=", expression=-100
+        )
+        assert comparison.quantity_range.magnitude == -100
+        assert comparison.quantity_range._include_negatives is True
+        assert comparison.interval.end == -100
 
     def test_comparison_interval(self):
         comparison = Comparison(
@@ -249,6 +258,8 @@ class TestImplication:
         )
         predicate = Predicate(content="the distance between $place1 and $place2 was")
         assert not distance.implies(predicate)
+        assert not distance.contradicts(predicate)
+        assert not predicate.contradicts(distance)
 
     def test_comparison_gte_predicate_false(self):
         distance = Comparison(

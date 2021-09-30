@@ -187,9 +187,6 @@ class PhraseABC(metaclass=ABCMeta):
         if self.truth is None or other.truth is None:
             return False
 
-        if self.__class__.__name__ != other.__class__.__name__:
-            return False
-
         return self.truth != other.truth
 
     def means(self, other: Any) -> bool:

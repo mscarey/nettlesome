@@ -1,7 +1,7 @@
 from datetime import date
 
 import pytest
-from sympy import S
+from sympy import S, oo
 
 from nettlesome.entities import Entity
 from nettlesome.quantities import UnitRange, IntRange, DecimalRange, DateRange, Q_
@@ -13,23 +13,35 @@ class TestQuantities:
         left = UnitRange(quantity=Q_("20 meters"), sign=">")
         right = make_comparison["meters"].quantity_range
         assert left.implies(right)
+        assert left.pint_quantity == Q_("20 meters")
 
     def test_quantity_from_string(self):
         left = UnitRange(quantity="2000 days", sign="<")
         assert left.magnitude == 2000
         assert left.domain == S.Reals
+        assert left.interval.start == 0
+
+    def test_quantity_from_string_include_negatives(self):
+        left = UnitRange(quantity="2000 days", sign="<", include_negatives=True)
+        assert left.magnitude == 2000
+        assert left.domain == S.Reals
+        assert left.interval.start == -oo
 
     def test_no_contradiction_between_classes(self):
         left = UnitRange(quantity=Q_("2000 days"), sign="<")
         right = IntRange(quantity=2000, sign=">")
         assert right.q == 2000
         assert right.domain == S.Naturals0
+        assert str(right) == "greater than 2000"
         assert left.magnitude == right.magnitude
         assert not left.contradicts(right)
 
     def test_contradiction_between_date_ranges(self):
         left = DateRange(quantity=date(2000, 1, 1), sign="<")
         right = DateRange(quantity=date(2020, 12, 12), sign=">")
+        assert left.q == date(2000, 1, 1)
+        assert left.domain == S.Naturals
+        assert str(left) == "less than 2000-01-01"
         assert left.contradicts(right)
 
 

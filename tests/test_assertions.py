@@ -17,9 +17,18 @@ class TestAssertion:
         statement=namespaces, authority=Entity(name="Tim Peters", generic=False)
     )
     no_authority = Assertion(statement=namespaces, authority=None)
+    absent_authority = Assertion(
+        statement=namespaces, authority=Entity(name="a historian"), absent=True
+    )
+    generic_generic_authority = Assertion(
+        statement=namespaces, authority=Entity(name="Twitter user"), generic=True
+    )
 
     def test_dictum_string(self):
         assert "<namespaces> were one honking great idea" in str(self.generic_authority)
+
+    def test_generic_string(self):
+        assert str(self.generic_generic_authority).startswith("<the assertion")
 
     def test_include_of_in_string(self):
         fact = Statement(predicate="$suspect stole bread", terms=Entity(name="Valjean"))
@@ -28,6 +37,9 @@ class TestAssertion:
             "the assertion, by <Javert>, of the statement that <Valjean> stole bread"
             in str(accusation)
         )
+
+    def test_string_absent(self):
+        assert "absence of the assertion" in str(self.absent_authority)
 
     def test_means_self(self):
         assert self.generic_authority.means(self.generic_authority)
