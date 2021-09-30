@@ -82,21 +82,21 @@ class Statement(Factor, BaseModel):
             values["terms"] = [values["terms"]]
         return values
 
-    @root_validator
-    def _validate_terms(cls, values):
+    @validator("terms")
+    def _validate_terms(cls, v, values, **kwargs):
         """Normalize ``terms`` to initialize Statement."""
 
         # make TermSequence for validation, then ignore it
-        TermSequence(values["terms"])
+        TermSequence.validate_terms(v)
 
-        if len(values["terms"]) != len(values["predicate"]):
+        if len(v) != len(values["predicate"]):
             message = (
                 "The number of items in 'terms' must be "
-                + f"{len(values['predicate'])}, not {len(values['terms'])}, "
-                + f"to match predicate.context_slots for '{values['predicate'].content}'"
+                + f"{len(values['predicate'])}, not {len(v)}, "
+                + f"to match predicate.context_slots for '{values['predicate']}'"
             )
             raise ValueError(message)
-        return values
+        return v
 
     @property
     def term_sequence(self) -> TermSequence:

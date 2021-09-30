@@ -1618,14 +1618,18 @@ class TermSequence(Tuple[Optional[Term], ...]):
         """Convert Sequence of Terms to a subclass of Tuple."""
         if isinstance(value, Term):
             value = (value,)
+        cls.validate_terms(value)
+        return tuple.__new__(TermSequence, value)
+
+    @classmethod
+    def validate_terms(cls, terms: Sequence[Optional[Term]]) -> None:
         seen: List[str] = []
-        for term in value:
-            if term and not isinstance(term, Term):
-                raise TypeError(
-                    f"'{term}' cannot be included in TermSequence because it is not type Term."
-                )
-        for term in value:
-            if term:
+        for term in terms:
+            if term is not None:
+                if not isinstance(term, Term):
+                    raise TypeError(
+                        f"'{term}' cannot be included in TermSequence because it is not type Term."
+                    )
                 if term.key in seen:
                     raise DuplicateTermError(
                         f"Term '{term}' may not appear more than once in TermSequence. "
@@ -1635,7 +1639,7 @@ class TermSequence(Tuple[Optional[Term], ...]):
                         "Term shares the same key text, please change one of them."
                     )
                 seen.append(term.key)
-        return tuple.__new__(TermSequence, value)
+        return None
 
     def ordered_comparison(
         self,
