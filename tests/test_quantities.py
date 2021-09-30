@@ -1,6 +1,7 @@
 from datetime import date
 
 import pytest
+from sympy import S
 
 from nettlesome.entities import Entity
 from nettlesome.quantities import UnitRange, IntRange, DecimalRange, DateRange, Q_
@@ -16,10 +17,13 @@ class TestQuantities:
     def test_quantity_from_string(self):
         left = UnitRange(quantity="2000 days", sign="<")
         assert left.magnitude == 2000
+        assert left.domain == S.Reals
 
     def test_no_contradiction_between_classes(self):
         left = UnitRange(quantity=Q_("2000 days"), sign="<")
         right = IntRange(quantity=2000, sign=">")
+        assert right.q == 2000
+        assert right.domain == S.Naturals0
         assert left.magnitude == right.magnitude
         assert not left.contradicts(right)
 
@@ -40,6 +44,14 @@ class TestCompareQuantities:
             str(make_comparison["less_than_20"].quantity_range) == "less than 20 foot"
         )
 
+    def test_compare_decimal_to_int(self, make_comparison):
+        assert make_comparison["int_distance"].implies(
+            make_comparison["float_distance"]
+        )
+        assert make_comparison["float_distance"].quantity_range.q == (
+            make_comparison["int_distance"].quantity_range.q
+        )
+
     def test_context_slots(self, make_comparison):
         assert len(make_comparison["meters"]) == 2
 
@@ -50,6 +62,7 @@ class TestCompareQuantities:
         assert "distance between $place1 and $place2 was less than 20.0" in str(
             make_comparison["float_distance"]
         )
+        assert make_comparison["float_distance"].quantity_range.domain == S.Reals
         assert "distance between $place1 and $place2 was less than 20 foot" in str(
             make_comparison["less_than_20"]
         )

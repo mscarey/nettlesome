@@ -157,7 +157,7 @@ class QuantityRange(BaseModel):
         return -oo if self._include_negatives else 0
 
     @abstractproperty
-    def magnitude(self) -> Union[int, float]:
+    def magnitude(self) -> Union[Decimal, int, float]:
         """Get amount of max or minimum of the quantity range, without a unit."""
         pass
 
@@ -385,7 +385,7 @@ class DecimalRange(QuantityRange, BaseModel):
         return S.Reals
 
     @property
-    def magnitude(self) -> Union[int, float]:
+    def magnitude(self) -> Decimal:
         """Return quantity attribute."""
         return self.quantity
 
@@ -393,7 +393,7 @@ class DecimalRange(QuantityRange, BaseModel):
         return str(self.quantity)
 
     @property
-    def q(self) -> float:
+    def q(self) -> Decimal:
         return self.quantity
 
 

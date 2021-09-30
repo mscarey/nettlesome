@@ -123,6 +123,14 @@ class TestQuantityInterval:
         with pytest.raises(ValidationError):
             IntRange(quantity=dogs.quantity)
 
+    def test_plural_in_comparison(self):
+        comparison = Comparison(
+            content="the weights of ${the defendants} were",
+            sign=">",
+            expression="200 pounds",
+        )
+        assert comparison.content.endswith("was")
+
 
 class TestCompareQuantities:
     def test_does_not_exclude_other_quantity(self):
