@@ -1,4 +1,4 @@
-from nettlesome.terms import ContextRegister
+from nettlesome.terms import ContextRegister, TermSequence
 import operator
 
 import pytest
@@ -51,6 +51,18 @@ class TestMakeEntities:
         gen = alice._context_registers(other=craig, comparison=means, context=known)
         register = next(gen)
         assert register.get("<Alice>") == craig
+
+    def test_term_sequence_from_one_term(self):
+
+        entity = Entity(name="Austin")
+        sequence = TermSequence(entity)
+        assert sequence[0].name == entity.name
+
+    def test_cannot_put_string_in_term_sequence(self):
+
+        entity = Entity(name="Austin")
+        with pytest.raises(TypeError):
+            TermSequence([entity, "Dallas as a string"])
 
 
 class TestSameMeaning:
