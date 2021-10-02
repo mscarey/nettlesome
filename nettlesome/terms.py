@@ -157,10 +157,6 @@ class Comparable(ABC):
         Indicates whether the object refers to multiple things.
     """
 
-    def __repr__(self) -> str:
-        attrs = ", ".join(f"{k}={repr(v)}" for k, v in self.__dict__.items())
-        return f"{self.__class__.__name__}({attrs})"
-
     @property
     def key(self) -> str:
         """Return string representation of self for use as a key in a ContextRegister."""

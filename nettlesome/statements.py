@@ -162,9 +162,6 @@ class Statement(Factor, BaseModel):
         unwrapped = self.predicate._add_truth_to_content(content)
         return super().__str__().format(unwrapped)
 
-    def __repr__(self) -> str:
-        return super().__repr__().replace(" _terms=", " terms=")
-
     @property
     def truth(self) -> Optional[bool]:
         """Access :attr:`~Predicate.truth` attribute."""

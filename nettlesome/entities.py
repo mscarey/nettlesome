@@ -53,14 +53,6 @@ class Entity(Term, BaseModel, extra=Extra.forbid):
         """
         return str(self)
 
-    def __repr__(self) -> str:
-        attrs = f"name='{self.name}'"
-        if not self.generic:
-            attrs += ", generic=False"
-        if self.plural:
-            attrs += ", plural=True"
-        return f"{self.__class__.__name__}({attrs})"
-
     def implies(
         self, other: Optional[Comparable], context: Optional[ContextRegister] = None
     ) -> bool:

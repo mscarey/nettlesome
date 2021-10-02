@@ -450,12 +450,6 @@ class Predicate(PhraseABC, BaseModel, extra=Extra.forbid):
     content: str
     truth: Optional[bool] = True
 
-    def __repr__(self):
-        return (
-            f"{self.__class__.__name__}(template='{self.template.template}', "
-            f"truth={self.truth})"
-        )
-
     def negated(self) -> Predicate:
         """Copy ``self``, with the opposite truth value."""
         return Predicate(

@@ -40,7 +40,7 @@ class TestStatements:
         city = Predicate(content="$place was a city")
         statement = Statement(predicate=city, terms=Entity(name="New York"))
         assert "<New York> was a city" in str(statement)
-        assert ", terms=[Entity(name='New York')]," in repr(statement)
+        assert ", terms=[Entity(name='New York'" in repr(statement)
 
     def test_get_terms(self, make_statement):
         terms = make_statement["friends"].terms
