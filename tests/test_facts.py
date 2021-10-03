@@ -141,6 +141,11 @@ class TestFacts:
         assert len(make_statement["crime"].predicate) == 1
         assert len(make_statement["crime"]) == 1
 
+    def test_bool_of_statement_is_true(self):
+        predicate = Predicate(content="context was included", truth=False)
+        no_context = Statement(predicate=predicate, terms=[])
+        assert bool(no_context) is True
+
     def test_predicate_with_entities(self, make_statement):
         content = make_statement["crime"].predicate._content_with_terms(
             [Entity(name="Jim")]

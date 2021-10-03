@@ -1539,6 +1539,9 @@ class Term(Comparable):
                 changes.insert_pair(factor, other_factors[i])
         return self.new_context(changes)
 
+    def __bool__(self) -> bool:
+        return True
+
     def add(
         self, other: Term, context: Optional[ContextRegister] = None
     ) -> Optional[Term]:
