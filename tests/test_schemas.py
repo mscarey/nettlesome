@@ -1,6 +1,10 @@
 from datetime import date
 
+from pydantic import ValidationError
+import pytest
+
 from nettlesome.predicates import Predicate
+from nettlesome.entities import Entity
 from nettlesome.quantities import Comparison, Q_
 from nettlesome.statements import Assertion
 
@@ -85,3 +89,13 @@ class TestFactorLoad:
         assert loaded.statement.terms[0].name == "Alice"
         dumped = loaded.dict()
         assert dumped["authority"]["name"] == "Bob"
+
+    def test_load_entity_with_type_field(self):
+        data = {"type": "Entity", "name": "Ed"}
+        loaded = Entity(**data)
+        assert loaded.name == "Ed"
+
+    def test_load_entity_with_wrong_type_field(self):
+        data = {"type": "Statement", "name": "Ed"}
+        with pytest.raises(ValidationError):
+            Entity(**data)

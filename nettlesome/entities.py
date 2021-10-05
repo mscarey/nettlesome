@@ -1,9 +1,10 @@
 """:class:`.Comparable` subclass for things that can be referenced in a Statement."""
 
 from __future__ import annotations
-from typing import ClassVar, Optional, Tuple
+from typing import ClassVar, Dict, Optional, Tuple
 
-from pydantic import BaseModel, Extra, Field, validator, ValidationError
+from pydantic import BaseModel, Extra, Field, validator, root_validator
+from pydantic import ValidationError
 
 from nettlesome.terms import Comparable, ContextRegister, Term
 
@@ -37,6 +38,13 @@ class Entity(Term, BaseModel, extra=Extra.forbid):
     generic: bool = True
     plural: bool = False
     context_factor_names: ClassVar[Tuple[str, ...]] = ()
+
+    @root_validator(pre=True)
+    def validate_type(cls, values) -> Dict:
+        name = values.pop("type", None)
+        if name and name.lower() != cls.__name__.lower():
+            raise ValidationError(f"Expected type {cls.__name__}, not {name}")
+        return values
 
     def __str__(self):
         if self.generic:
