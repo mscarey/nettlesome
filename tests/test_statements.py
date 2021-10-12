@@ -209,7 +209,7 @@ class TestStatements:
             terms=[Entity(name="Donald"), Entity(name="Daisy")],
         )
         new = statement.new_context(
-            changes=Entity(name="Mickey"),
+            changes=[Entity(name="Mickey")],
             terms_to_replace=[Entity(name="Donald"), Entity(name="Daisy")],
         )
         assert "<Mickey> loved <Daisy>".lower() in str(new).lower()
@@ -238,7 +238,7 @@ class TestStatements:
         statement = Statement(
             predicate=predicate, terms=[Entity(name="Independence Inn")]
         )
-        different = statement.new_context(Entity(name="Dragonfly Inn", generic=False))
+        different = statement.new_context([Entity(name="Dragonfly Inn", generic=False)])
         assert "Dragonfly Inn was a hotel" in str(different)
 
     def test_new_statement_from_entities(self):
@@ -460,7 +460,7 @@ class TestSameMeaning:
         assert not fact.means(fact_b)
 
     def test_equal_with_different_generic_subfactors(self):
-        shot_predicate = predicate = Predicate(content="$shooter shot $victim")
+        shot_predicate = Predicate(content="$shooter shot $victim")
         shot_fact = Statement(
             predicate=shot_predicate, terms=[Entity(name="Alice"), Entity(name="Bob")]
         )

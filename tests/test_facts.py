@@ -124,7 +124,7 @@ class TestFacts:
     def test_new_context_from_factor(self, make_statement):
         crime = make_statement["crime"]
         greg = Entity(name="Greg", generic=False)
-        different = crime.new_context(greg)
+        different = crime.new_context([greg])
         assert "Greg committed a crime" in str(different)
 
     def test_type_of_terms(self, make_statement):

@@ -13,7 +13,7 @@ from typing import Any, Callable, ClassVar, Dict, Iterable, Iterator
 from typing import List, NamedTuple, Optional, Sequence, Tuple, Union
 from typing import KeysView, ValuesView, ItemsView
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -657,8 +657,7 @@ class Comparable(ABC):
                 new_context = explanation.context.merged_with(generic_context)
                 if new_context:
                     yield explanation.with_context(new_context)
-            for result in self._means_if_concrete(other, explanation):
-                yield result
+            yield from self._means_if_concrete(other, explanation)
 
     def explanations_same_meaning(
         self,
@@ -745,7 +744,7 @@ class Comparable(ABC):
                 return value
         return None
 
-    def get_factor_by_str(self, query: str) -> Optional[Comparable]:
+    def get_factor_by_str(self, query: str) -> Optional[Term]:
         """
         Search of ``self`` and ``self``'s attributes for :class:`Factor` with specified string.
 
@@ -1215,8 +1214,6 @@ class ContextRegister:
         """Convert changes to ``factor``, expressed as built-in Python objects, to a ContextRegister."""
         if isinstance(changes, ContextRegister):
             return changes
-        if isinstance(changes, (str, Term)):
-            changes = [changes]
         if isinstance(changes, Dict):
             return cls.from_lists(
                 to_replace=list(changes),
@@ -1267,7 +1264,7 @@ class ContextRegister:
             return False
         return self[key.key].compare_keys(value)
 
-    def factor_pairs(self) -> Iterator[Tuple[Term, Term]]:
+    def factor_pairs(self) -> Iterator[Tuple[Optional[Term], Term]]:
         """Get pairs of corresponding Comparables."""
         for value in self.values():
             yield (self.get_reverse_factor(value), value)
@@ -1289,7 +1286,7 @@ class ContextRegister:
         """Get value corresponding to the key ``query``."""
         return self.get(query.short_string)
 
-    def get_reverse_factor(self, query: Comparable) -> Optional[Comparable]:
+    def get_reverse_factor(self, query: Term) -> Optional[Term]:
         """Get key corresponding to the value ``query``."""
         return self.reverse_matches.get(query.short_string)
 
@@ -1305,7 +1302,7 @@ class ContextRegister:
         """Get values from ``matches`` mapping."""
         return self.matches.values()
 
-    def check_insert_pair(self, key: Comparable, value: Comparable) -> None:
+    def check_insert_pair(self, key: Term, value: Term) -> None:
         """Raise exception if a pair of corresponding Comparables can't be added to register."""
         for comp in (key, value):
             if not isinstance(comp, Comparable):
@@ -1328,7 +1325,7 @@ class ContextRegister:
                 + f"{found_key.key}, not {key.key}"
             )
 
-    def insert_pair(self, key: Comparable, value: Comparable) -> None:
+    def insert_pair(self, key: Term, value: Term) -> None:
         """Add a pair of corresponding Comparables."""
         self.check_insert_pair(key=key, value=value)
 
@@ -1480,14 +1477,12 @@ class Explanation:
             return False
         if not self.context.means(other.context):
             return False
-        if not len(self.reasons) == len(other.reasons):
+        if len(self.reasons) != len(other.reasons):
             return False
-        for reason in self.reasons:
-            if not any(
-                other_reason.key == reason.key for other_reason in other.reasons
-            ):
-                return False
-        return True
+        return not any(
+            all(other_reason.key != reason.key for other_reason in other.reasons)
+            for reason in self.reasons
+        )
 
     def operate(self, left: Comparable, right: Comparable) -> Iterator[Explanation]:
         """Generate further explanations for applying self.operation to a new Factor pair."""

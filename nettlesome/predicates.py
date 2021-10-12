@@ -7,7 +7,7 @@ the `pint <https://pint.readthedocs.io/en/>`_ library).
 """
 
 from __future__ import annotations
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 
 from itertools import product
 
@@ -331,7 +331,7 @@ class PhraseABC(metaclass=ABCMeta):
         """
         return self.template.substitute_with_plurals(terms)
 
-    def same_content_meaning(self, other: Predicate) -> bool:
+    def same_content_meaning(self, other: PhraseABC) -> bool:
         """
         Test if :attr:`~Predicate.content` strings of ``self`` and ``other`` have same meaning.
 
@@ -347,14 +347,14 @@ class PhraseABC(metaclass=ABCMeta):
             == other.content_without_placeholders().lower()
         )
 
-    def same_term_positions(self, other: Predicate) -> bool:
+    def same_term_positions(self, other: PhraseABC) -> bool:
         """Test if self and other have same positions for interchangeable Terms."""
 
         return list(self.term_positions().values()) == list(
             other.term_positions().values()
         )
 
-    def _same_meaning_as_true_predicate(self, other: Predicate) -> bool:
+    def _same_meaning_as_true_predicate(self, other: PhraseABC) -> bool:
         """Test if self and other mean the same if they are both True."""
         if not isinstance(other, PhraseABC):
             raise TypeError(
@@ -383,7 +383,7 @@ class PhraseABC(metaclass=ABCMeta):
 
         for index, placeholder in enumerate(without_duplicates):
             if placeholder[-1].isdigit:
-                for k in result.keys():
+                for k, v in result.items():
                     if k[-1].isdigit() and k[:-1] == placeholder[:-1]:
                         result[k].add(index)
         return result
@@ -391,8 +391,7 @@ class PhraseABC(metaclass=ABCMeta):
     def term_index_permutations(self) -> List[Tuple[int, ...]]:
         """Get the arrangements of all this Predicate's terms that preserve the same meaning."""
         product_of_positions = product(*self.term_positions().values())
-        without_duplicates = [x for x in product_of_positions if len(set(x)) == len(x)]
-        return without_duplicates
+        return [x for x in product_of_positions if len(set(x)) == len(x)]
 
     def _add_truth_to_content(self, content: str) -> str:
         """Get self's content with a prefix indicating the truth value."""

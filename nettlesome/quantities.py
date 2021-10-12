@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractproperty
+from abc import abstractproperty
 from datetime import date
 from decimal import Decimal
 from typing import Any, ClassVar, Dict, Optional, Union

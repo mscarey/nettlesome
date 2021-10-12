@@ -6,10 +6,8 @@ from copy import deepcopy
 import functools
 import operator
 import textwrap
-from typing import Callable, ClassVar, Dict, Iterable, Iterator, List
+from typing import Callable, ClassVar, Dict, Iterator, List
 from typing import Optional, Sequence, Tuple, Union
-
-from pydantic import BaseModel
 
 from nettlesome.factors import Factor
 from nettlesome.terms import (
@@ -115,7 +113,7 @@ class FactorGroup(Comparable):
 
     def __add__(
         self, other: Union[FactorGroup, Sequence[Factor], Factor]
-    ) -> FactorGroup:
+    ) -> Optional[FactorGroup]:
         return self.add(other)
 
     @property

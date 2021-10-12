@@ -4,8 +4,7 @@ import pytest
 from sympy import S, oo
 
 from nettlesome.entities import Entity
-from nettlesome.quantities import UnitRange, IntRange, DecimalRange, DateRange, Q_
-from nettlesome.quantities import Comparison
+from nettlesome.quantities import UnitRange, IntRange, DateRange, Q_, Comparison
 from nettlesome.statements import Statement
 
 
