@@ -264,7 +264,7 @@ class Assertion(Factor, BaseModel):
     name: str = ""
     absent: bool = False
     generic: bool = False
-    context_factor_names: ClassVar[Tuple[str, str]] = ("statement", "authority")
+    context_factor_names: ClassVar[Tuple[str, ...]] = ("statement", "authority")
 
     def base_string(self):
         text = f"the {self.__class__.__name__.lower()}" + " {}"

@@ -613,13 +613,11 @@ class TestContradiction:
             ]
         )
         assert nafta.contradicts(brexit)
-        answers = []
+
         explanations_usa_like_uk = nafta.explanations_contradiction(
             brexit, context=([Entity(name="USA")], [Entity(name="UK")])
         )
-        for answer in explanations_usa_like_uk:
-            answers.append(answer)
-        assert len(answers) == 2
+        assert len(list(explanations_usa_like_uk)) == 2
 
     def test_implication_no_repeated_explanations(self):
         large_payments = FactorGroup(

@@ -116,9 +116,7 @@ def new_context_helper(func: Callable):
     return wrapper
 
 
-def expand_string_from_source(
-    term: Union[str, Term], source: Optional[Comparable]
-) -> Term:
+def expand_string_from_source(term: Union[str, Term], source: Comparable) -> Term:
     """Replace ``term`` with the real term it references, if ``term`` is a string reference."""
     if isinstance(term, str):
         result: Optional[Term] = source.get_factor(term)
@@ -1244,10 +1242,10 @@ class ContextRegister:
             return False
         return self[key.key].compare_keys(value)
 
-    def factor_pairs(self) -> Iterator[Tuple[Optional[Term], Term]]:
+    def factor_pairs(self) -> Iterator[Tuple[Term, Term]]:
         """Get pairs of corresponding Comparables."""
         for value in self.values():
-            yield (self.get_reverse_factor(value), value)
+            yield (self.reverse_matches[value.key], value)
 
     def means(self, other: ContextRegister) -> bool:
         """Determine if self and other have the same Factor matches."""
@@ -1283,15 +1281,13 @@ class ContextRegister:
         return self.matches.values()
 
     def check_insert_pair(self, key: Term, value: Term) -> None:
-        """Raise exception if a pair of corresponding Comparables can't be added to register."""
+        """Raise exception if a pair of corresponding Terms can't be added to register."""
         for comp in (key, value):
             if not isinstance(comp, Term):
                 raise TypeError(
                     "'key' and 'value' must both be subclasses of 'Term'",
                     f"but {comp} was type {type(comp)}.",
                 )
-            if isinstance(comp, Iterable) and not isinstance(comp, BaseModel):
-                raise TypeError("Iterable objects may not be added to ContextRegister")
         found_value = self.get_factor(key)
         if found_value and not self.check_match(key, value):
             raise KeyError(
@@ -1389,8 +1385,7 @@ class FactorMatch(NamedTuple):
         indent = "  "
         left = textwrap.indent(str(self.left), prefix=indent)
         right = textwrap.indent(str(self.right), prefix=indent)
-        match_text = f"{left}\n" f"{relation}\n" f"{right}\n"
-        return match_text
+        return f"{left}\n" f"{relation}\n" f"{right}\n"
 
 
 class Explanation:
