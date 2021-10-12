@@ -157,6 +157,10 @@ class Comparable(ABC):
         Indicates whether the object refers to multiple things.
     """
 
+    generic: bool
+    absent: bool
+    context_factor_names: ClassVar[Tuple[str]]
+
     @property
     def key(self) -> str:
         """Return string representation of self for use as a key in a ContextRegister."""
@@ -1129,7 +1133,7 @@ class ContextRegister:
     def reason(self) -> str:
         """Make statement matching analagous context factors of self and other."""
         similies = [
-            f'{key.short_string} {"are" if (key.plural) else "is"} like {value.short_string}'
+            f'{key.short_string} {"are" if (key.__dict__.get("plural")) else "is"} like {value.short_string}'
             for key, value in self.factor_pairs()
         ]
         if len(similies) > 1:

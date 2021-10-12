@@ -1,6 +1,5 @@
 """Factors that can be included in FactorGroups."""
 
-from typing import Optional
 from nettlesome.terms import Term
 
 

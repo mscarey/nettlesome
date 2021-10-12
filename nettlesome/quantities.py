@@ -8,7 +8,7 @@ from decimal import Decimal
 from typing import Any, ClassVar, Dict, Optional, Union
 
 from pint import UnitRegistry, Quantity
-from pydantic import BaseModel, ValidationError, root_validator, validator
+from pydantic import BaseModel, root_validator, validator
 import sympy
 from sympy import Eq, Interval, oo, S
 from sympy.sets import EmptySet, FiniteSet
@@ -536,8 +536,7 @@ class Comparison(BaseModel, PhraseABC):
         quantity = value.strip()
 
         try:
-            result = date.fromisoformat(value)
-            return result
+            return date.fromisoformat(value)
         except ValueError:
             pass
 
@@ -602,7 +601,7 @@ class Comparison(BaseModel, PhraseABC):
     def _add_truth_to_content(self, content: str) -> str:
         """Get self's content with a prefix indicating the truth value."""
         content = super()._add_truth_to_content(content)
-        return f"{content} {str(self.quantity_range)}"
+        return f"{content} {self.quantity_range}"
 
     def implies(self, other: Any) -> bool:
         r"""

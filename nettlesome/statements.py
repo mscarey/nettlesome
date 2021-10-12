@@ -7,7 +7,7 @@ import operator
 from typing import ClassVar, Dict, Iterator, List, Mapping
 from typing import Optional, Sequence, Tuple, Union
 
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, validator, root_validator
 from slugify import slugify
 
 from nettlesome.terms import (
@@ -17,7 +17,6 @@ from nettlesome.terms import (
     TermSequence,
     ContextRegister,
     new_context_helper,
-    DuplicateTermError,
 )
 from nettlesome.entities import Entity
 from nettlesome.factors import Factor
@@ -63,7 +62,6 @@ class Statement(Factor, BaseModel):
     name: str = ""
     absent: bool = False
     generic: bool = False
-    truth: Optional[bool] = None
 
     @root_validator(pre=True)
     def move_truth_to_predicate(cls, values):
@@ -288,5 +286,4 @@ class Assertion(Factor, BaseModel):
 
 
 Statement.update_forward_refs()
-
 Assertion.update_forward_refs()
