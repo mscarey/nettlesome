@@ -619,6 +619,23 @@ class TestContradiction:
         )
         assert len(list(explanations_usa_like_uk)) == 2
 
+    def test_register_for_none(self):
+        treaty = FactorGroup(
+            [
+                Statement(
+                    predicate="$country1 signed a treaty with $country2",
+                    terms=[Entity(name="UK"), Entity(name="European Union")],
+                ),
+            ]
+        )
+        registers = list(
+            treaty.update_context_register(
+                other=None, context=ContextRegister(), comparison=means
+            )
+        )
+        assert len(registers) == 1
+        assert not registers[0]  # empty register
+
     def test_implication_no_repeated_explanations(self):
         large_payments = FactorGroup(
             [

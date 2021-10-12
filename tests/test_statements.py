@@ -1190,7 +1190,7 @@ class TestContradiction:
             [Entity(name="Alice")], [Entity(name="Dan")]
         )
         update = left.update_context_register(right, register, comparison=means)
-        assert not any(register is not None for register in update)
+        assert all(register is None for register in update)
 
     def test_entity_consistency_identity_not_equality(self):
         left = Statement(
@@ -1205,7 +1205,7 @@ class TestContradiction:
             [Entity(name="Dan")], [Entity(name="Dan")]
         )
         update = left.update_context_register(right, register, comparison=means)
-        assert not any(register is not None for register in update)
+        assert all(register is None for register in update)
 
     def test_check_entity_consistency_type_error(self, make_statement, make_predicate):
         """
