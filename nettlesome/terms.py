@@ -331,10 +331,6 @@ class Comparable(ABC):
             context = ContextRegister()
         if other is None:
             yield context
-        elif self.generic or other.generic:
-            self_value = context.get(self.key)
-            if self_value is None or (self_value.compare_keys(other)):
-                yield self._generic_register(other)
         else:
             already_found: List[ContextRegister] = []
             for term_permutation in self.term_permutations():
@@ -651,7 +647,7 @@ class Comparable(ABC):
             and self.generic == other.generic
             and self.absent == other.absent
         ):
-            if self.generic:
+            if isinstance(other, Term) and other.generic:
                 generic_context = self._generic_register(other)
                 new_context = explanation.context.merged_with(generic_context)
                 if new_context:
@@ -669,11 +665,6 @@ class Comparable(ABC):
         )
         for new in self._explanations_same_meaning(other=other, explanation=context):
             yield new.with_match(FactorMatch(self, means, other))
-
-    def _generic_register(self, other: Term) -> ContextRegister:
-        register = ContextRegister()
-        register.insert_pair(self, other)
-        return register
 
     def _implies_if_present(
         self, other: Comparable, explanation: Explanation
@@ -1305,9 +1296,9 @@ class ContextRegister:
     def check_insert_pair(self, key: Term, value: Term) -> None:
         """Raise exception if a pair of corresponding Comparables can't be added to register."""
         for comp in (key, value):
-            if not isinstance(comp, Comparable):
+            if not isinstance(comp, Term):
                 raise TypeError(
-                    "'key' and 'value' must both be subclasses of 'Comparable'",
+                    "'key' and 'value' must both be subclasses of 'Term'",
                     f"but {comp} was type {type(comp)}.",
                 )
             if isinstance(comp, Iterable) and not isinstance(comp, BaseModel):
@@ -1582,6 +1573,28 @@ class Term(Comparable):
             yield from super().explanations_consistent_with(
                 other=other, context=context
             )
+
+    def _context_registers(
+        self,
+        other: Optional[Comparable],
+        comparison: Callable,
+        context: Optional[ContextRegister] = None,
+    ) -> Iterator[ContextRegister]:
+        if context is None:
+            context = ContextRegister()
+        if other is None:
+            yield context
+        elif isinstance(other, Term) and (self.generic or other.generic):
+            self_value = context.get(self.key)
+            if self_value is None or (self_value.compare_keys(other)):
+                yield self._generic_register(other)
+        else:
+            yield from super()._context_registers(other, comparison, context=context)
+
+    def _generic_register(self, other: Term) -> ContextRegister:
+        register = ContextRegister()
+        register.insert_pair(self, other)
+        return register
 
     def generic_terms_by_str(self) -> Dict[str, Term]:
         """Get all generic Terms found in this Term, indexed by their string keys."""
