@@ -335,11 +335,12 @@ class FactorGroup(Comparable):
     ) -> Iterator[ContextRegister]:
         for likely in self.likely_contexts(other, context):
             partial = self + other.new_context(likely.reversed())
-            try:
-                partial.internally_consistent()
-                yield likely
-            except ValueError:
-                pass
+            if partial is not None:
+                try:
+                    partial.internally_consistent()
+                    yield likely
+                except ValueError:
+                    pass
 
     def _verbose_comparison(
         self,

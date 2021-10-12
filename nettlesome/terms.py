@@ -1116,7 +1116,7 @@ class ContextRegister:
         self._matches = {}
         self._reverse_matches = {}
 
-    def __getitem__(self, item: str) -> Comparable:
+    def __getitem__(self, item: str) -> Term:
         return self.matches[item]
 
     def __len__(self):
@@ -1258,7 +1258,7 @@ class ContextRegister:
             return False
         return self_value.compare_keys(other.get_factor(key_factor))
 
-    def check_match(self, key: Comparable, value: Comparable) -> bool:
+    def check_match(self, key: Term, value: Term) -> bool:
         """Test if key and value are in ``matches`` as corresponding to one another."""
         if self.get(key.key) is None:
             return False
