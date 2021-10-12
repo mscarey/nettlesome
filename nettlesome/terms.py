@@ -673,12 +673,6 @@ class Comparable(ABC):
             the attribute ``absent == True``.
         """
         if isinstance(other, self.__class__):
-            if isinstance(other, Term) and other.generic:
-                if explanation.context.get_factor(self) is None or (
-                    explanation.context.get_factor(self) == other
-                ):
-                    new_context = self._generic_register(other)
-                    yield explanation.with_context(new_context)
             if not self.generic:
                 yield from self._implies_if_concrete(other, explanation)
 
@@ -1601,6 +1595,21 @@ class Term(Comparable):
             if new_context:
                 yield explanation.with_context(new_context)
         yield from super()._explanations_same_meaning(other, explanation)
+
+    def _implies_if_present(
+        self, other: Comparable, explanation: Explanation
+    ) -> Iterator[Explanation]:
+        if (
+            isinstance(other, self.__class__)
+            and other.generic
+            and (
+                explanation.context.get_factor(self) is None
+                or (explanation.context.get_factor(self) == other)
+            )
+        ):
+            new_context = self._generic_register(other)
+            yield explanation.with_context(new_context)
+        yield from super()._implies_if_present(other, explanation)
 
     def _generic_register(self, other: Term) -> ContextRegister:
         register = ContextRegister()
