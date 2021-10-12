@@ -5,6 +5,7 @@ from sympy import S, oo
 
 from nettlesome.entities import Entity
 from nettlesome.quantities import UnitRange, IntRange, DecimalRange, DateRange, Q_
+from nettlesome.quantities import Comparison
 from nettlesome.statements import Statement
 
 
@@ -87,3 +88,10 @@ class TestCompareQuantities:
                     terms=[Entity(name="thing"), Entity(name="place")],
                 )
             )
+
+    def test_comparison_from_expression_without_sign(self):
+        comparison = Comparison(
+            **{"content": "{}'s favorite number was", "expression": 42}
+        )
+        assert comparison.sign == "=="
+        assert str(comparison) == "that {}'s favorite number was exactly equal to 42"

@@ -467,7 +467,7 @@ class Comparison(BaseModel, PhraseABC):
         """Reverse the sign of a Comparison if necessary."""
         if not values.get("quantity_range"):
             quantity = cls.expression_to_quantity(values.pop("expression", None))
-            sign = values.pop("sign", "")
+            sign = values.pop("sign", "==")
             include_negatives = values.pop("include_negatives", None)
             if isinstance(quantity, date):
                 values["quantity_range"] = DateRange(
