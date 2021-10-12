@@ -583,13 +583,7 @@ class Comparable(ABC):
                 + "implication with other Comparable objects or None."
             )
         if isinstance(other, self.__class__):
-            if not self.__dict__.get("absent"):
-                if not other.__dict__.get("absent"):
-                    yield from self._implies_if_present(other, explanation)
-                else:
-                    yield from self._contradicts_if_present(other, explanation)
-
-            else:
+            if self.__dict__.get("absent"):
                 reversed_explanation = explanation.with_context(
                     explanation.context.reversed()
                 )
@@ -601,6 +595,11 @@ class Comparable(ABC):
                     register.with_context(register.context.reversed())
                     for register in test
                 )
+
+            elif not other.__dict__.get("absent"):
+                yield from self._implies_if_present(other, explanation)
+            else:
+                yield from self._contradicts_if_present(other, explanation)
 
     def explanations_implication(
         self,
@@ -671,7 +670,7 @@ class Comparable(ABC):
         for new in self._explanations_same_meaning(other=other, explanation=context):
             yield new.with_match(FactorMatch(self, means, other))
 
-    def _generic_register(self, other: Comparable) -> ContextRegister:
+    def _generic_register(self, other: Term) -> ContextRegister:
         register = ContextRegister()
         register.insert_pair(self, other)
         return register
@@ -688,7 +687,7 @@ class Comparable(ABC):
             the attribute ``absent == True``.
         """
         if isinstance(other, self.__class__):
-            if other.generic:
+            if isinstance(other, Term) and other.generic:
                 if explanation.context.get_factor(self) is None or (
                     explanation.context.get_factor(self) == other
                 ):
@@ -832,11 +831,7 @@ class Comparable(ABC):
 
     def implies_same_context(self, other: Comparable) -> bool:
         """Check if self would imply other if their generic terms are matched in order."""
-        same_context = ContextRegister()
-        for key in self.generic_terms():
-            same_context.insert_pair(key, key)
-        for value in other.generic_terms():
-            same_context.insert_pair(value, value)
+        same_context = self.make_same_context(other)
         return self.implies(other, context=same_context)
 
     def contradicts_same_context(self, other: Comparable) -> bool:
@@ -845,12 +840,17 @@ class Comparable(ABC):
 
         Used to check consistency of FactorGroups.
         """
-        same_context = ContextRegister()
-        for key in self.generic_terms():
-            same_context.insert_pair(key, key)
-        for value in other.generic_terms():
-            same_context.insert_pair(value, value)
+        same_context = self.make_same_context(other)
         return self.contradicts(other, context=same_context)
+
+    def make_same_context(self, other: Comparable):
+        """Make ContextRegister assuming all terms in self correspond to the same terms in other."""
+        result = ContextRegister()
+        for key in self.generic_terms():
+            result.insert_pair(key, key)
+        for value in other.generic_terms():
+            result.insert_pair(value, value)
+        return result
 
     def likely_contexts(
         self, other: Comparable, context: Optional[ContextRegister] = None
