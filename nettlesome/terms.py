@@ -159,7 +159,7 @@ class Comparable(ABC):
 
     generic: bool
     absent: bool
-    context_factor_names: ClassVar[Tuple[str]]
+    context_factor_names: ClassVar[Tuple[str, ...]]
 
     @property
     def key(self) -> str:
@@ -647,11 +647,6 @@ class Comparable(ABC):
             and self.generic == other.generic
             and self.absent == other.absent
         ):
-            if isinstance(other, Term) and other.generic:
-                generic_context = self._generic_register(other)
-                new_context = explanation.context.merged_with(generic_context)
-                if new_context:
-                    yield explanation.with_context(new_context)
             yield from self._means_if_concrete(other, explanation)
 
     def explanations_same_meaning(
@@ -700,7 +695,7 @@ class Comparable(ABC):
             generic :class:`.Factor`\s as keys and the :class:`.Factor`\s
             themselves as values.
         """
-        generics: Dict[str, Comparable] = {}
+        generics: Dict[str, Term] = {}
         for factor in self.term_sequence:
             if factor is not None:
                 for generic in factor.generic_terms():
@@ -1590,6 +1585,22 @@ class Term(Comparable):
                 yield self._generic_register(other)
         else:
             yield from super()._context_registers(other, comparison, context=context)
+
+    def _explanations_same_meaning(
+        self, other: Comparable, explanation: Explanation
+    ) -> Iterator[Explanation]:
+        if (
+            isinstance(other, Term)
+            and self.__class__ == other.__class__
+            and self.generic
+            and other.generic
+            and self.absent == other.absent
+        ):
+            generic_context = self._generic_register(other)
+            new_context = explanation.context.merged_with(generic_context)
+            if new_context:
+                yield explanation.with_context(new_context)
+        yield from super()._explanations_same_meaning(other, explanation)
 
     def _generic_register(self, other: Term) -> ContextRegister:
         register = ContextRegister()
