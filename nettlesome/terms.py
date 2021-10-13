@@ -316,7 +316,7 @@ class Comparable(ABC):
         self,
         other: Optional[Comparable],
         comparison: Callable,
-        context: Optional[ContextRegister] = None,
+        context: ContextRegister,
     ) -> Iterator[ContextRegister]:
         r"""
         Search for ways to match :attr:`terms` of ``self`` and ``other``.
@@ -325,8 +325,6 @@ class Comparable(ABC):
             all valid ways to make matches between
             corresponding :class:`Factor`\s.
         """
-        if context is None:
-            context = ContextRegister()
         if other is None:
             yield context
         else:
@@ -1067,8 +1065,7 @@ class Comparable(ABC):
         """
         if other and not isinstance(other, Comparable):
             raise TypeError
-        if not isinstance(context, ContextRegister):
-            raise TypeError
+        context = context or ContextRegister()
         for incoming_register in self._context_registers(
             other, comparison, context=context
         ):

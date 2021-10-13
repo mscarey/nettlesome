@@ -636,6 +636,31 @@ class TestContradiction:
         assert len(registers) == 1
         assert not registers[0]  # empty register
 
+    def test_update_context_register_from_none(self):
+        left = FactorGroup(
+            [
+                Statement(
+                    predicate="$shooter shot $victim",
+                    terms=[Entity(name="Alice"), Entity(name="Bob")],
+                )
+            ]
+        )
+        right = FactorGroup(
+            [
+                Statement(
+                    predicate="$shooter shot $victim",
+                    terms=[Entity(name="Craig"), Entity(name="Dan")],
+                )
+            ]
+        )
+        update = left.update_context_register(
+            right,
+            context=None,
+            comparison=means,
+        )
+        explanation = next(update)
+        assert "!"
+
     def test_implication_no_repeated_explanations(self):
         large_payments = FactorGroup(
             [
