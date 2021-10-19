@@ -84,7 +84,7 @@ context where it’s only part of a longer sentence.
 The use of different placeholders doesn’t
 cause :class:`~nettlesome.predicates.Predicate`\s to be considered to have
 different meanings. The example below demonstrates this using
-the :meth:`~nettlesome.predicates.Predicate.means` method, which tests
+the :meth:`~nettlesome.predicates.PhraseABC.means` method, which tests
 whether two Nettlesome objects have the same meaning.
 
     >>> account_for_partnership = Predicate(content="$applicant opened a bank account for $partnership")

@@ -9,5 +9,5 @@ class Factor(Term):
 
     Factors can be compared as a group by including them
     in :class:`~nettlesome.groups.FactorGroup`\s, unlike
-    :class:`~nettlesome.term.Term`\s that are not Factors.
+    :class:`~nettlesome.terms.Term`\s that are not Factors.
     """

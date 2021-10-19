@@ -33,8 +33,6 @@ release = nettlesome.__version__
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
-    "sphinx.ext.graphviz",
-    "sphinx.ext.inheritance_diagram",
     "sphinx.ext.intersphinx",
     "sphinx_autodoc_typehints",
     "sphinx_rtd_theme",
