@@ -33,6 +33,7 @@ release = nettlesome.__version__
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.graphviz",
     "sphinx.ext.inheritance_diagram",
     "sphinx.ext.intersphinx",
     "sphinx_autodoc_typehints",
@@ -40,8 +41,6 @@ extensions = [
 ]
 
 intersphinx_mapping = {
-    "apispec": ("https://apispec.readthedocs.io/en/latest/", None),
-    "marshmallow": ("https://marshmallow.readthedocs.io/en/stable/", None),
     "pint": ("https://pint.readthedocs.io/en/stable/", None),
     "python": ("https://docs.python.org/3", None),
     "sympy": ("https://docs.sympy.org/latest/", None),
