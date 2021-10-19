@@ -44,8 +44,6 @@ Nettlesome itself doesn't depend on any legal concepts or legal knowledge.
     api/assertions.rst
     api/explanations.rst
     api/groups.rst
-    api/schemas.rst
-    api/spec.rst
 
 .. toctree::
     :maxdepth: 1

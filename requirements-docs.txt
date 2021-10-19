@@ -1,10 +1,7 @@
-apispec[validation]>=4.3.0
-apispec-oneofschema
-marshmallow>=3.10
-marshmallow-oneofschema
 pint>=0.15
 python-slugify
+pydantic
+sympy~=1.8
 sphinx>=2.1.2
 sphinx-autodoc-typehints
 sphinx-rtd-theme
-sympy~=1.7

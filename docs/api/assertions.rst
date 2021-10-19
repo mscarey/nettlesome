@@ -2,10 +2,10 @@
 Assertions
 ==============
 
-.. inheritance-diagram:: nettlesome.assertions.Assertion
-    :top-classes: authorityspoke.comparisons.Comparable
+.. inheritance-diagram:: nettlesome.statements.Assertion
+    :top-classes: authorityspoke.terms.Comparable
     :parts: 1
 
-.. autoclass:: nettlesome.assertions.Assertion
+.. autoclass:: nettlesome.statements.Assertion
     :members:
     :special-members:

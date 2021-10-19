@@ -10,7 +10,5 @@ pytest-profiling
 pytest>=6.0.0
 rope
 setuptools
-sphinx-autodoc-typehints
-sphinx>=2.1.2
 twine
 wheel
