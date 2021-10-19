@@ -1,8 +1,13 @@
 Changelog
 =========
-0.6.0 (2021-05-20)
+0.6.0 (2021-10-19)
 ------------------
-- replace NumberRange with IntRange, FloatRange
+- replace NumberRange with IntRange and FloatRange
+- replace Marshmallow serializers with Pydantic
+- Entity and Predicate models don't allow extra fields
+- add equal sign as default value for QuantityRange sign
+- fix bug: bool(Term) returned False if the Term's "length" was 0
+- remove custom reprs that can be replaced by Pydantic BaseModel repr
 
 0.5.1 (2021-05-20)
 ------------------
