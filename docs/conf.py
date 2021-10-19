@@ -36,7 +36,6 @@ extensions = [
     "sphinx.ext.inheritance_diagram",
     "sphinx.ext.intersphinx",
     "sphinx_autodoc_typehints",
-    "sphinx.ext.graphviz",
     "sphinx_rtd_theme",
 ]
 
