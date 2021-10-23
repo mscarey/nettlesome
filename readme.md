@@ -2,7 +2,7 @@
 
 Simplified semantic reasoning in Python
 
-[![An Ethical Open Source Project](https://img.shields.io/badge/open-ethical-%234baaaa)](https://ethicalsource.dev/licenses/) [![Tests](https://github.com/mscarey/nettlesome/actions/workflows/python-package.yml/badge.svg)](https://github.com/mscarey/nettlesome/actions) [![Coverage Status](https://coveralls.io/repos/github/mscarey/nettlesome/badge.svg?branch=master)](https://coveralls.io/github/mscarey/nettlesome?branch=master) [![Documentation Status](https://readthedocs.org/projects/nettlesome/badge/?version=latest)](https://nettlesome.readthedocs.io/en/latest/?badge=latest)
+[![An Ethical Open Source Project](https://img.shields.io/badge/open-ethical-%234baaaa)](https://ethicalsource.dev/licenses/) [![Tests](https://github.com/mscarey/nettlesome/actions/workflows/python-package.yml/badge.svg)](https://github.com/mscarey/nettlesome/actions) [![Coverage Status](https://coveralls.io/repos/github/mscarey/nettlesome/badge.svg?branch=master)](https://coveralls.io/github/mscarey/nettlesome?branch=master) [![Documentation Status](https://readthedocs.org/projects/nettlesome/badge/?version=latest)](https://nettlesome.readthedocs.io/en/latest/?badge=latest) [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/nettlesome)](https://pypi.org/project/nettlesome/)
 
 Nettlesome is a Python
 library defining a limited grammar of natural-language statements

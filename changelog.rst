@@ -1,5 +1,9 @@
 Changelog
 =========
+0.6.1 (2021-10-23)
+------------------
+- add MANIFEST.in (to display readme on PyPI)
+
 0.6.0 (2021-10-19)
 ------------------
 - replace NumberRange with IntRange and FloatRange
