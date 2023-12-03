@@ -68,8 +68,8 @@ class TestQuantityInterval:
             sign=">",
             expression=Q_("20 miles"),
         )
-        assert comparison.interval == Interval(20, oo, left_open=True)
-        assert "quantity='20 mile'" in repr(comparison)
+        assert comparison.interval == Interval(Decimal(20), oo, left_open=True)
+        assert "quantity_magnitude=Decimal('20')" in repr(comparison)
 
     def test_negated_method(self, make_comparison):
         as_false = make_comparison["exact"].negated()
@@ -108,7 +108,8 @@ class TestQuantityInterval:
             expression=Q_("20 miles"),
         )
         assert comparison.interval == sympy.Union(
-            Interval(0, 20, right_open=True), Interval(20, oo, left_open=True)
+            Interval(0, Decimal(20), right_open=True),
+            Interval(Decimal(20), oo, left_open=True),
         )
 
     def test_str_not_equal(self, make_comparison):

@@ -1,4 +1,5 @@
 from datetime import date
+from decimal import Decimal
 
 from pydantic import ValidationError
 import pytest
@@ -55,7 +56,8 @@ class TestPredicateDump:
             expression=Q_("35 feet"),
         )
         dumped = predicate.dict()
-        assert dumped["quantity_range"]["quantity"] == "35 foot"
+        assert dumped["quantity_range"]["quantity_magnitude"] == Decimal("35")
+        assert dumped["quantity_range"]["quantity_units"] == "foot"
 
     def test_round_trip(self):
         predicate = Comparison(

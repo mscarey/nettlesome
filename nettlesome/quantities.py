@@ -233,6 +233,10 @@ class UnitRange(QuantityRange, BaseModel):
         return Quantity(self.quantity_magnitude, self.quantity_units)
 
     @property
+    def quantity(self) -> Quantity:
+        return self.q
+
+    @property
     def domain(self) -> sympy.Set:
         """Get the domain of the quantity range."""
         return S.Reals
