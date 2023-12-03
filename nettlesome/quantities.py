@@ -220,30 +220,22 @@ class QuantityRange(BaseModel):
 class UnitRange(QuantityRange, BaseModel):
     """A range defined relative to a pint Quantity."""
 
-    quantity: str
+    quantity_magnitude: Decimal
+    quantity_units: str
     sign: str = "=="
     include_negatives: Optional[bool] = None
 
-    @validator("quantity", pre=True)
-    def validate_quantity(cls, quantity: Union[Quantity, str]) -> str:
-        """Validate that quantity is a pint Quantity."""
-        if isinstance(quantity, str):
-            quantity = Q_(quantity)
-        if not isinstance(quantity, Quantity):
-            raise TypeError(
-                f"quantity must be a pint Quantity or string, not {type(quantity)}"
-            )
-        return str(quantity)
+    class Config:
+        arbitrary_types_allowed = True
+
+    @property
+    def q(self) -> Quantity:
+        return Quantity(self.quantity_magnitude, self.quantity_units)
 
     @property
     def domain(self) -> sympy.Set:
         """Get the domain of the quantity range."""
         return S.Reals
-
-    @property
-    def pint_quantity(self) -> Quantity:
-        """Get the Quantity as a Pint object."""
-        return Q_(self.quantity)
 
     @property
     def magnitude(self) -> Union[int, float]:
@@ -315,11 +307,7 @@ class UnitRange(QuantityRange, BaseModel):
         return other_interval.is_subset(self.interval)
 
     def _quantity_string(self) -> str:
-        return super()._quantity_string() + str(self.quantity)
-
-    @property
-    def q(self) -> Quantity:
-        return Q_(self.quantity)
+        return super()._quantity_string() + str(self.q)
 
 
 class DateRange(QuantityRange, BaseModel):
@@ -451,9 +439,12 @@ class Comparison(BaseModel, PhraseABC):
                     include_negatives=include_negatives,
                 )
             elif isinstance(quantity, (str, Quantity)):
+                if isinstance(quantity, str):
+                    quantity = Q_(quantity)
                 values["quantity_range"] = UnitRange(
                     sign=sign,
-                    quantity=str(quantity),
+                    quantity_magnitude=Decimal(quantity.magnitude),
+                    quantity_units=str(quantity.units),
                     include_negatives=include_negatives,
                 )
             else:

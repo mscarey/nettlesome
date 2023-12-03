@@ -1,5 +1,7 @@
 from datetime import date
+from decimal import Decimal
 
+from pint import Quantity
 import pytest
 from sympy import S, oo
 
@@ -10,25 +12,30 @@ from nettlesome.statements import Statement
 
 class TestQuantities:
     def test_unitregistry_imports_do_not_conflict(self, make_comparison):
-        left = UnitRange(quantity=Q_("20 meters"), sign=">")
+        left = UnitRange(quantity_magnitude=20, quantity_units="meter", sign=">")
         right = make_comparison["meters"].quantity_range
         assert left.implies(right)
-        assert left.pint_quantity == Q_("20 meters")
+        assert left.q == Quantity(Decimal("20"), "meter")
 
     def test_quantity_from_string(self):
-        left = UnitRange(quantity="2000 days", sign="<")
+        left = UnitRange(quantity_magnitude=2000, quantity_units="day", sign="<")
         assert left.magnitude == 2000
         assert left.domain == S.Reals
         assert left.interval.start == 0
 
     def test_quantity_from_string_include_negatives(self):
-        left = UnitRange(quantity="2000 days", sign="<", include_negatives=True)
+        left = UnitRange(
+            quantity_magnitude=2000,
+            quantity_units="day",
+            sign="<",
+            include_negatives=True,
+        )
         assert left.magnitude == 2000
         assert left.domain == S.Reals
         assert left.interval.start == -oo
 
     def test_no_contradiction_between_classes(self):
-        left = UnitRange(quantity=Q_("2000 days"), sign="<")
+        left = UnitRange(quantity_magnitude=2000, quantity_units="day", sign="<")
         right = DecimalRange(quantity=2000, sign=">")
         assert right.q == 2000
         assert right.domain == S.Naturals0
