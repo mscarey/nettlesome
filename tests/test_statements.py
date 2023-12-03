@@ -40,7 +40,8 @@ class TestStatements:
         city = Predicate(content="$place was a city")
         statement = Statement(predicate=city, terms=Entity(name="New York"))
         assert "<New York> was a city" in str(statement)
-        assert ", terms=[Entity(name='New York'" in repr(statement)
+        assert ", terms=[Entity(" in repr(statement)
+        assert "name='New York'" in repr(statement)
 
     def test_get_terms(self, make_statement):
         terms = make_statement["friends"].terms
@@ -779,7 +780,6 @@ class TestImplication:
     )
 
     def test_implication_complex_whether(self):
-
         assert self.relevant_fact > self.relevant_whether
 
     def test_implication_complex_explain(self):
@@ -1287,7 +1287,6 @@ class TestConsistent:
 
 
 class TestAddition:
-
     predicate_less = Comparison(
         content="${vehicle}'s speed was",
         sign=">",
