@@ -483,7 +483,7 @@ class Comparison(BaseModel, PhraseABC):
     @classmethod
     def expression_to_quantity(
         cls, value: Union[date, float, int, str]
-    ) -> Union[date, float, int, Quantity]:
+    ) -> Union[date, Decimal, str]:
         r"""
         Create numeric expression from text for Comparison class.
 
@@ -500,8 +500,10 @@ class Comparison(BaseModel, PhraseABC):
         """
         if isinstance(value, Quantity):
             return str(value)
-        if isinstance(value, (int, float, date)):
+        if isinstance(value, date):
             return value
+        if isinstance(value, (int, float)):
+            return Decimal(value)
         quantity = value.strip()
 
         try:
@@ -510,12 +512,12 @@ class Comparison(BaseModel, PhraseABC):
             pass
 
         if quantity.isdigit():
-            return int(quantity)
+            return Decimal(quantity)
         float_parts = quantity.split(".")
         if len(float_parts) == 2 and all(
             substring.isnumeric() for substring in float_parts
         ):
-            return float(quantity)
+            return Decimal(quantity)
         return str(Q_(quantity))
 
     @property
