@@ -347,7 +347,44 @@ class DateRange(QuantityRange, BaseModel):
         return str(self.quantity)
 
 
-class IntRange(QuantityRange, BaseModel):
+class NumberQuantityRange(QuantityRange, BaseModel):
+    """A range defined relative to an integer or decimal."""
+
+    quantity: Union[int, float]
+    sign: str = "=="
+    include_negatives: Optional[bool] = None
+
+    @property
+    def domain(self) -> sympy.Set:
+        """Set domain as natural numbers."""
+        return S.Reals
+
+    @property
+    def magnitude(self) -> Union[int, float]:
+        """Return quantity attribute."""
+        return self.quantity
+
+    def _quantity_string(self) -> str:
+        return str(self.quantity)
+
+    @property
+    def q(self) -> Union[int, float]:
+        return self.quantity
+
+    def implies(self, other: Any) -> bool:
+        """Check if self's interval includes all of other's interval."""
+        if not isinstance(other, NumberQuantityRange):
+            return False
+        return self._implies_quantity_interval(other.interval)
+
+    def means(self, other: Any) -> bool:
+        """Compare for same meaning."""
+        if not isinstance(other, NumberQuantityRange):
+            return False
+        return Eq(self.interval, other.interval)
+
+
+class IntRange(NumberQuantityRange, BaseModel):
     """A range defined relative to an integer or float."""
 
     quantity: int
@@ -372,7 +409,7 @@ class IntRange(QuantityRange, BaseModel):
         return self.quantity
 
 
-class DecimalRange(QuantityRange, BaseModel):
+class DecimalRange(NumberQuantityRange, BaseModel):
     """A range defined relative to an integer or float."""
 
     quantity: Decimal
