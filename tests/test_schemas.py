@@ -97,5 +97,5 @@ class TestFactorLoad:
 
     def test_load_entity_with_wrong_type_field(self):
         data = {"type": "Statement", "name": "Ed"}
-        with pytest.raises(ValidationError):
+        with pytest.raises(TypeError):
             Entity(**data)
