@@ -4,7 +4,7 @@ import pytest
 from sympy import S, oo
 
 from nettlesome.entities import Entity
-from nettlesome.quantities import UnitRange, IntRange, DateRange, Q_, Comparison
+from nettlesome.quantities import UnitRange, DateRange, DecimalRange, Q_, Comparison
 from nettlesome.statements import Statement
 
 
@@ -29,7 +29,7 @@ class TestQuantities:
 
     def test_no_contradiction_between_classes(self):
         left = UnitRange(quantity=Q_("2000 days"), sign="<")
-        right = IntRange(quantity=2000, sign=">")
+        right = DecimalRange(quantity=2000, sign=">")
         assert right.q == 2000
         assert right.domain == S.Naturals0
         assert str(right) == "greater than 2000"

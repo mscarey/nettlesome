@@ -1,5 +1,5 @@
 from datetime import date
-
+from decimal import Decimal
 from pint import Quantity
 from pydantic import ValidationError
 import pytest
@@ -7,7 +7,7 @@ import sympy
 from sympy import Interval, oo
 
 from nettlesome.predicates import Predicate
-from nettlesome.quantities import Comparison, IntRange, DecimalRange, Q_
+from nettlesome.quantities import Comparison, DecimalRange, Q_
 from nettlesome.statements import Statement
 
 
@@ -24,14 +24,14 @@ class TestQuantityInterval:
         scones = Comparison(
             content="the number of scones $diner ate was", sign="<", expression="5"
         )
-        assert scones.interval == sympy.Interval(0, 5, right_open=True)
+        assert scones.interval == sympy.Interval(0, Decimal(5), right_open=True)
 
     def test_comparison_with_int(self):
-        value = IntRange(sign="<", quantity=5)
+        value = DecimalRange(sign="<", quantity=5)
         scones = Comparison(
             content="the number of scones $diner ate was", quantity_range=value
         )
-        assert scones.interval == sympy.Interval(0, 5, right_open=True)
+        assert scones.interval == sympy.Interval(0, Decimal(5), right_open=True)
 
     def test_comparison_with_string_for_float(self):
         scones = Comparison(
@@ -130,7 +130,7 @@ class TestQuantityInterval:
             content="the number of dogs was", sign=">", expression="3 gallons"
         )
         with pytest.raises(ValidationError):
-            IntRange(quantity=dogs.quantity)
+            DecimalRange(quantity=dogs.quantity)
 
     def test_plural_in_comparison(self):
         comparison = Comparison(

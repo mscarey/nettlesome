@@ -1,9 +1,9 @@
 """:class:`.Comparable` subclass for things that can be referenced in a Statement."""
 
 from __future__ import annotations
-from typing import ClassVar, Dict, Optional, Tuple
+from typing import ClassVar, Optional, Tuple
 
-from pydantic import BaseModel, model_validator, root_validator
+from pydantic import BaseModel, model_validator
 from pydantic import ValidationError
 
 from nettlesome.terms import Comparable, ContextRegister, Term
