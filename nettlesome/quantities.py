@@ -225,9 +225,6 @@ class UnitRange(QuantityRange, BaseModel):
     sign: str = "=="
     include_negatives: Optional[bool] = None
 
-    class Config:
-        arbitrary_types_allowed = True
-
     @property
     def q(self) -> Quantity:
         return Quantity(self.quantity_magnitude, self.quantity_units)

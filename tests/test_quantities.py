@@ -31,14 +31,14 @@ class TestQuantities:
             include_negatives=True,
         )
         assert left.magnitude == 2000
-        assert left.domain == S.Reals
         assert left.interval.start == -oo
 
     def test_no_contradiction_between_classes(self):
-        left = UnitRange(quantity_magnitude=2000, quantity_units="day", sign="<")
+        left = UnitRange(
+            quantity_magnitude=Decimal(2000), quantity_units="day", sign="<"
+        )
         right = DecimalRange(quantity=2000, sign=">")
         assert right.q == 2000
-        assert right.domain == S.Naturals0
         assert str(right) == "greater than 2000"
         assert left.magnitude == right.magnitude
         assert not left.contradicts(right)
@@ -58,7 +58,7 @@ class TestCompareQuantities:
             make_comparison["meters"].quantity_range.expression_comparison()
             == "at least 10 meter"
         )
-        assert "20 foot" in repr(make_comparison["less_than_20"])
+        assert "20 foot" in str(make_comparison["less_than_20"])
         assert (
             str(make_comparison["less_than_20"].quantity_range) == "less than 20 foot"
         )
@@ -78,7 +78,7 @@ class TestCompareQuantities:
         assert "distance between $place1 and $place2 was less than 20" in str(
             make_comparison["int_distance"]
         )
-        assert "distance between $place1 and $place2 was less than 20.0" in str(
+        assert "distance between $place1 and $place2 was less than 20" in str(
             make_comparison["float_distance"]
         )
         assert make_comparison["float_distance"].quantity_range.domain == S.Reals

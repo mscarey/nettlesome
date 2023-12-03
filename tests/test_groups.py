@@ -890,7 +890,7 @@ class TestConsistent:
         assert not group.consistent_with(self.faster_statement, context=register)
         assert not consistent_with(group, self.faster_statement, context=register)
         assert repr(group).startswith("FactorGroup([Statement")
-        assert "30.0 mile / hour" in repr(group)
+        assert "less than 30 mile / hour" in str(group[0])
 
     def test_no_duplicate_explanations_consistent(self):
         large_payments = FactorGroup(
