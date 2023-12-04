@@ -45,7 +45,7 @@ class TestPredicateLoad:
 class TestPredicateDump:
     def test_dump_predicate(self):
         predicate = Predicate(content="$defendant stole ${victim}'s car")
-        dumped = predicate.dict()
+        dumped = predicate.model_dump()
         assert dumped["truth"] is True
 
     def test_dump_to_dict_with_units(self):
@@ -55,7 +55,7 @@ class TestPredicateDump:
             sign="<>",
             expression=Q_("35 feet"),
         )
-        dumped = predicate.dict()
+        dumped = predicate.model_dump()
         assert dumped["quantity_range"]["quantity_magnitude"] == Decimal("35")
         assert dumped["quantity_range"]["quantity_units"] == "foot"
 
@@ -63,7 +63,7 @@ class TestPredicateDump:
         predicate = Comparison(
             **{"content": "{}'s favorite number was", "sign": "==", "expression": 42}
         )
-        dumped = predicate.dict()
+        dumped = predicate.model_dump()
         new_statement = Comparison(**dumped)
         assert "{}'s favorite number was exactly equal to 42" in str(new_statement)
 
@@ -73,7 +73,7 @@ class TestPredicateDump:
             sign=">=",
             expression=date(1978, 1, 1),
         )
-        dumped = copyright_date_range.dict()
+        dumped = copyright_date_range.model_dump()
         assert dumped["quantity_range"]["quantity"] == date(1978, 1, 1)
 
 
@@ -89,7 +89,7 @@ class TestFactorLoad:
         }
         loaded = Assertion(**data)
         assert loaded.statement.terms[0].name == "Alice"
-        dumped = loaded.dict()
+        dumped = loaded.model_dump()
         assert dumped["authority"]["name"] == "Bob"
 
     def test_load_entity_with_type_field(self):
