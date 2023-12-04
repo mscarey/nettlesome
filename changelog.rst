@@ -1,5 +1,14 @@
 Changelog
 =========
+0.7.0 (2023-12-03)
+------------------
+- import Pydantic v2, not v1
+- use pint 0.22
+- don't import deprecated "Extra"
+- check_sign is field_validator
+- save magnitude and unit separately on UnitRange model
+- remove IntRange (to avoid SymPy comparisons between int and decimal intervals)
+
 0.6.1 (2021-10-23)
 ------------------
 - add MANIFEST.in (to display readme on PyPI)

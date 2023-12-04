@@ -6,4 +6,4 @@ from .predicates import Predicate
 from .quantities import Comparison, DateRange, DecimalRange, UnitRange
 from .statements import Statement, Assertion
 
-__version__ = "0.6.1"
+__version__ = "0.7.0"
