@@ -8,7 +8,7 @@ from decimal import Decimal
 from typing import Any, ClassVar, Dict, Optional, Union
 
 from pint import UnitRegistry, Quantity
-from pydantic import BaseModel, field_validator, root_validator, validator
+from pydantic import BaseModel, field_validator, model_validator, validator
 import sympy
 from sympy import Eq, Interval, oo, S
 from sympy.sets import EmptySet, FiniteSet
@@ -426,7 +426,7 @@ class Comparison(BaseModel, PhraseABC):
     quantity_range: Union[DecimalRange, UnitRange, DateRange]
     truth: Optional[bool] = True
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     def set_quantity_range(cls, values):
         """Reverse the sign of a Comparison if necessary."""
         if not values.get("quantity_range"):
