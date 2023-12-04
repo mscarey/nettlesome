@@ -5,9 +5,15 @@ from copy import deepcopy
 import operator
 
 from typing import ClassVar, Dict, Iterator, List, Mapping
-from typing import Optional, Sequence, Tuple, Union
+from typing import Optional, Self, Sequence, Tuple, Union
 
-from pydantic import BaseModel, validator, root_validator
+from pydantic import (
+    BaseModel,
+    validator,
+    field_validator,
+    model_validator,
+    root_validator,
+)
 from slugify import slugify
 
 from nettlesome.terms import (
@@ -80,21 +86,25 @@ class Statement(Factor, BaseModel):
             values["terms"] = [values["terms"]]
         return values
 
-    @validator("terms")
-    def _validate_terms(cls, v, values, **kwargs):
+    @field_validator("terms")
+    @classmethod
+    def validate_terms(cls, v):
         """Normalize ``terms`` to initialize Statement."""
 
         # make TermSequence for validation, then ignore it
         TermSequence.validate_terms(v)
+        return v
 
-        if values.get("predicate") and len(v) != len(values["predicate"]):
+    @model_validator(mode="after")
+    def validate_terms_for_predicate(self) -> Self:
+        if self.predicate and len(self.terms) != len(self.predicate):
             message = (
                 "The number of items in 'terms' must be "
-                + f"{len(values['predicate'])}, not {len(v)}, "
-                + f"to match predicate.context_slots for '{values['predicate']}'"
+                + f"{len(self.predicate)}, not {len(self.terms)}, "
+                + f"to match predicate.context_slots for '{self.predicate}'"
             )
             raise ValueError(message)
-        return v
+        return self
 
     @property
     def term_sequence(self) -> TermSequence:
