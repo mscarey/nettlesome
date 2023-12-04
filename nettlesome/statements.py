@@ -285,5 +285,5 @@ class Assertion(Factor, BaseModel):
         return formatted
 
 
-Statement.update_forward_refs()
-Assertion.update_forward_refs()
+Statement.model_rebuild()
+Assertion.model_rebuild()
