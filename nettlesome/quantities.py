@@ -8,7 +8,7 @@ from decimal import Decimal
 from typing import Any, ClassVar, Dict, Optional, Union
 
 from pint import UnitRegistry, Quantity
-from pydantic import BaseModel, root_validator, validator
+from pydantic import BaseModel, field_validator, model_validator, validator
 import sympy
 from sympy import Eq, Interval, oo, S
 from sympy.sets import EmptySet, FiniteSet
@@ -91,15 +91,15 @@ class QuantityRange(BaseModel):
     }
     normalized_comparisons: ClassVar[Dict[str, str]] = {"=": "==", "<>": "!="}
 
-    @validator("sign")
-    def _check_sign(cls, sign):
-        if sign in cls.normalized_comparisons:
-            sign = cls.normalized_comparisons[sign]
-        if sign not in cls.opposite_comparisons.keys():
+    @field_validator("sign", mode="after")
+    def check_sign(cls, v: str) -> str:
+        if v in cls.normalized_comparisons:
+            v = cls.normalized_comparisons[v]
+        if v not in cls.opposite_comparisons.keys():
             raise ValueError(
-                f'"sign" string parameter must be one of {cls.opposite_comparisons.keys()}, not {sign}.'
+                f'"sign" string parameter must be one of {cls.opposite_comparisons.keys()}, not {v}.'
             )
-        return sign
+        return v
 
     @property
     def _include_negatives(self) -> bool:
@@ -202,7 +202,7 @@ class QuantityRange(BaseModel):
         """
         Change self.sign in place to reverse the range of numbers covered.
 
-            >>> quantity_range = UnitRange(quantity="100 meters", sign=">")
+            >>> quantity_range = UnitRange(quantity_magnitude="100", quantity_units="meters", sign=">")
             >>> str(quantity_range)
             'greater than 100 meter'
             >>> quantity_range.reverse_meaning()
@@ -220,30 +220,23 @@ class QuantityRange(BaseModel):
 class UnitRange(QuantityRange, BaseModel):
     """A range defined relative to a pint Quantity."""
 
-    quantity: str
+    quantity_magnitude: Decimal
+    quantity_units: str
     sign: str = "=="
     include_negatives: Optional[bool] = None
 
-    @validator("quantity", pre=True)
-    def validate_quantity(cls, quantity: Union[Quantity, str]) -> str:
-        """Validate that quantity is a pint Quantity."""
-        if isinstance(quantity, str):
-            quantity = Q_(quantity)
-        if not isinstance(quantity, Quantity):
-            raise TypeError(
-                f"quantity must be a pint Quantity or string, not {type(quantity)}"
-            )
-        return str(quantity)
+    @property
+    def q(self) -> Quantity:
+        return Quantity(self.quantity_magnitude, self.quantity_units)
+
+    @property
+    def quantity(self) -> Quantity:
+        return self.q
 
     @property
     def domain(self) -> sympy.Set:
         """Get the domain of the quantity range."""
         return S.Reals
-
-    @property
-    def pint_quantity(self) -> Quantity:
-        """Get the Quantity as a Pint object."""
-        return Q_(self.quantity)
 
     @property
     def magnitude(self) -> Union[int, float]:
@@ -315,11 +308,7 @@ class UnitRange(QuantityRange, BaseModel):
         return other_interval.is_subset(self.interval)
 
     def _quantity_string(self) -> str:
-        return super()._quantity_string() + str(self.quantity)
-
-    @property
-    def q(self) -> Quantity:
-        return Q_(self.quantity)
+        return super()._quantity_string() + str(self.q)
 
 
 class DateRange(QuantityRange, BaseModel):
@@ -345,31 +334,6 @@ class DateRange(QuantityRange, BaseModel):
 
     def _quantity_string(self) -> str:
         return str(self.quantity)
-
-
-class IntRange(QuantityRange, BaseModel):
-    """A range defined relative to an integer or float."""
-
-    quantity: int
-    sign: str = "=="
-    include_negatives: Optional[bool] = None
-
-    @property
-    def domain(self) -> sympy.Set:
-        """Set domain as natural numbers."""
-        return S.Naturals0
-
-    @property
-    def magnitude(self) -> Union[int, float]:
-        """Return quantity attribute."""
-        return self.quantity
-
-    def _quantity_string(self) -> str:
-        return str(self.quantity)
-
-    @property
-    def q(self) -> int:
-        return self.quantity
 
 
 class DecimalRange(QuantityRange, BaseModel):
@@ -459,14 +423,20 @@ class Comparison(BaseModel, PhraseABC):
     """
 
     content: str
-    quantity_range: Union[DecimalRange, IntRange, UnitRange, DateRange]
+    quantity_range: Union[DecimalRange, UnitRange, DateRange]
     truth: Optional[bool] = True
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     def set_quantity_range(cls, values):
         """Reverse the sign of a Comparison if necessary."""
         if not values.get("quantity_range"):
-            quantity = cls.expression_to_quantity(values.pop("expression", None))
+            try:
+                quantity = cls.expression_to_quantity(values.pop("expression", None))
+            except AttributeError:
+                raise ValueError(
+                    "A Comparison must have a quantity_range, "
+                    "a quantity, or an expression."
+                )
             sign = values.pop("sign", "==")
             include_negatives = values.pop("include_negatives", None)
             if isinstance(quantity, date):
@@ -476,15 +446,12 @@ class Comparison(BaseModel, PhraseABC):
                     include_negatives=include_negatives,
                 )
             elif isinstance(quantity, (str, Quantity)):
+                if isinstance(quantity, str):
+                    quantity = Q_(quantity)
                 values["quantity_range"] = UnitRange(
                     sign=sign,
-                    quantity=str(quantity),
-                    include_negatives=include_negatives,
-                )
-            elif isinstance(quantity, int):
-                values["quantity_range"] = IntRange(
-                    sign=sign,
-                    quantity=quantity,
+                    quantity_magnitude=Decimal(quantity.magnitude),
+                    quantity_units=str(quantity.units),
                     include_negatives=include_negatives,
                 )
             else:
@@ -498,7 +465,7 @@ class Comparison(BaseModel, PhraseABC):
             values["quantity_range"].reverse_meaning()
         return values
 
-    @validator("content")
+    @field_validator("content")
     def content_ends_with_was(cls, content: str) -> str:
         """Ensure content ends with 'was'."""
         if content.endswith("were"):
@@ -514,7 +481,7 @@ class Comparison(BaseModel, PhraseABC):
     @classmethod
     def expression_to_quantity(
         cls, value: Union[date, float, int, str]
-    ) -> Union[date, float, int, Quantity]:
+    ) -> Union[date, Decimal, str]:
         r"""
         Create numeric expression from text for Comparison class.
 
@@ -531,8 +498,10 @@ class Comparison(BaseModel, PhraseABC):
         """
         if isinstance(value, Quantity):
             return str(value)
-        if isinstance(value, (int, float, date)):
+        if isinstance(value, date):
             return value
+        if isinstance(value, (int, float)):
+            return Decimal(value)
         quantity = value.strip()
 
         try:
@@ -541,12 +510,12 @@ class Comparison(BaseModel, PhraseABC):
             pass
 
         if quantity.isdigit():
-            return int(quantity)
+            return Decimal(quantity)
         float_parts = quantity.split(".")
         if len(float_parts) == 2 and all(
             substring.isnumeric() for substring in float_parts
         ):
-            return float(quantity)
+            return Decimal(quantity)
         return str(Q_(quantity))
 
     @property
@@ -559,7 +528,7 @@ class Comparison(BaseModel, PhraseABC):
         ...     sign=">=",
         ...     expression="10 grams")
         >>> weight.interval
-        Interval(10, oo)
+        Interval(10.0000000000000, oo)
 
         """
         return self.quantity_range.interval
@@ -696,4 +665,4 @@ class Comparison(BaseModel, PhraseABC):
         return self._add_truth_to_content(self.content)
 
 
-Comparison.update_forward_refs()
+Comparison.model_rebuild()

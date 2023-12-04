@@ -1,37 +1,44 @@
 from datetime import date
+from decimal import Decimal
 
+from pint import Quantity
 import pytest
 from sympy import S, oo
 
 from nettlesome.entities import Entity
-from nettlesome.quantities import UnitRange, IntRange, DateRange, Q_, Comparison
+from nettlesome.quantities import UnitRange, DateRange, DecimalRange, Q_, Comparison
 from nettlesome.statements import Statement
 
 
 class TestQuantities:
     def test_unitregistry_imports_do_not_conflict(self, make_comparison):
-        left = UnitRange(quantity=Q_("20 meters"), sign=">")
+        left = UnitRange(quantity_magnitude=20, quantity_units="meter", sign=">")
         right = make_comparison["meters"].quantity_range
         assert left.implies(right)
-        assert left.pint_quantity == Q_("20 meters")
+        assert left.q == Quantity(Decimal("20"), "meter")
 
     def test_quantity_from_string(self):
-        left = UnitRange(quantity="2000 days", sign="<")
+        left = UnitRange(quantity_magnitude=2000, quantity_units="day", sign="<")
         assert left.magnitude == 2000
         assert left.domain == S.Reals
         assert left.interval.start == 0
 
     def test_quantity_from_string_include_negatives(self):
-        left = UnitRange(quantity="2000 days", sign="<", include_negatives=True)
+        left = UnitRange(
+            quantity_magnitude=2000,
+            quantity_units="day",
+            sign="<",
+            include_negatives=True,
+        )
         assert left.magnitude == 2000
-        assert left.domain == S.Reals
         assert left.interval.start == -oo
 
     def test_no_contradiction_between_classes(self):
-        left = UnitRange(quantity=Q_("2000 days"), sign="<")
-        right = IntRange(quantity=2000, sign=">")
+        left = UnitRange(
+            quantity_magnitude=Decimal(2000), quantity_units="day", sign="<"
+        )
+        right = DecimalRange(quantity=2000, sign=">")
         assert right.q == 2000
-        assert right.domain == S.Naturals0
         assert str(right) == "greater than 2000"
         assert left.magnitude == right.magnitude
         assert not left.contradicts(right)
@@ -51,7 +58,7 @@ class TestCompareQuantities:
             make_comparison["meters"].quantity_range.expression_comparison()
             == "at least 10 meter"
         )
-        assert "20 foot" in repr(make_comparison["less_than_20"])
+        assert "20 foot" in str(make_comparison["less_than_20"])
         assert (
             str(make_comparison["less_than_20"].quantity_range) == "less than 20 foot"
         )
@@ -71,7 +78,7 @@ class TestCompareQuantities:
         assert "distance between $place1 and $place2 was less than 20" in str(
             make_comparison["int_distance"]
         )
-        assert "distance between $place1 and $place2 was less than 20.0" in str(
+        assert "distance between $place1 and $place2 was less than 20" in str(
             make_comparison["float_distance"]
         )
         assert make_comparison["float_distance"].quantity_range.domain == S.Reals

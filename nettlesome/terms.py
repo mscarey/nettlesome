@@ -99,7 +99,6 @@ def new_context_helper(func: Callable):
         terms_to_replace: Optional[Sequence[Term]] = None,
         source: Optional[Term] = None,
     ) -> Comparable:
-
         expanded_changes = ContextRegister.create(
             changes=changes,
             current=factor,
@@ -156,7 +155,7 @@ class Comparable(ABC):
     """
 
     generic: bool
-    absent: bool
+    absent: bool = False
     context_factor_names: ClassVar[Tuple[str, ...]]
 
     @property
@@ -483,7 +482,6 @@ class Comparable(ABC):
         other: Comparable,
         explanation: Explanation,
     ) -> Iterator[Explanation]:
-
         for new_context in self._contexts_consistent_with(
             other=other, context=explanation.context
         ):
@@ -604,7 +602,7 @@ class Comparable(ABC):
         If self is `absent`, then generate a ContextRegister from other's point
         of view and then swap the keys and values.
         """
-        context = context = Explanation.from_context(
+        context = Explanation.from_context(
             context=context, current=self, incoming=other
         )
         for new_explanation in self._explanations_implication(

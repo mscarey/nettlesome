@@ -19,7 +19,7 @@ class TestMakeGroup:
         group = FactorGroup(factor_list)
         assert isinstance(group, FactorGroup)
         assert group[1] == make_statement["shooting"]
-        assert "nt(predicate=Predicate(content='$person1 committed" in repr(group)
+        assert "predicate=Predicate(content='$person1 committed" in repr(group)
 
     def test_group_from_item(self, make_statement):
         factor = make_statement["shooting"]
@@ -890,7 +890,7 @@ class TestConsistent:
         assert not group.consistent_with(self.faster_statement, context=register)
         assert not consistent_with(group, self.faster_statement, context=register)
         assert repr(group).startswith("FactorGroup([Statement")
-        assert "30.0 mile / hour" in repr(group)
+        assert "less than 30 mile / hour" in str(group[0])
 
     def test_no_duplicate_explanations_consistent(self):
         large_payments = FactorGroup(

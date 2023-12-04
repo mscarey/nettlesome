@@ -15,7 +15,7 @@ from string import Template
 from typing import Any, Dict, Mapping
 from typing import List, Optional, Sequence, Set, Tuple
 
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel
 
 from nettlesome.terms import Comparable, TermSequence
 from nettlesome.terms import Term
@@ -404,7 +404,7 @@ class PhraseABC(metaclass=ABCMeta):
         return f"{truth_prefix}{content}"
 
 
-class Predicate(PhraseABC, BaseModel, extra=Extra.forbid):
+class Predicate(PhraseABC, BaseModel, extra="forbid"):
     r"""
     A statement about real events or about a legal conclusion.
 

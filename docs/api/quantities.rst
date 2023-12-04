@@ -10,10 +10,6 @@ Quantity Ranges
     :members:
     :special-members:
 
-.. autoclass:: nettlesome.quantities.IntRange
-    :members:
-    :special-members:
-
 .. autoclass:: nettlesome.quantities.DecimalRange
     :members:
     :special-members:
