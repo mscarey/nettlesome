@@ -69,7 +69,7 @@ class Statement(Factor, BaseModel):
     absent: bool = False
     generic: bool = False
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     def move_truth_to_predicate(cls, values):
         if isinstance(values.get("predicate"), str):
             values["predicate"] = Predicate(content=values["predicate"])
