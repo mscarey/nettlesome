@@ -202,7 +202,7 @@ class QuantityRange(BaseModel):
         """
         Change self.sign in place to reverse the range of numbers covered.
 
-            >>> quantity_range = UnitRange(quantity="100 meters", sign=">")
+            >>> quantity_range = UnitRange(quantity_magnitude="100", quantity_units="meters", sign=">")
             >>> str(quantity_range)
             'greater than 100 meter'
             >>> quantity_range.reverse_meaning()
@@ -528,7 +528,7 @@ class Comparison(BaseModel, PhraseABC):
         ...     sign=">=",
         ...     expression="10 grams")
         >>> weight.interval
-        Interval(10, oo)
+        Interval(10.0000000000000, oo)
 
         """
         return self.quantity_range.interval
