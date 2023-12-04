@@ -665,4 +665,4 @@ class Comparison(BaseModel, PhraseABC):
         return self._add_truth_to_content(self.content)
 
 
-Comparison.update_forward_refs()
+Comparison.model_rebuild()
