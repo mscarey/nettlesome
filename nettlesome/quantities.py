@@ -91,15 +91,15 @@ class QuantityRange(BaseModel):
     }
     normalized_comparisons: ClassVar[Dict[str, str]] = {"=": "==", "<>": "!="}
 
-    @validator("sign")
-    def _check_sign(cls, sign):
-        if sign in cls.normalized_comparisons:
-            sign = cls.normalized_comparisons[sign]
-        if sign not in cls.opposite_comparisons.keys():
+    @field_validator("sign", mode="after")
+    def check_sign(cls, v: str) -> str:
+        if v in cls.normalized_comparisons:
+            v = cls.normalized_comparisons[v]
+        if v not in cls.opposite_comparisons.keys():
             raise ValueError(
-                f'"sign" string parameter must be one of {cls.opposite_comparisons.keys()}, not {sign}.'
+                f'"sign" string parameter must be one of {cls.opposite_comparisons.keys()}, not {v}.'
             )
-        return sign
+        return v
 
     @property
     def _include_negatives(self) -> bool:
