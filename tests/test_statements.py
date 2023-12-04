@@ -30,7 +30,7 @@ class TestStatements:
     def test_cannot_use_string_for_term(self):
         predicate = Predicate(content="$person visited $place")
         entity = Entity(name="Austin")
-        with pytest.raises(TypeError):
+        with pytest.raises(AttributeError):
             Statement(
                 predicate=predicate,
                 terms=[entity, "Dallas as a string"],

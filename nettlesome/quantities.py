@@ -430,7 +430,13 @@ class Comparison(BaseModel, PhraseABC):
     def set_quantity_range(cls, values):
         """Reverse the sign of a Comparison if necessary."""
         if not values.get("quantity_range"):
-            quantity = cls.expression_to_quantity(values.pop("expression", None))
+            try:
+                quantity = cls.expression_to_quantity(values.pop("expression", None))
+            except AttributeError:
+                raise ValueError(
+                    "A Comparison must have a quantity_range, "
+                    "a quantity, or an expression."
+                )
             sign = values.pop("sign", "==")
             include_negatives = values.pop("include_negatives", None)
             if isinstance(quantity, date):

@@ -65,7 +65,7 @@ class Statement(Factor, BaseModel):
 
     @root_validator(pre=True)
     def move_truth_to_predicate(cls, values):
-        if isinstance(values["predicate"], str):
+        if isinstance(values.get("predicate"), str):
             values["predicate"] = Predicate(content=values["predicate"])
         if "truth" in values:
             values["predicate"].truth = values["truth"]
@@ -76,7 +76,7 @@ class Statement(Factor, BaseModel):
             ].template.get_term_sequence_from_mapping(values["terms"])
         if not values.get("terms"):
             values["terms"] = []
-        elif isinstance(values["terms"], Term):
+        elif isinstance(values.get("terms"), Term):
             values["terms"] = [values["terms"]]
         return values
 
@@ -87,7 +87,7 @@ class Statement(Factor, BaseModel):
         # make TermSequence for validation, then ignore it
         TermSequence.validate_terms(v)
 
-        if len(v) != len(values["predicate"]):
+        if values.get("predicate") and len(v) != len(values["predicate"]):
             message = (
                 "The number of items in 'terms' must be "
                 + f"{len(values['predicate'])}, not {len(v)}, "
