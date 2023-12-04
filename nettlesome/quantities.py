@@ -8,7 +8,7 @@ from decimal import Decimal
 from typing import Any, ClassVar, Dict, Optional, Union
 
 from pint import UnitRegistry, Quantity
-from pydantic import BaseModel, root_validator, validator
+from pydantic import BaseModel, field_validator, root_validator, validator
 import sympy
 from sympy import Eq, Interval, oo, S
 from sympy.sets import EmptySet, FiniteSet
@@ -465,7 +465,7 @@ class Comparison(BaseModel, PhraseABC):
             values["quantity_range"].reverse_meaning()
         return values
 
-    @validator("content")
+    @field_validator("content")
     def content_ends_with_was(cls, content: str) -> str:
         """Ensure content ends with 'was'."""
         if content.endswith("were"):
