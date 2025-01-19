@@ -4,7 +4,6 @@ from __future__ import annotations
 from typing import ClassVar, Optional, Tuple
 
 from pydantic import BaseModel, model_validator
-from pydantic import ValidationError
 
 from nettlesome.terms import Comparable, ContextRegister, Term
 
@@ -44,7 +43,7 @@ class Entity(Term, BaseModel, extra="forbid"):
         if isinstance(values, dict):
             name = values.pop("type", None)
             if name and name.lower() != cls.__name__.lower():
-                raise ValidationError(f"Expected type {cls.__name__}, not {name}")
+                raise ValueError(f"Expected type {cls.__name__}, not {name}")
         return values
 
     def __str__(self):

@@ -10,7 +10,7 @@ from nettlesome.statements import Statement
 
 class TestPredicates:
     def test_no_sign_allowed_for_predicate(self):
-        with pytest.raises(ValidationError):
+        with pytest.raises(ValueError):
             Predicate(
                 content="the date when $work was created was",
                 sign=">=",

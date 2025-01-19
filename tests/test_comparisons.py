@@ -1,7 +1,6 @@
 from datetime import date
 from decimal import Decimal
 from pint import Quantity
-from pydantic import ValidationError
 import pytest
 import sympy
 from sympy import Interval, oo
@@ -50,17 +49,17 @@ class TestQuantityInterval:
         comparison = Comparison(
             content="the balance in the bank account was", sign="<=", expression=-100
         )
-        assert comparison.quantity_range.magnitude == -100
+        assert comparison.quantity_range.magnitude == Decimal(-100)
         assert comparison.quantity_range._include_negatives is True
-        assert comparison.interval.end == -100
+        assert comparison.interval.end == float(-100)
 
     def test_comparison_negative_attr(self):
         comparison = Comparison(
             content="the balance in the bank account was", sign="<=", expression=-100
         )
-        assert comparison.quantity_range.magnitude == -100
+        assert comparison.quantity_range.magnitude == Decimal(-100)
         assert comparison.quantity_range._include_negatives is True
-        assert comparison.interval.end == -100
+        assert comparison.interval.end == float(-100)
 
     def test_comparison_interval(self):
         comparison = Comparison(
@@ -130,7 +129,7 @@ class TestQuantityInterval:
         dogs = Comparison(
             content="the number of dogs was", sign=">", expression="3 gallons"
         )
-        with pytest.raises(ValidationError):
+        with pytest.raises(ValueError):
             DecimalRange(quantity=dogs.quantity)
 
     def test_plural_in_comparison(self):

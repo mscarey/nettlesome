@@ -1,6 +1,5 @@
 import operator
 
-from pydantic import ValidationError
 import pytest
 
 from nettlesome.terms import (
