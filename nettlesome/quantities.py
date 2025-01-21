@@ -500,7 +500,7 @@ class Comparison(BaseModel, PhraseABC):
             return str(value)
         if isinstance(value, date):
             return value
-        if isinstance(value, (int, float)):
+        if isinstance(value, (int, Decimal, float)):
             return Decimal(value)
         quantity = value.strip()
 

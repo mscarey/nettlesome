@@ -237,6 +237,19 @@ class TestCompareQuantities:
         )
         assert kilos.quantity_range.implies(miles.quantity_range)
 
+    def test_compare_tax_rate(self):
+        specific_tax_rate = Comparison(
+            content="${taxpayer}'s marginal income tax rate was",
+            sign="=",
+            expression=Decimal(".3"),
+        )
+        tax_rate_over_25 = Comparison(
+            content="${taxpayer}'s marginal income tax rate was",
+            sign=">",
+            expression=Decimal(".25"),
+        )
+        assert specific_tax_rate.implies(tax_rate_over_25)
+
 
 class TestSameMeaning:
     def test_same_meaning_float_and_int(self, make_comparison):
