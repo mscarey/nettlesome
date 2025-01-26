@@ -549,24 +549,12 @@ class Comparable(ABC):
                 f"{self.__class__} objects may only be compared for "
                 + "implication with other Comparable objects or None."
             )
-        if isinstance(other, self.__class__):
-            if self.__dict__.get("absent"):
-                reversed_explanation = explanation.with_context(
-                    explanation.context.reversed()
-                )
-                if other.__dict__.get("absent"):
-                    test = other._implies_if_present(self, reversed_explanation)
-                else:
-                    test = other._contradicts_if_present(self, reversed_explanation)
-                yield from (
-                    register.with_context(register.context.reversed())
-                    for register in test
-                )
 
-            elif not other.__dict__.get("absent"):
-                yield from self._implies_if_present(other, explanation)
-            else:
-                yield from self._contradicts_if_present(other, explanation)
+        if other.__dict__.get("absent"):
+            if isinstance(other.absent, self.__class__):
+                yield from self._contradicts_if_present(other.absent, explanation)
+        else:
+            yield from self._implies_if_present(other, explanation)
 
     def explanations_implication(
         self,

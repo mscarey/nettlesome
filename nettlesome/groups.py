@@ -347,7 +347,7 @@ class FactorGroup(Comparable):
 
     def _verbose_comparison(
         self,
-        still_need_matches: List[Factor],
+        still_need_matches: Sequence[Factor | AbsenceOf],
         explanation: Explanation,
     ) -> Iterator[Explanation]:
         r"""
@@ -404,7 +404,7 @@ class FactorGroup(Comparable):
                 still_need_matches=list(other.sequence),
                 explanation=explanation,
             )
-        elif isinstance(other, Factor):
+        elif isinstance(other, (self.term_class, self.absence_class)):
             yield from self._verbose_comparison(
                 still_need_matches=[other],
                 explanation=explanation,
