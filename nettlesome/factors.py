@@ -25,6 +25,24 @@ class AbsenceOf(Comparable, BaseModel):
     def __str__(self):
         return f"absence of {str(self.absent)}"
 
+    def _explanations_implication(
+        self, other: Comparable, explanation: Explanation
+    ) -> Iterator[Explanation]:
+        if not isinstance(other, Comparable):
+            raise TypeError(
+                f"{self.__class__} objects may only be compared for "
+                + "implication with other Comparable objects or None."
+            )
+
+        reversed_explanation = explanation.with_context(explanation.context.reversed())
+        if isinstance(other, self.__class__):
+            test = other.absent._implies_if_present(self.absent, reversed_explanation)
+        else:
+            test = other._contradicts_if_present(self.absent, reversed_explanation)
+        yield from (
+            register.with_context(register.context.reversed()) for register in test
+        )
+
     def _explanations_contradiction(
         self, other: Comparable, explanation: Explanation
     ) -> Iterator[Explanation]:

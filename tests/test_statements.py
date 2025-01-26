@@ -730,23 +730,25 @@ class TestImplication:
         assert not fact_greater >= fact_exact
 
     def test_absent_factor_implies_absent_factor_with_lesser_quantity(self):
-        absent_broader = Statement(
-            predicate=Comparison(
-                content="the distance north from $south to $north was",
-                sign="<",
-                expression="200 miles",
-            ),
-            terms=[Entity(name="Austin"), Entity(name="Dallas")],
-            absent=True,
+        absent_broader = AbsenceOf(
+            absent=Statement(
+                predicate=Comparison(
+                    content="the distance north from $south to $north was",
+                    sign="<",
+                    expression="200 miles",
+                ),
+                terms=[Entity(name="Austin"), Entity(name="Dallas")],
+            )
         )
-        absent_narrower = Statement(
-            predicate=Comparison(
-                content="the distance north from $south to $north was",
-                sign="<",
-                expression="50 miles",
-            ),
-            terms=[Entity(name="Austin"), Entity(name="Dallas")],
-            absent=True,
+        absent_narrower = AbsenceOf(
+            absent=Statement(
+                predicate=Comparison(
+                    content="the distance north from $south to $north was",
+                    sign="<",
+                    expression="50 miles",
+                ),
+                terms=[Entity(name="Austin"), Entity(name="Dallas")],
+            )
         )
         assert absent_broader >= absent_narrower
         assert not absent_narrower >= absent_broader
@@ -898,8 +900,8 @@ class TestContradiction:
     def test_factor_contradiction_absent_predicate(self):
         predicate = Predicate(content="$person was a person")
         fact = Statement(predicate=predicate, terms=Entity(name="Alice"))
-        absent_fact = Statement(
-            predicate=predicate, terms=Entity(name="Alice"), absent=True
+        absent_fact = AbsenceOf(
+            absent=Statement(predicate=predicate, terms=Entity(name="Alice"))
         )
 
         assert fact.contradicts(absent_fact)
@@ -908,8 +910,8 @@ class TestContradiction:
     def test_contradiction_with_empty_explanation_for_context(self):
         predicate = Predicate(content="$person was a person")
         fact = Statement(predicate=predicate, terms=Entity(name="Alice"))
-        absent_fact = Statement(
-            predicate=predicate, terms=Entity(name="Alice"), absent=True
+        absent_fact = AbsenceOf(
+            absent=Statement(predicate=predicate, terms=Entity(name="Alice"))
         )
         explanation = Explanation(reasons=[])
 
