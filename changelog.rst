@@ -1,5 +1,11 @@
 Changelog
 =========
+0.7.1 (2025-01-25)
+------------------
+- don't restate "abstract" field in subclasses
+- Comparison "expression" can be Decimal
+- use ValueError, not ValidationError, in pydantic validators
+
 0.7.0 (2023-12-03)
 ------------------
 - import Pydantic v2, not v1
