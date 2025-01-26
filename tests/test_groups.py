@@ -659,7 +659,7 @@ class TestContradiction:
             comparison=means,
         )
         explanation = next(update)
-        assert "!"
+        assert explanation.reason == ""
 
     def test_implication_no_repeated_explanations(self):
         large_payments = FactorGroup(
