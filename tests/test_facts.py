@@ -225,10 +225,11 @@ class TestSameMeaning:
             predicate=make_predicate["shooting"],
             terms=[Entity(name="Al"), Entity(name="Bo")],
         )
-        right = Statement(
-            predicate=make_predicate["shooting"],
-            terms=[Entity(name="Al"), Entity(name="Bob")],
-            absent=True,
+        right = AbsenceOf(
+            absent=Statement(
+                predicate=make_predicate["shooting"],
+                terms=[Entity(name="Al"), Entity(name="Bob")],
+            )
         )
         assert not left.means(right)
 

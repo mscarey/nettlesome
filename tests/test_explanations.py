@@ -47,7 +47,7 @@ class TestContext:
         assert (
             explanation and "<the bull> is like <the cow>" in explanation.context.reason
         )
-        assert "=[Entity(generic=True, absent=False, name='Al'" in repr(explanation)
+        assert "=[Entity(generic=True, name='Al'" in repr(explanation)
 
 
 class TestMakeExplanation:
