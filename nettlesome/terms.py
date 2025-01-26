@@ -9,11 +9,10 @@ from itertools import permutations, zip_longest
 import logging
 import operator
 import textwrap
-from typing import Any, Callable, ClassVar, Dict, Iterable, Iterator
+from typing import Any, Callable, ClassVar, Dict, Iterator
 from typing import List, NamedTuple, Optional, Sequence, Tuple, Union
 from typing import KeysView, ValuesView, ItemsView
 
-from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 

@@ -8,7 +8,7 @@ from decimal import Decimal
 from typing import Any, ClassVar, Dict, Optional, Union
 
 from pint import UnitRegistry, Quantity
-from pydantic import BaseModel, field_validator, model_validator, validator
+from pydantic import BaseModel, field_validator, model_validator
 import sympy
 from sympy import Eq, Interval, oo, S
 from sympy.sets import EmptySet, FiniteSet

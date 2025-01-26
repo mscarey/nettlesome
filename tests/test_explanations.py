@@ -5,7 +5,6 @@ import pytest
 from nettlesome.terms import (
     ContextRegister,
     Explanation,
-    FactorMatch,
     consistent_with,
     contradicts,
     means,

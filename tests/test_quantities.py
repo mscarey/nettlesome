@@ -6,7 +6,7 @@ import pytest
 from sympy import S, oo
 
 from nettlesome.entities import Entity
-from nettlesome.quantities import UnitRange, DateRange, DecimalRange, Q_, Comparison
+from nettlesome.quantities import UnitRange, DateRange, DecimalRange, Comparison
 from nettlesome.statements import Statement
 
 

@@ -9,10 +9,8 @@ from typing import Optional, Self, Sequence, Tuple, Union
 
 from pydantic import (
     BaseModel,
-    validator,
     field_validator,
     model_validator,
-    root_validator,
 )
 from slugify import slugify
 
