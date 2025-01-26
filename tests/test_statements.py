@@ -928,9 +928,9 @@ class TestContradiction:
             expression=Q_("30 miles"),
         )
         terms = [Entity(name="New York"), Entity(name="Los Angeles")]
-        fact = Statement(predicate=predicate, terms=terms, absent=True)
-        fact_opposite = Statement(
-            predicate=predicate_opposite, terms=terms, absent=True
+        fact = AbsenceOf(absent=Statement(predicate=predicate, terms=terms))
+        fact_opposite = AbsenceOf(
+            absent=Statement(predicate=predicate_opposite, terms=terms)
         )
 
         assert not fact.contradicts(fact_opposite)
@@ -960,8 +960,8 @@ class TestContradiction:
             expression=Q_("60 miles per hour"),
         )
         terms = [Entity(name="the car")]
-        absent_general_fact = Statement(
-            predicate=predicate_less, terms=terms, absent=True
+        absent_general_fact = AbsenceOf(
+            absent=Statement(predicate=predicate_less, terms=terms)
         )
         specific_fact = Statement(predicate=predicate_more, terms=terms)
 

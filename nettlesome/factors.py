@@ -33,9 +33,14 @@ class AbsenceOf(Comparable, BaseModel):
                 f"{self.__class__} objects may only be compared for "
                 + "contradiction with other Factor objects or None."
             )
+        # No contradiction between absences of any two Comparables
         if not isinstance(other, self.__class__):
-            # No contradiction between absences of any two Comparables
-            if isinstance(other, self.absent.__class__):
+            if not isinstance(other, Term):
+                explanation_reversed = explanation.reversed_context()
+                yield from other._explanations_contradiction(
+                    self, explanation=explanation_reversed
+                )
+            elif isinstance(other, self.absent.__class__):
                 explanation_reversed = explanation.with_context(
                     explanation.context.reversed()
                 )
@@ -44,8 +49,3 @@ class AbsenceOf(Comparable, BaseModel):
                     yield new_explanation.with_context(
                         new_explanation.context.reversed()
                     )
-        elif not isinstance(other, Term):
-            explanation_reversed = explanation.reversed_context()
-            yield from other._explanations_contradiction(
-                self, explanation=explanation_reversed
-            )

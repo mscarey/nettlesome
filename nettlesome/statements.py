@@ -41,11 +41,6 @@ class Statement(Factor, BaseModel):
         a series of :class:`~nettlesome.factors.Factor` objects that fill in
         the blank spaces in the ``predicate`` statement.
 
-    :param name:
-        an identifier for this object, often used if the object needs
-        to be referred to multiple times in the process of composing
-        other :class:`~nettlesome.factors.Factor` objects.
-
     :param absent:
         whether the absence, rather than the presence, of the legal
         fact described above is being asserted.
