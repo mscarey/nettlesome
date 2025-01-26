@@ -275,8 +275,6 @@ class Assertion(Factor, BaseModel):
         text = f"the {self.__class__.__name__.lower()}" + " {}"
         if self.generic:
             text = f"<{text}>"
-        if self.absent:
-            text = "absence of " + text
         return text
 
     def __str__(self):

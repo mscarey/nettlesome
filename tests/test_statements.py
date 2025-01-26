@@ -10,6 +10,7 @@ from nettlesome.terms import (
     expand_string_from_source,
 )
 from nettlesome.entities import Entity
+from nettlesome.factors import AbsenceOf
 from nettlesome.predicates import Predicate
 from nettlesome.quantities import Comparison, Q_
 from nettlesome.statements import Statement
@@ -979,8 +980,8 @@ class TestContradiction:
             expression=Q_("60 miles per hour"),
         )
         terms = [Entity(name="the car")]
-        absent_general_fact = Statement(
-            predicate=predicate_more, terms=terms, absent=True
+        absent_general_fact = AbsenceOf(
+            absent=Statement(predicate=predicate_more, terms=terms)
         )
         specific_fact = Statement(predicate=predicate_less, terms=terms)
 
@@ -1099,19 +1100,20 @@ class TestContradiction:
         )
 
     def test_false_does_not_contradict_absent(self):
-        absent_fact = Statement(
-            predicate=Predicate(
-                content="${rural_s_telephone_directory} was copyrightable", truth=True
-            ),
-            terms=[Entity(name="Rural's telephone directory")],
-            absent=True,
+        absent_fact = AbsenceOf(
+            absent=Statement(
+                predicate=Predicate(
+                    content="${rural_s_telephone_directory} was copyrightable",
+                    truth=True,
+                ),
+                terms=[Entity(name="Rural's telephone directory")],
+            )
         )
         false_fact = Statement(
             predicate=Predicate(
                 content="${the_java_api} was copyrightable", truth=False
             ),
             terms=[Entity(name="the Java API", generic=True, plural=False)],
-            absent=False,
         )
         assert not false_fact.contradicts(absent_fact)
         assert not absent_fact.contradicts(false_fact)
