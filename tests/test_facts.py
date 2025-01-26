@@ -7,7 +7,7 @@ import pytest
 from nettlesome.terms import ContextRegister, DuplicateTermError
 from nettlesome.terms import Explanation, TermSequence, means
 from nettlesome.entities import Entity
-
+from nettlesome.factors import AbsenceOf
 from nettlesome.predicates import Predicate
 from nettlesome.quantities import Comparison, Q_
 from nettlesome.statements import Statement
@@ -27,10 +27,11 @@ class TestFacts:
             terms=[Entity(name="Al"), Entity(name="Ed")],
         )
         assert "<Al> shot <Ed>" in str(statement)
-        absent = Statement(
-            predicate=make_predicate["shooting"],
-            terms=[Entity(name="Al"), Entity(name="Ed")],
-            absent=True,
+        absent = AbsenceOf(
+            absent=Statement(
+                predicate=make_predicate["shooting"],
+                terms=[Entity(name="Al"), Entity(name="Ed")],
+            )
         )
         assert "absence of the statement" in str(absent).lower()
 
@@ -210,7 +211,6 @@ class TestSameMeaning:
         assert not generic.means(specific)
 
     def test_cannot_repeat_term_in_termsequence(self, make_predicate):
-
         with pytest.raises(DuplicateTermError):
             Statement(
                 predicate="$person1 shot $person2",
@@ -225,10 +225,11 @@ class TestSameMeaning:
             predicate=make_predicate["shooting"],
             terms=[Entity(name="Al"), Entity(name="Bo")],
         )
-        right = Statement(
-            predicate=make_predicate["shooting"],
-            terms=[Entity(name="Al"), Entity(name="Bob")],
-            absent=True,
+        right = AbsenceOf(
+            absent=Statement(
+                predicate=make_predicate["shooting"],
+                terms=[Entity(name="Al"), Entity(name="Bob")],
+            )
         )
         assert not left.means(right)
 
@@ -491,19 +492,20 @@ class TestContradiction:
         )
 
     def test_false_does_not_contradict_absent(self):
-        absent_fact = Statement(
-            predicate=Predicate(
-                content="${rural_s_telephone_directory} was copyrightable", truth=True
-            ),
-            terms=[Entity(name="Rural's telephone directory")],
-            absent=True,
+        absent_fact = AbsenceOf(
+            absent=Statement(
+                predicate=Predicate(
+                    content="${rural_s_telephone_directory} was copyrightable",
+                    truth=True,
+                ),
+                terms=[Entity(name="Rural's telephone directory")],
+            )
         )
         false_fact = Statement(
             predicate=Predicate(
                 content="${the_java_api} was copyrightable", truth=False
             ),
             terms=[Entity(name="the Java API", generic=True, plural=False)],
-            absent=False,
         )
         assert not false_fact.contradicts(absent_fact)
         assert not absent_fact.contradicts(false_fact)
@@ -594,7 +596,6 @@ class TestContradiction:
         assert all(register is None for register in update)
 
     def test_entity_consistency_identity_not_equality(self, make_statement):
-
         register = ContextRegister()
         register.insert_pair(key=Entity(name="Dan"), value=Entity(name="Dan"))
         update = make_statement["irrelevant_3"].update_context_register(

@@ -141,10 +141,6 @@ class Comparable(ABC):
         this object for another generic object of the same class does not change the
         meaning of other Comparable objects that incorporate this one as a term.
 
-    :attr absent:
-        Indicates the absence of the described object. The absence of two
-        contradictory objects is not contradictory.
-
     :attr name:
         An identifier for this object. May be used as a shorthand way of referring to
         this object when replacing another Comparable object's generic terms.
@@ -154,7 +150,6 @@ class Comparable(ABC):
     """
 
     generic: bool
-    absent: bool = False
     context_factor_names: ClassVar[Tuple[str, ...]]
 
     @property
@@ -223,8 +218,6 @@ class Comparable(ABC):
         text = f"the {self.__class__.__name__.lower()}" + " {}"
         if self.generic:
             text = f"<{text}>"
-        if self.absent:
-            text = "absence of " + text
         return text
 
     def _all_generic_terms_match(
@@ -515,23 +508,8 @@ class Comparable(ABC):
                 f"{self.__class__} objects may only be compared for "
                 + "contradiction with other Factor objects or None."
             )
-        if isinstance(other, self.__class__):
-            if not self.__dict__.get("absent"):
-                if not other.__dict__.get("absent"):
-                    yield from self._contradicts_if_present(other, explanation)
-                else:
-                    yield from self._implies_if_present(other, explanation)
-            elif self.__dict__.get("absent"):
-                # No contradiction between absences of any two Comparables
-                if not other.__dict__.get("absent"):
-                    explanation_reversed = explanation.with_context(
-                        explanation.context.reversed()
-                    )
-                    test = other._implies_if_present(self, explanation_reversed)
-                    for new_explanation in test:
-                        yield new_explanation.with_context(
-                            new_explanation.context.reversed()
-                        )
+        elif isinstance(other, self.__class__):
+            yield from self._contradicts_if_present(other, explanation)
         elif not isinstance(other, Term):
             explanation_reversed = explanation.reversed_context()
             yield from other._explanations_contradiction(
@@ -571,24 +549,12 @@ class Comparable(ABC):
                 f"{self.__class__} objects may only be compared for "
                 + "implication with other Comparable objects or None."
             )
-        if isinstance(other, self.__class__):
-            if self.__dict__.get("absent"):
-                reversed_explanation = explanation.with_context(
-                    explanation.context.reversed()
-                )
-                if other.__dict__.get("absent"):
-                    test = other._implies_if_present(self, reversed_explanation)
-                else:
-                    test = other._contradicts_if_present(self, reversed_explanation)
-                yield from (
-                    register.with_context(register.context.reversed())
-                    for register in test
-                )
 
-            elif not other.__dict__.get("absent"):
-                yield from self._implies_if_present(other, explanation)
-            else:
-                yield from self._contradicts_if_present(other, explanation)
+        if other.__dict__.get("absent"):
+            if isinstance(other.absent, self.__class__):
+                yield from self._contradicts_if_present(other.absent, explanation)
+        else:
+            yield from self._implies_if_present(other, explanation)
 
     def explanations_implication(
         self,
@@ -635,11 +601,7 @@ class Comparable(ABC):
     def _explanations_same_meaning(
         self, other: Comparable, explanation: Explanation
     ) -> Iterator[Explanation]:
-        if (
-            self.__class__ == other.__class__
-            and self.generic == other.generic
-            and self.absent == other.absent
-        ):
+        if self.__class__ == other.__class__ and self.generic == other.generic:
             yield from self._means_if_concrete(other, explanation)
 
     def explanations_same_meaning(
@@ -1104,7 +1066,7 @@ class ContextRegister:
     def reason(self) -> str:
         """Make statement matching analagous context factors of self and other."""
         similies = [
-            f'{key.short_string} {"are" if (key.__dict__.get("plural")) else "is"} like {value.short_string}'
+            f"{key.short_string} {'are' if (key.__dict__.get('plural')) else 'is'} like {value.short_string}"
             for key, value in self.factor_pairs()
         ]
         if len(similies) > 1:
@@ -1379,7 +1341,7 @@ class FactorMatch(NamedTuple):
         indent = "  "
         left = textwrap.indent(str(self.left), prefix=indent)
         right = textwrap.indent(str(self.right), prefix=indent)
-        return f"{left}\n" f"{relation}\n" f"{right}\n"
+        return f"{left}\n{relation}\n{right}\n"
 
 
 class Explanation:
@@ -1577,7 +1539,6 @@ class Term(Comparable):
             and self.__class__ == other.__class__
             and self.generic
             and other.generic
-            and self.absent == other.absent
         ):
             generic_context = self._generic_register(other)
             new_context = explanation.context.merged_with(generic_context)

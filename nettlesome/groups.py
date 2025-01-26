@@ -9,7 +9,7 @@ import textwrap
 from typing import Callable, ClassVar, Dict, Iterator, List
 from typing import Optional, Sequence, Tuple, Union
 
-from nettlesome.factors import Factor
+from nettlesome.factors import Factor, AbsenceOf
 from nettlesome.terms import (
     Comparable,
     ContextMemo,
@@ -41,10 +41,14 @@ class FactorGroup(Comparable):
     r"""Terms to be used together in a comparison."""
 
     term_class = Factor
+    absence_class = AbsenceOf
     generic: bool = False
     context_factor_names: ClassVar[Tuple[str, ...]] = ()
 
-    def __init__(self, factors: Union[FactorGroup, Sequence[Factor], Factor] = ()):
+    def __init__(
+        self,
+        factors: FactorGroup | Sequence[Factor | AbsenceOf] | Factor | AbsenceOf = (),
+    ):
         """Normalize ``factors`` as sequence attribute."""
         if isinstance(factors, FactorGroup):
             self.sequence: Tuple[Factor, ...] = factors.sequence
@@ -53,7 +57,7 @@ class FactorGroup(Comparable):
         else:
             self.sequence = (factors,)
         for factor in self.sequence:
-            if not isinstance(factor, self.term_class):
+            if not isinstance(factor, (self.term_class, self.absence_class)):
                 raise TypeError(
                     f'Object "{factor} could not be included in '
                     f"{self.__class__.__name__} because it is "
@@ -188,7 +192,6 @@ class FactorGroup(Comparable):
     def _explain_contradicts_factor(
         self, other: Comparable, explanation: Explanation
     ) -> Iterator[Explanation]:
-
         for self_factor in self:
             yield from self_factor.explanations_contradiction(other, explanation)
 
@@ -344,7 +347,7 @@ class FactorGroup(Comparable):
 
     def _verbose_comparison(
         self,
-        still_need_matches: List[Factor],
+        still_need_matches: Sequence[Factor | AbsenceOf],
         explanation: Explanation,
     ) -> Iterator[Explanation]:
         r"""
@@ -401,7 +404,7 @@ class FactorGroup(Comparable):
                 still_need_matches=list(other.sequence),
                 explanation=explanation,
             )
-        elif isinstance(other, Factor):
+        elif isinstance(other, (self.term_class, self.absence_class)):
             yield from self._verbose_comparison(
                 still_need_matches=[other],
                 explanation=explanation,
