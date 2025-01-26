@@ -753,6 +753,9 @@ class TestImplication:
         assert absent_broader >= absent_narrower
         assert not absent_narrower >= absent_broader
 
+        with pytest.raises(TypeError):
+            absent_narrower.implies(3)
+
     def test_equal_factors_not_gt(self):
         fact = Statement(
             predicate=Predicate(content="$person was a person"),
@@ -1092,7 +1095,6 @@ class TestContradiction:
         shot_false = Statement(
             predicate=Predicate(content="$shooter shot $victim", truth=False),
             terms=[Entity(name="Alice"), Entity(name="Bob")],
-            absent=True,
         )
         assert shot_fact._contradicts_if_present(
             shot_false, explanation=Explanation.from_context()

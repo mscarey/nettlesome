@@ -1,6 +1,6 @@
 """Factors that can be included in FactorGroups."""
 
-from typing import Iterator
+from typing import ClassVar, Iterator, Tuple
 
 from pydantic import BaseModel
 from nettlesome.terms import Comparable, Explanation, Term
@@ -21,6 +21,7 @@ class AbsenceOf(Comparable, BaseModel):
 
     generic: bool = False
     absent: Factor
+    context_factor_names: ClassVar[Tuple[str, ...]] = "absent"
 
     def __str__(self):
         return f"absence of {str(self.absent)}"
