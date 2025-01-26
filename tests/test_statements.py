@@ -49,8 +49,8 @@ class TestStatements:
 
     def test_string_representation_of_absent_factor(self):
         predicate = Predicate(content="$company was the best brand")
-        statement = Statement(
-            predicate=predicate, terms=Entity(name="Acme"), absent=True
+        statement = AbsenceOf(
+            absent=Statement(predicate=predicate, terms=Entity(name="Acme"))
         )
         assert "absence of the statement" in str(statement).lower()
 
@@ -453,10 +453,10 @@ class TestSameMeaning:
         fact = Statement(
             predicate=predicate, terms=[Entity(name="Al"), Entity(name="Meg")]
         )
-        fact_b = Statement(
-            predicate=predicate,
-            terms=[Entity(name="Al"), Entity(name="Meg")],
-            absent=True,
+        fact_b = AbsenceOf(
+            absent=Statement(
+                predicate=predicate, terms=[Entity(name="Al"), Entity(name="Meg")]
+            )
         )
         assert not fact.means(fact_b)
 

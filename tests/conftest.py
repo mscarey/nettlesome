@@ -3,6 +3,7 @@ from typing import Dict
 import pytest
 
 from nettlesome.terms import ContextRegister
+from nettlesome.factors import AbsenceOf
 from nettlesome.predicates import Predicate
 from nettlesome.quantities import Comparison, Q_
 from nettlesome.statements import Statement, Assertion
@@ -11,7 +12,6 @@ from nettlesome.entities import Entity
 
 @pytest.fixture(scope="class")
 def make_predicate() -> Dict[str, Predicate]:
-
     return {
         "make_predicate": Predicate(content="$person committed a crime"),
         "murder": Predicate(content="$shooter murdered $victim"),
@@ -184,8 +184,8 @@ def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
         "crime_specific_person": Statement(
             predicate=p["crime"], terms=Entity(name="Alice", generic=False)
         ),
-        "absent_no_crime": Statement(
-            predicate=p["no_crime"], terms=Entity(name="Alice"), absent=True
+        "absent_no_crime": AbsenceOf(
+            absent=Statement(predicate=p["no_crime"], terms=Entity(name="Alice"))
         ),
         "no_crime": Statement(predicate=p["no_crime"], terms=Entity(name="Alice")),
         "no_crime_entity_order": Statement(
@@ -307,20 +307,23 @@ def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
             predicate=c["way_more"],
             terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
         ),
-        "absent_less": Statement(
-            predicate=c["less"],
-            terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
-            absent=True,
+        "absent_less": AbsenceOf(
+            absent=Statement(
+                predicate=c["less"],
+                terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
+            )
         ),
-        "absent_more": Statement(
-            predicate=c["more"],
-            terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
-            absent=True,
+        "absent_more": AbsenceOf(
+            absent=Statement(
+                predicate=c["more"],
+                terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
+            )
         ),
-        "absent_way_more": Statement(
-            predicate=c["way_more"],
-            terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
-            absent=True,
+        "absent_way_more": AbsenceOf(
+            absent=Statement(
+                predicate=c["way_more"],
+                terms=[Entity(name="San Francisco"), Entity(name="Oakland")],
+            )
         ),
     }
 
