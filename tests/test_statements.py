@@ -1121,6 +1121,8 @@ class TestContradiction:
         )
         assert not false_fact.contradicts(absent_fact)
         assert not absent_fact.contradicts(false_fact)
+        with pytest.raises(TypeError):
+            absent_fact.contradicts(3)
 
     def test_inconsistent_statements_about_different_entities(self):
         """
