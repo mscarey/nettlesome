@@ -1,6 +1,5 @@
 """Statements, similar to AuthoritySpoke Facts but without a "standard of proof"."""
 
-
 from copy import deepcopy
 import operator
 
@@ -31,7 +30,7 @@ from nettlesome.quantities import Comparison
 
 class Statement(Factor, BaseModel):
     r"""
-    An assertion that can be accepted as factual and compared to other Statements.
+    A statement that may be accepted as factual or compared to other Statements.
 
     :param predicate:
         a natural-language clause with zero or more slots
@@ -64,7 +63,6 @@ class Statement(Factor, BaseModel):
     predicate: Union[Predicate, Comparison]
     terms: List[Union[Entity, "Statement", "Assertion"]]
     name: str = ""
-    absent: bool = False
     generic: bool = False
 
     @model_validator(mode="before")
@@ -270,7 +268,6 @@ class Assertion(Factor, BaseModel):
     statement: "Statement"
     authority: Optional[Entity] = None
     name: str = ""
-    absent: bool = False
     generic: bool = False
     context_factor_names: ClassVar[Tuple[str, ...]] = ("statement", "authority")
 
