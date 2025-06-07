@@ -337,7 +337,7 @@ class FactorGroup(Comparable):
         self, other: FactorGroup, context: ContextRegister
     ) -> Iterator[ContextRegister]:
         for likely in self.likely_contexts(other, context):
-            partial = self + other.new_context(likely.reversed())
+            partial: FactorGroup | None = self + other.new_context(likely.reversed())
             if partial is not None:
                 try:
                     partial.internally_consistent()
