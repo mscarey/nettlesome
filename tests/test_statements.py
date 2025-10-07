@@ -983,12 +983,12 @@ class TestContradiction:
         assert not fact_no_truth.contradicts(fact)
 
     def test_broader_absent_factor_contradicts_quantity_statement(self):
-        predicate_less = Comparison(
+        predicate_less = Comparison.new(
             content="${vehicle}'s speed was",
             sign=">",
             expression=Q_("30 miles per hour"),
         )
-        predicate_more = Comparison(
+        predicate_more = Comparison.new(
             content="${vehicle}'s speed was",
             sign=">",
             expression=Q_("30 miles per hour"),
@@ -1003,12 +1003,12 @@ class TestContradiction:
         assert specific_fact.contradicts(absent_general_fact)
 
     def test_broader_absent_factor_contradicts_quantity_statement_sympy(self):
-        predicate_less = Comparison(
+        predicate_less = Comparison.new(
             content="${vehicle}'s speed was",
             sign=">",
             expression=30 * miles / hour,
         )
-        predicate_more = Comparison(
+        predicate_more = Comparison.new(
             content="${vehicle}'s speed was",
             sign=">",
             expression=30 * miles / hour,
@@ -1023,12 +1023,12 @@ class TestContradiction:
         assert specific_fact.contradicts(absent_general_fact)
 
     def test_less_specific_absent_contradicts_more_specific(self):
-        predicate_less = Comparison(
+        predicate_less = Comparison.new(
             content="${vehicle}'s speed was",
             sign="<",
             expression=30 * miles / hour,
         )
-        predicate_more = Comparison(
+        predicate_more = Comparison.new(
             content="${vehicle}'s speed was",
             sign="<",
             expression=60 * miles / hour,
@@ -1348,32 +1348,23 @@ class TestContradiction:
 
 
 class TestConsistent:
-    p_small_weight = Comparison.new(
-        content="the amount of gold $person possessed was",
-        sign="<",
-        expression=1 * gram,
-    )
-    p_smallish_weight = Comparison.new(
-        content="the amount of gold $person possessed was",
-        sign="<",
-        expression=100 * gram,
-    )
-    p_large_weight = Comparison.new(
-        content="the amount of gold $person possessed was",
-        sign=">=",
-        expression=100 * kilograms,
-    )
-    big = Statement(predicate=p_large_weight, terms=Entity(name="Alice"))
-    small = Statement(predicate=p_small_weight, terms=Entity(name="Bob"))
-    smallish = Statement(predicate=p_smallish_weight, terms=Entity(name="Karen"))
-
     def test_contradictory_facts_about_same_entity(self):
+        p_small_weight = Comparison.new(
+            content="the amount of gold $person possessed was",
+            sign="<",
+            expression=1 * gram,
+        )
+        p_large_weight = Comparison.new(
+            content="the amount of gold $person possessed was",
+            sign=">=",
+            expression=100 * kilograms,
+        )
+        big = Statement(predicate=p_large_weight, terms=Entity(name="Alice"))
+        small = Statement(predicate=p_small_weight, terms=Entity(name="Bob"))
         register = ContextRegister()
         register.insert_pair(Entity(name="Alice"), Entity(name="Bob"))
         assert not self.small.consistent_with(self.big, register)
-        explanations = list(
-            self.small.explanations_consistent_with(self.big, context=register)
-        )
+        explanations = list(small.explanations_consistent_with(big, context=register))
         assert not explanations
 
     def test_not_consistent_different_terms(self, make_statement):
@@ -1389,29 +1380,71 @@ class TestConsistent:
         )
 
     def test_factor_consistent_with_none(self):
-        assert self.small.consistent_with(None)
+        p_small_weight = Comparison.new(
+            content="the amount of gold $person possessed was",
+            sign="<",
+            expression=1 * gram,
+        )
+        small = Statement(predicate=p_small_weight, terms=Entity(name="Bob"))
+        assert small.consistent_with(None)
 
     def test_explain_consistent(self):
-        gen = self.small.explanations_consistent_with(self.smallish)
+        p_small_weight = Comparison.new(
+            content="the amount of gold $person possessed was",
+            sign="<",
+            expression=1 * gram,
+        )
+        small = Statement(predicate=p_small_weight, terms=Entity(name="Bob"))
+        p_smallish_weight = Comparison.new(
+            content="the amount of gold $person possessed was",
+            sign="<",
+            expression=100 * gram,
+        )
+        smallish = Statement(predicate=p_smallish_weight, terms=Entity(name="Karen"))
+        gen = small.explanations_consistent_with(smallish)
         explanation = next(gen)
         assert explanation.context["<Bob>"].compare_keys(Entity(name="Karen"))
 
     def test_explain_consistent_if_implied(self):
-        gen = self.smallish.explanations_consistent_with(self.small)
+        p_small_weight = Comparison.new(
+            content="the amount of gold $person possessed was",
+            sign="<",
+            expression=1 * gram,
+        )
+        small = Statement(predicate=p_small_weight, terms=Entity(name="Bob"))
+        p_smallish_weight = Comparison.new(
+            content="the amount of gold $person possessed was",
+            sign="<",
+            expression=100 * gram,
+        )
+        smallish = Statement(predicate=p_smallish_weight, terms=Entity(name="Karen"))
+        gen = smallish.explanations_consistent_with(small)
         explanation = next(gen)
         assert explanation.context["<Karen>"].compare_keys(Entity(name="Bob"))
 
     def test_no_explanation_consistent(self):
-        assert self.small.explain_contradiction(self.smallish) is None
+        p_small_weight = Comparison.new(
+            content="the amount of gold $person possessed was",
+            sign="<",
+            expression=1 * gram,
+        )
+        small = Statement(predicate=p_small_weight, terms=Entity(name="Bob"))
+        p_smallish_weight = Comparison.new(
+            content="the amount of gold $person possessed was",
+            sign="<",
+            expression=100 * gram,
+        )
+        smallish = Statement(predicate=p_smallish_weight, terms=Entity(name="Karen"))
+        assert small.explain_contradiction(smallish) is None
 
 
 class TestAddition:
-    predicate_less = Comparison(
+    predicate_less = Comparison.new(
         content="${vehicle}'s speed was",
         sign=">",
         expression=30 * miles / hour,
     )
-    predicate_more = Comparison(
+    predicate_more = Comparison.new(
         content="${vehicle}'s speed was",
         sign=">=",
         expression=60 * miles / hour,
