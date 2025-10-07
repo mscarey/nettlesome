@@ -604,6 +604,18 @@ class TestImplication:
         with pytest.raises(TypeError):
             statement > phrase
 
+    def test_new_comparison_false(self):
+        phrase = Comparison.new(
+            content="the distance north from $south to $north was",
+            sign=">",
+            expression="180 miles",
+            truth=False,
+        )
+        assert (
+            "the distance north from $south to $north was no more than 180 mile"
+            in str(phrase).lower()
+        )
+
     def test_statement_implies_because_of_quantity(self):
         statement = Statement(
             predicate=Comparison(
