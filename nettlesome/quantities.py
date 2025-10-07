@@ -560,9 +560,7 @@ class Comparison(BaseModel, PhraseABC):
         """
         if isinstance(value, Quantity):
             return str(value)
-        if isinstance(value, SympyQuantity):
-            return str(Q_(value.scale_factor, str(value.dimension)))
-        if isinstance(value, Mul):
+        if isinstance(value, (SympyQuantity, Mul)):
             return str(Q_(str(value)))
         if isinstance(value, date):
             return value

@@ -1363,7 +1363,7 @@ class TestConsistent:
         small = Statement(predicate=p_small_weight, terms=Entity(name="Bob"))
         register = ContextRegister()
         register.insert_pair(Entity(name="Alice"), Entity(name="Bob"))
-        assert not self.small.consistent_with(self.big, register)
+        assert not small.consistent_with(big, register)
         explanations = list(small.explanations_consistent_with(big, context=register))
         assert not explanations
 
