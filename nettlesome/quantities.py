@@ -10,7 +10,7 @@ from typing import Any, ClassVar, Dict, Optional, Union
 from pint import UnitRegistry, Quantity
 from pydantic import BaseModel, field_validator, model_validator
 import sympy
-from sympy import Eq, Interval, oo, S
+from sympy import Eq, Interval, Mul, oo, S
 from sympy.sets import EmptySet, FiniteSet
 from sympy.physics.units import Quantity as SympyQuantity
 
@@ -562,6 +562,8 @@ class Comparison(BaseModel, PhraseABC):
             return str(value)
         if isinstance(value, SympyQuantity):
             return str(Q_(value.scale_factor, str(value.dimension)))
+        if isinstance(value, Mul):
+            return str(Q_(str(value)))
         if isinstance(value, date):
             return value
         if isinstance(value, (int, Decimal, float)):

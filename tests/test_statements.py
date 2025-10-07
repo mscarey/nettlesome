@@ -1439,27 +1439,40 @@ class TestConsistent:
 
 
 class TestAddition:
-    predicate_less = Comparison.new(
-        content="${vehicle}'s speed was",
-        sign=">",
-        expression=30 * miles / hour,
-    )
-    predicate_more = Comparison.new(
-        content="${vehicle}'s speed was",
-        sign=">=",
-        expression=60 * miles / hour,
-    )
-    general_fact = Statement(predicate=predicate_less, terms=Entity(name="the car"))
-    specific_fact = Statement(
-        predicate=predicate_more, terms=Entity(name="the motorcycle")
-    )
-
     def test_addition_returns_broader_operand(self):
-        answer = self.specific_fact + self.general_fact
-        assert answer.means(self.specific_fact)
+        predicate_less = Comparison.new(
+            content="${vehicle}'s speed was",
+            sign=">",
+            expression=30 * miles / hour,
+        )
+        predicate_more = Comparison.new(
+            content="${vehicle}'s speed was",
+            sign=">=",
+            expression=60 * miles / hour,
+        )
+        general_fact = Statement(predicate=predicate_less, terms=Entity(name="the car"))
+        specific_fact = Statement(
+            predicate=predicate_more, terms=Entity(name="the motorcycle")
+        )
+        answer = specific_fact + general_fact
+        assert answer.means(specific_fact)
 
     def test_addition_uses_terms_from_left(self):
-        answer = self.general_fact + self.specific_fact
+        predicate_less = Comparison.new(
+            content="${vehicle}'s speed was",
+            sign=">",
+            expression=30 * miles / hour,
+        )
+        predicate_more = Comparison.new(
+            content="${vehicle}'s speed was",
+            sign=">=",
+            expression=60 * miles / hour,
+        )
+        general_fact = Statement(predicate=predicate_less, terms=Entity(name="the car"))
+        specific_fact = Statement(
+            predicate=predicate_more, terms=Entity(name="the motorcycle")
+        )
+        answer = general_fact + specific_fact
         assert "<the car>" in str(answer)
         assert "the-car-s-speed" in answer.slug
 
