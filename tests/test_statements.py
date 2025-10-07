@@ -1,7 +1,7 @@
 import operator
 
 import pytest
-from sympy.physics.units import gram, hour, kilograms, miles
+from nettlesome.units import gram, hour, kilograms, miles
 
 from nettlesome.terms import (
     ContextRegister,
@@ -1348,17 +1348,17 @@ class TestContradiction:
 
 
 class TestConsistent:
-    p_small_weight = Comparison(
+    p_small_weight = Comparison.new(
         content="the amount of gold $person possessed was",
         sign="<",
         expression=1 * gram,
     )
-    p_smallish_weight = Comparison(
+    p_smallish_weight = Comparison.new(
         content="the amount of gold $person possessed was",
         sign="<",
         expression=100 * gram,
     )
-    p_large_weight = Comparison(
+    p_large_weight = Comparison.new(
         content="the amount of gold $person possessed was",
         sign=">=",
         expression=100 * kilograms,
