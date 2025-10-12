@@ -188,7 +188,6 @@ class FactorGroup(Comparable):
     def _explain_contradicts_factor(
         self, other: Comparable, explanation: Explanation
     ) -> Iterator[Explanation]:
-
         for self_factor in self:
             yield from self_factor.explanations_contradiction(other, explanation)
 
@@ -291,7 +290,7 @@ class FactorGroup(Comparable):
         """
         if other is None:
             return False
-        return any(self.explanations_contradiction(other, context=context))
+        return any(self.explanations_contradiction(other=other, context=context))
 
     def _explanations_implied_by(
         self,
