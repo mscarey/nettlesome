@@ -10,8 +10,9 @@ from typing import Any, ClassVar, Dict, Optional, Union
 from pint import UnitRegistry, Quantity
 from pydantic import BaseModel, field_validator, model_validator
 import sympy
-from sympy import Eq, Interval, oo, S
+from sympy import Eq, Interval, Mul, oo, S
 from sympy.sets import EmptySet, FiniteSet
+from sympy.physics.units import Quantity as SympyQuantity
 
 from nettlesome.predicates import PhraseABC
 
@@ -426,6 +427,67 @@ class Comparison(BaseModel, PhraseABC):
     quantity_range: Union[DecimalRange, UnitRange, DateRange]
     truth: Optional[bool] = True
 
+    @classmethod
+    def new(
+        cls,
+        content: str,
+        expression: str | int | float | date,
+        sign: str = "==",
+        include_negatives: bool | None = None,
+        truth: bool = True,
+    ) -> Comparison:
+        """
+        Create a Comparison object.
+
+        :param content:
+            template string for the Comparison, which must end with
+            the word "was"
+        :param expression:
+            an object to be interpreted as the ``expression`` field
+            of a :class:`~authorityspoke.predicate.Comparison`
+        :param sign:
+            A string representing an equality or inequality sign like ``==``,
+            ``>``, or ``<=``. Used to indicate that the clause ends with a
+            comparison to some quantity. Should be defined if and only if a
+            ``quantity`` is defined. Even though "=" is the default, it's
+            the least useful, because courts almost always state rules that
+            are intended to apply to quantities above or below some threshold.
+        :param include_negatives:
+            whether negative values should be included in the range of
+            possible values. If None (the default), negative values are
+            included if and only if the quantity is negative.
+        :param truth:
+            whether the statement is asserted to be true or false.
+            Defaults to True.
+        """
+        quantity = cls.expression_to_quantity(expression)
+        if isinstance(quantity, date):
+            quantity_range = DateRange(
+                sign=sign,
+                quantity=quantity,
+                include_negatives=include_negatives,
+            )
+        elif isinstance(quantity, (str, SympyQuantity)):
+            if isinstance(quantity, str):
+                quantity = Q_(quantity)
+            quantity_range = UnitRange(
+                sign=sign,
+                quantity_magnitude=Decimal(quantity.magnitude),
+                quantity_units=str(quantity.units),
+                include_negatives=include_negatives,
+            )
+        else:
+            quantity_range = DecimalRange(
+                sign=sign,
+                quantity=quantity,
+                include_negatives=include_negatives,
+            )
+        return cls(
+            content=content,
+            quantity_range=quantity_range,
+            truth=truth,
+        )
+
     @model_validator(mode="before")
     def set_quantity_range(cls, values):
         """Reverse the sign of a Comparison if necessary."""
@@ -480,7 +542,7 @@ class Comparison(BaseModel, PhraseABC):
 
     @classmethod
     def expression_to_quantity(
-        cls, value: Union[date, float, int, str]
+        cls, value: Union[date, float, int, SympyQuantity]
     ) -> Union[date, Decimal, str]:
         r"""
         Create numeric expression from text for Comparison class.
@@ -498,6 +560,8 @@ class Comparison(BaseModel, PhraseABC):
         """
         if isinstance(value, Quantity):
             return str(value)
+        if isinstance(value, (SympyQuantity, Mul)):
+            return str(Q_(str(value)))
         if isinstance(value, date):
             return value
         if isinstance(value, (int, Decimal, float)):
