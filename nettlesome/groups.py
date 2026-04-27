@@ -294,7 +294,7 @@ class FactorGroup(Comparable):
         """
         if other is None:
             return False
-        return any(self.explanations_contradiction(other, context=context))
+        return any(self.explanations_contradiction(other=other, context=context))
 
     def _explanations_implied_by(
         self,

@@ -1,6 +1,7 @@
 import operator
 
 import pytest
+from nettlesome.units import gram, hour, kilograms, miles
 
 from nettlesome.terms import (
     ContextRegister,
@@ -604,6 +605,18 @@ class TestImplication:
         with pytest.raises(TypeError):
             statement > phrase
 
+    def test_new_comparison_false(self):
+        phrase = Comparison.new(
+            content="the distance north from $south to $north was",
+            sign=">",
+            expression="180 miles",
+            truth=False,
+        )
+        assert (
+            "the distance north from $south to $north was no more than 180 mile"
+            in str(phrase).lower()
+        )
+
     def test_statement_implies_because_of_quantity(self):
         statement = Statement(
             predicate=Comparison(
@@ -867,12 +880,30 @@ class TestContradiction:
         predicate = Comparison(
             content="the distance between $place1 and $place2 was",
             sign=">",
-            expression=Q_("30 miles"),
+            expression=30 * miles,
         )
         predicate_opposite = Comparison(
             content="the distance between $place1 and $place2 was",
             sign="<",
             expression=Q_("30 miles"),
+        )
+        terms = [Entity(name="New York"), Entity(name="Los Angeles")]
+        fact = Statement(predicate=predicate, terms=terms)
+        fact_opposite = Statement(predicate=predicate_opposite, terms=terms)
+
+        assert fact.contradicts(fact_opposite)
+        assert fact_opposite.contradicts(fact)
+
+    def test_factor_different_predicate_truth_contradicts_sympy(self):
+        predicate = Comparison(
+            content="the distance between $place1 and $place2 was",
+            sign=">",
+            expression=30 * miles,
+        )
+        predicate_opposite = Comparison(
+            content="the distance between $place1 and $place2 was",
+            sign="<",
+            expression=30 * miles,
         )
         terms = [Entity(name="New York"), Entity(name="Los Angeles")]
         fact = Statement(predicate=predicate, terms=terms)
@@ -938,6 +969,22 @@ class TestContradiction:
             absent=Statement(predicate=predicate_opposite, terms=terms)
         )
 
+    def test_absences_of_contradictory_facts_consistent_sympy(self):
+        predicate = Comparison(
+            content="the distance between $place1 and $place2 was",
+            sign=">",
+            expression=30 * miles,
+        )
+        predicate_opposite = Comparison(
+            content="the distance between $place1 and $place2 was",
+            sign="<",
+            expression=30 * miles,
+        )
+        terms = [Entity(name="New York"), Entity(name="Los Angeles")]
+        fact = Statement(predicate=predicate, terms=terms, absent=True)
+        fact_opposite = Statement(
+            predicate=predicate_opposite, terms=terms, absent=True
+        )
         assert not fact.contradicts(fact_opposite)
         assert not fact_opposite.contradicts(fact)
 
@@ -954,15 +1001,35 @@ class TestContradiction:
         assert not fact_no_truth.contradicts(fact)
 
     def test_broader_absent_factor_contradicts_quantity_statement(self):
-        predicate_less = Comparison(
+        predicate_less = Comparison.new(
             content="${vehicle}'s speed was",
             sign=">",
             expression=Q_("30 miles per hour"),
         )
-        predicate_more = Comparison(
+        predicate_more = Comparison.new(
             content="${vehicle}'s speed was",
             sign=">",
-            expression=Q_("60 miles per hour"),
+            expression=Q_("30 miles per hour"),
+        )
+        terms = [Entity(name="the car")]
+        absent_general_fact = Statement(
+            predicate=predicate_less, terms=terms, absent=True
+        )
+        specific_fact = Statement(predicate=predicate_more, terms=terms)
+
+        assert absent_general_fact.contradicts(specific_fact)
+        assert specific_fact.contradicts(absent_general_fact)
+
+    def test_broader_absent_factor_contradicts_quantity_statement_sympy(self):
+        predicate_less = Comparison.new(
+            content="${vehicle}'s speed was",
+            sign=">",
+            expression=30 * miles / hour,
+        )
+        predicate_more = Comparison.new(
+            content="${vehicle}'s speed was",
+            sign=">",
+            expression=30 * miles / hour,
         )
         terms = [Entity(name="the car")]
         absent_general_fact = AbsenceOf(
@@ -974,15 +1041,15 @@ class TestContradiction:
         assert specific_fact.contradicts(absent_general_fact)
 
     def test_less_specific_absent_contradicts_more_specific(self):
-        predicate_less = Comparison(
+        predicate_less = Comparison.new(
             content="${vehicle}'s speed was",
             sign="<",
-            expression=Q_("30 miles per hour"),
+            expression=30 * miles / hour,
         )
-        predicate_more = Comparison(
+        predicate_more = Comparison.new(
             content="${vehicle}'s speed was",
             sign="<",
-            expression=Q_("60 miles per hour"),
+            expression=60 * miles / hour,
         )
         terms = [Entity(name="the car")]
         absent_general_fact = AbsenceOf(
@@ -1003,6 +1070,26 @@ class TestContradiction:
             content="${vehicle}'s speed was",
             sign="<",
             expression=Q_("60 miles per hour"),
+        )
+        terms = [Entity(name="the car")]
+        general_fact = Statement(predicate=predicate_more, terms=terms)
+        absent_specific_fact = Statement(
+            predicate=predicate_less, terms=terms, absent=True
+        )
+
+        assert not general_fact.contradicts(absent_specific_fact)
+        assert not absent_specific_fact.contradicts(general_fact)
+
+    def test_no_contradiction_with_more_specific_absent_sympy(self):
+        predicate_less = Comparison(
+            content="${vehicle}'s speed was",
+            sign="<",
+            expression=30 * miles / hour,
+        )
+        predicate_more = Comparison(
+            content="${vehicle}'s speed was",
+            sign="<",
+            expression=60 * miles / hour,
         )
         terms = [Entity(name="the car")]
         general_fact = Statement(predicate=predicate_more, terms=terms)
@@ -1145,6 +1232,27 @@ class TestContradiction:
         bob_poor = Statement(predicate=p_small_weight, terms=bob)
         assert alice_rich.contradicts(bob_poor)
 
+    def test_inconsistent_statements_about_different_entities_sympy(self):
+        """
+        Alice and Bob are both generics. So it's possible to reach a
+        contradiction if you assume they correspond to one another.
+        """
+        p_small_weight = Comparison(
+            content="the amount of gold $person possessed was",
+            sign="<",
+            expression=1 * gram,
+        )
+        p_large_weight = Comparison(
+            content="the amount of gold $person possessed was",
+            sign=">=",
+            expression=100 * kilograms,
+        )
+        alice = Entity(name="Alice")
+        bob = Entity(name="Bob")
+        alice_rich = Statement(predicate=p_large_weight, terms=alice)
+        bob_poor = Statement(predicate=p_small_weight, terms=bob)
+        assert alice_rich.contradicts(bob_poor)
+
     def test_inconsistent_statements_about_corresponding_entities(self):
         """
         Even though Alice and Bob are both generics, it's known that
@@ -1160,6 +1268,30 @@ class TestContradiction:
             content="the amount of gold $person possessed was",
             sign=">=",
             expression=Q_("100 kilograms"),
+        )
+        alice = Entity(name="Alice")
+        bob = Entity(name="Bob")
+        alice_rich = Statement(predicate=p_large_weight, terms=alice)
+        bob_poor = Statement(predicate=p_small_weight, terms=bob)
+        register = ContextRegister()
+        register.insert_pair(alice, alice)
+        assert not alice_rich.contradicts(bob_poor, context=register)
+
+    def test_inconsistent_statements_about_corresponding_entities_sympy(self):
+        """
+        Even though Alice and Bob are both generics, it's known that
+        Alice in the first context corresponds with Alice in the second.
+        So there's no contradiction.
+        """
+        p_small_weight = Comparison(
+            content="the amount of gold $person possessed was",
+            sign="<",
+            expression=1 * gram,
+        )
+        p_large_weight = Comparison(
+            content="the amount of gold $person possessed was",
+            sign=">=",
+            expression=100 * kilograms,
         )
         alice = Entity(name="Alice")
         bob = Entity(name="Bob")
@@ -1236,32 +1368,23 @@ class TestContradiction:
 
 
 class TestConsistent:
-    p_small_weight = Comparison(
-        content="the amount of gold $person possessed was",
-        sign="<",
-        expression=Q_("1 gram"),
-    )
-    p_smallish_weight = Comparison(
-        content="the amount of gold $person possessed was",
-        sign="<",
-        expression=Q_("100 grams"),
-    )
-    p_large_weight = Comparison(
-        content="the amount of gold $person possessed was",
-        sign=">=",
-        expression=Q_("100 kilograms"),
-    )
-    big = Statement(predicate=p_large_weight, terms=Entity(name="Alice"))
-    small = Statement(predicate=p_small_weight, terms=Entity(name="Bob"))
-    smallish = Statement(predicate=p_smallish_weight, terms=Entity(name="Karen"))
-
     def test_contradictory_facts_about_same_entity(self):
+        p_small_weight = Comparison.new(
+            content="the amount of gold $person possessed was",
+            sign="<",
+            expression=1 * gram,
+        )
+        p_large_weight = Comparison.new(
+            content="the amount of gold $person possessed was",
+            sign=">=",
+            expression=100 * kilograms,
+        )
+        big = Statement(predicate=p_large_weight, terms=Entity(name="Alice"))
+        small = Statement(predicate=p_small_weight, terms=Entity(name="Bob"))
         register = ContextRegister()
         register.insert_pair(Entity(name="Alice"), Entity(name="Bob"))
-        assert not self.small.consistent_with(self.big, register)
-        explanations = list(
-            self.small.explanations_consistent_with(self.big, context=register)
-        )
+        assert not small.consistent_with(big, register)
+        explanations = list(small.explanations_consistent_with(big, context=register))
         assert not explanations
 
     def test_not_consistent_different_terms(self, make_statement):
@@ -1277,44 +1400,99 @@ class TestConsistent:
         )
 
     def test_factor_consistent_with_none(self):
-        assert self.small.consistent_with(None)
+        p_small_weight = Comparison.new(
+            content="the amount of gold $person possessed was",
+            sign="<",
+            expression=1 * gram,
+        )
+        small = Statement(predicate=p_small_weight, terms=Entity(name="Bob"))
+        assert small.consistent_with(None)
 
     def test_explain_consistent(self):
-        gen = self.small.explanations_consistent_with(self.smallish)
+        p_small_weight = Comparison.new(
+            content="the amount of gold $person possessed was",
+            sign="<",
+            expression=1 * gram,
+        )
+        small = Statement(predicate=p_small_weight, terms=Entity(name="Bob"))
+        p_smallish_weight = Comparison.new(
+            content="the amount of gold $person possessed was",
+            sign="<",
+            expression=100 * gram,
+        )
+        smallish = Statement(predicate=p_smallish_weight, terms=Entity(name="Karen"))
+        gen = small.explanations_consistent_with(smallish)
         explanation = next(gen)
         assert explanation.context["<Bob>"].compare_keys(Entity(name="Karen"))
 
     def test_explain_consistent_if_implied(self):
-        gen = self.smallish.explanations_consistent_with(self.small)
+        p_small_weight = Comparison.new(
+            content="the amount of gold $person possessed was",
+            sign="<",
+            expression=1 * gram,
+        )
+        small = Statement(predicate=p_small_weight, terms=Entity(name="Bob"))
+        p_smallish_weight = Comparison.new(
+            content="the amount of gold $person possessed was",
+            sign="<",
+            expression=100 * gram,
+        )
+        smallish = Statement(predicate=p_smallish_weight, terms=Entity(name="Karen"))
+        gen = smallish.explanations_consistent_with(small)
         explanation = next(gen)
         assert explanation.context["<Karen>"].compare_keys(Entity(name="Bob"))
 
     def test_no_explanation_consistent(self):
-        assert self.small.explain_contradiction(self.smallish) is None
+        p_small_weight = Comparison.new(
+            content="the amount of gold $person possessed was",
+            sign="<",
+            expression=1 * gram,
+        )
+        small = Statement(predicate=p_small_weight, terms=Entity(name="Bob"))
+        p_smallish_weight = Comparison.new(
+            content="the amount of gold $person possessed was",
+            sign="<",
+            expression=100 * gram,
+        )
+        smallish = Statement(predicate=p_smallish_weight, terms=Entity(name="Karen"))
+        assert small.explain_contradiction(smallish) is None
 
 
 class TestAddition:
-    predicate_less = Comparison(
-        content="${vehicle}'s speed was",
-        sign=">",
-        expression=Q_("30 miles per hour"),
-    )
-    predicate_more = Comparison(
-        content="${vehicle}'s speed was",
-        sign=">=",
-        expression=Q_("60 miles per hour"),
-    )
-    general_fact = Statement(predicate=predicate_less, terms=Entity(name="the car"))
-    specific_fact = Statement(
-        predicate=predicate_more, terms=Entity(name="the motorcycle")
-    )
-
     def test_addition_returns_broader_operand(self):
-        answer = self.specific_fact + self.general_fact
-        assert answer.means(self.specific_fact)
+        predicate_less = Comparison.new(
+            content="${vehicle}'s speed was",
+            sign=">",
+            expression=30 * miles / hour,
+        )
+        predicate_more = Comparison.new(
+            content="${vehicle}'s speed was",
+            sign=">=",
+            expression=60 * miles / hour,
+        )
+        general_fact = Statement(predicate=predicate_less, terms=Entity(name="the car"))
+        specific_fact = Statement(
+            predicate=predicate_more, terms=Entity(name="the motorcycle")
+        )
+        answer = specific_fact + general_fact
+        assert answer.means(specific_fact)
 
     def test_addition_uses_terms_from_left(self):
-        answer = self.general_fact + self.specific_fact
+        predicate_less = Comparison.new(
+            content="${vehicle}'s speed was",
+            sign=">",
+            expression=30 * miles / hour,
+        )
+        predicate_more = Comparison.new(
+            content="${vehicle}'s speed was",
+            sign=">=",
+            expression=60 * miles / hour,
+        )
+        general_fact = Statement(predicate=predicate_less, terms=Entity(name="the car"))
+        specific_fact = Statement(
+            predicate=predicate_more, terms=Entity(name="the motorcycle")
+        )
+        answer = general_fact + specific_fact
         assert "<the car>" in str(answer)
         assert "the-car-s-speed" in answer.slug
 
