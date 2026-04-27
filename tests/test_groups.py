@@ -7,6 +7,7 @@ from nettlesome.terms import (
     means,
 )
 from nettlesome.entities import Entity
+from nettlesome.factors import AbsenceOf
 from nettlesome.groups import FactorGroup
 from nettlesome.predicates import Predicate
 from nettlesome.quantities import Comparison
@@ -711,6 +712,15 @@ class TestContradiction:
             )
         )
         assert len(limited_explanations) == 1
+
+    def test_absence_contradicts_group(self):
+        shot_fact = Statement(
+            predicate=Predicate(content="$shooter shot $victim"),
+            terms=[Entity(name="Alice"), Entity(name="Bob")],
+        )
+        shot_absence = AbsenceOf(absent=shot_fact)
+        group = FactorGroup([shot_fact])
+        assert shot_absence.contradicts(group)
 
     def test_interchangeable_implication_no_repeated_explanations(self):
         nafta = FactorGroup(

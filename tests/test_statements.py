@@ -11,6 +11,7 @@ from nettlesome.terms import (
     expand_string_from_source,
 )
 from nettlesome.entities import Entity
+from nettlesome.factors import AbsenceOf
 from nettlesome.predicates import Predicate
 from nettlesome.quantities import Comparison, Q_
 from nettlesome.statements import Statement
@@ -49,8 +50,8 @@ class TestStatements:
 
     def test_string_representation_of_absent_factor(self):
         predicate = Predicate(content="$company was the best brand")
-        statement = Statement(
-            predicate=predicate, terms=Entity(name="Acme"), absent=True
+        statement = AbsenceOf(
+            absent=Statement(predicate=predicate, terms=Entity(name="Acme"))
         )
         assert "absence of the statement" in str(statement).lower()
 
@@ -453,10 +454,10 @@ class TestSameMeaning:
         fact = Statement(
             predicate=predicate, terms=[Entity(name="Al"), Entity(name="Meg")]
         )
-        fact_b = Statement(
-            predicate=predicate,
-            terms=[Entity(name="Al"), Entity(name="Meg")],
-            absent=True,
+        fact_b = AbsenceOf(
+            absent=Statement(
+                predicate=predicate, terms=[Entity(name="Al"), Entity(name="Meg")]
+            )
         )
         assert not fact.means(fact_b)
 
@@ -742,26 +743,31 @@ class TestImplication:
         assert not fact_greater >= fact_exact
 
     def test_absent_factor_implies_absent_factor_with_lesser_quantity(self):
-        absent_broader = Statement(
-            predicate=Comparison(
-                content="the distance north from $south to $north was",
-                sign="<",
-                expression="200 miles",
-            ),
-            terms=[Entity(name="Austin"), Entity(name="Dallas")],
-            absent=True,
+        absent_broader = AbsenceOf(
+            absent=Statement(
+                predicate=Comparison(
+                    content="the distance north from $south to $north was",
+                    sign="<",
+                    expression="200 miles",
+                ),
+                terms=[Entity(name="Austin"), Entity(name="Dallas")],
+            )
         )
-        absent_narrower = Statement(
-            predicate=Comparison(
-                content="the distance north from $south to $north was",
-                sign="<",
-                expression="50 miles",
-            ),
-            terms=[Entity(name="Austin"), Entity(name="Dallas")],
-            absent=True,
+        absent_narrower = AbsenceOf(
+            absent=Statement(
+                predicate=Comparison(
+                    content="the distance north from $south to $north was",
+                    sign="<",
+                    expression="50 miles",
+                ),
+                terms=[Entity(name="Austin"), Entity(name="Dallas")],
+            )
         )
         assert absent_broader >= absent_narrower
         assert not absent_narrower >= absent_broader
+
+        with pytest.raises(TypeError):
+            absent_narrower.implies(3)
 
     def test_equal_factors_not_gt(self):
         fact = Statement(
@@ -928,8 +934,8 @@ class TestContradiction:
     def test_factor_contradiction_absent_predicate(self):
         predicate = Predicate(content="$person was a person")
         fact = Statement(predicate=predicate, terms=Entity(name="Alice"))
-        absent_fact = Statement(
-            predicate=predicate, terms=Entity(name="Alice"), absent=True
+        absent_fact = AbsenceOf(
+            absent=Statement(predicate=predicate, terms=Entity(name="Alice"))
         )
 
         assert fact.contradicts(absent_fact)
@@ -938,8 +944,8 @@ class TestContradiction:
     def test_contradiction_with_empty_explanation_for_context(self):
         predicate = Predicate(content="$person was a person")
         fact = Statement(predicate=predicate, terms=Entity(name="Alice"))
-        absent_fact = Statement(
-            predicate=predicate, terms=Entity(name="Alice"), absent=True
+        absent_fact = AbsenceOf(
+            absent=Statement(predicate=predicate, terms=Entity(name="Alice"))
         )
         explanation = Explanation(reasons=[])
 
@@ -958,9 +964,9 @@ class TestContradiction:
             expression=Q_("30 miles"),
         )
         terms = [Entity(name="New York"), Entity(name="Los Angeles")]
-        fact = Statement(predicate=predicate, terms=terms, absent=True)
-        fact_opposite = Statement(
-            predicate=predicate_opposite, terms=terms, absent=True
+        fact = AbsenceOf(absent=Statement(predicate=predicate, terms=terms))
+        fact_opposite = AbsenceOf(
+            absent=Statement(predicate=predicate_opposite, terms=terms)
         )
 
     def test_absences_of_contradictory_facts_consistent_sympy(self):
@@ -975,9 +981,9 @@ class TestContradiction:
             expression=30 * miles,
         )
         terms = [Entity(name="New York"), Entity(name="Los Angeles")]
-        fact = Statement(predicate=predicate, terms=terms, absent=True)
-        fact_opposite = Statement(
-            predicate=predicate_opposite, terms=terms, absent=True
+        fact = AbsenceOf(absent=Statement(predicate=predicate, terms=terms))
+        fact_opposite = AbsenceOf(
+            absent=Statement(predicate=predicate_opposite, terms=terms)
         )
         assert not fact.contradicts(fact_opposite)
         assert not fact_opposite.contradicts(fact)
@@ -1006,8 +1012,8 @@ class TestContradiction:
             expression=Q_("30 miles per hour"),
         )
         terms = [Entity(name="the car")]
-        absent_general_fact = Statement(
-            predicate=predicate_less, terms=terms, absent=True
+        absent_general_fact = AbsenceOf(
+            absent=Statement(predicate=predicate_less, terms=terms)
         )
         specific_fact = Statement(predicate=predicate_more, terms=terms)
 
@@ -1026,8 +1032,8 @@ class TestContradiction:
             expression=30 * miles / hour,
         )
         terms = [Entity(name="the car")]
-        absent_general_fact = Statement(
-            predicate=predicate_less, terms=terms, absent=True
+        absent_general_fact = AbsenceOf(
+            absent=Statement(predicate=predicate_less, terms=terms)
         )
         specific_fact = Statement(predicate=predicate_more, terms=terms)
 
@@ -1046,8 +1052,8 @@ class TestContradiction:
             expression=60 * miles / hour,
         )
         terms = [Entity(name="the car")]
-        absent_general_fact = Statement(
-            predicate=predicate_more, terms=terms, absent=True
+        absent_general_fact = AbsenceOf(
+            absent=Statement(predicate=predicate_more, terms=terms)
         )
         specific_fact = Statement(predicate=predicate_less, terms=terms)
 
@@ -1176,7 +1182,6 @@ class TestContradiction:
         shot_false = Statement(
             predicate=Predicate(content="$shooter shot $victim", truth=False),
             terms=[Entity(name="Alice"), Entity(name="Bob")],
-            absent=True,
         )
         assert shot_fact._contradicts_if_present(
             shot_false, explanation=Explanation.from_context()
@@ -1186,22 +1191,25 @@ class TestContradiction:
         )
 
     def test_false_does_not_contradict_absent(self):
-        absent_fact = Statement(
-            predicate=Predicate(
-                content="${rural_s_telephone_directory} was copyrightable", truth=True
-            ),
-            terms=[Entity(name="Rural's telephone directory")],
-            absent=True,
+        absent_fact = AbsenceOf(
+            absent=Statement(
+                predicate=Predicate(
+                    content="${rural_s_telephone_directory} was copyrightable",
+                    truth=True,
+                ),
+                terms=[Entity(name="Rural's telephone directory")],
+            )
         )
         false_fact = Statement(
             predicate=Predicate(
                 content="${the_java_api} was copyrightable", truth=False
             ),
             terms=[Entity(name="the Java API", generic=True, plural=False)],
-            absent=False,
         )
         assert not false_fact.contradicts(absent_fact)
         assert not absent_fact.contradicts(false_fact)
+        with pytest.raises(TypeError):
+            absent_fact.contradicts(3)
 
     def test_inconsistent_statements_about_different_entities(self):
         """

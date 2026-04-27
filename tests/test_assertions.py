@@ -2,6 +2,7 @@ import pytest
 
 from nettlesome.terms import ContextRegister
 from nettlesome.entities import Entity
+from nettlesome.factors import AbsenceOf
 from nettlesome.statements import Statement, Assertion
 
 
@@ -17,8 +18,8 @@ class TestAssertion:
         statement=namespaces, authority=Entity(name="Tim Peters", generic=False)
     )
     no_authority = Assertion(statement=namespaces, authority=None)
-    absent_authority = Assertion(
-        statement=namespaces, authority=Entity(name="a historian"), absent=True
+    absent_authority = AbsenceOf(
+        absent=Assertion(statement=namespaces, authority=Entity(name="a historian"))
     )
     generic_generic_authority = Assertion(
         statement=namespaces, authority=Entity(name="Twitter user"), generic=True
