@@ -179,16 +179,16 @@ class Statement(Factor, BaseModel):
         return self.predicate.truth
 
     def _means_if_concrete(
-        self, other: Comparable, context: Explanation
+        self, other: Comparable, explanation: Explanation
     ) -> Iterator[Explanation]:
         if isinstance(other, Statement) and self.predicate.means(other.predicate):
-            yield from super()._means_if_concrete(other, context)
+            yield from super()._means_if_concrete(other, explanation)
 
     def __len__(self):
         return len(self.generic_terms())
 
     def _implies_if_concrete(
-        self, other: Comparable, context: Explanation
+        self, other: Comparable, explanation: Explanation
     ) -> Iterator[Explanation]:
         """
         Test if ``self`` impliess ``other``, assuming they are not ``generic``.
@@ -197,7 +197,7 @@ class Statement(Factor, BaseModel):
             whether ``self`` implies ``other`` under the given assumption.
         """
         if isinstance(other, Statement) and self.predicate >= other.predicate:
-            yield from super()._implies_if_concrete(other, context)
+            yield from super()._implies_if_concrete(other, explanation)
 
     def _contradicts_if_present(
         self, other: Comparable, explanation: Explanation
