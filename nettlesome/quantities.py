@@ -3,7 +3,7 @@
 from abc import abstractmethod
 from datetime import date
 from decimal import Decimal
-from typing import Any, ClassVar, Dict, Optional, Union
+from typing import Any, ClassVar, Dict, Optional, Self, Union
 
 from pint import UnitRegistry, Quantity
 from pint.facets.plain import PlainQuantity
@@ -287,7 +287,7 @@ class UnitRange(QuantityRange, BaseModel):
         return self._implies_quantity_interval(other_interval)
 
     def get_unit_converted_interval(
-        self, other: UnitRange
+        self, other: Self
     ) -> Union[Interval, FiniteSet, sympy.Union]:
         """Get ``other``'s interval if it was denominated in ``self``'s units."""
         if not isinstance(other, UnitRange):
@@ -446,7 +446,7 @@ class Comparison(BaseModel, PhraseABC):
         sign: str = "==",
         include_negatives: bool | None = None,
         truth: bool | None = True,
-    ) -> Comparison:
+    ) -> Self:
         """
         Create a Comparison object.
 
