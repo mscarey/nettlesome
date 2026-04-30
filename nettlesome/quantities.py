@@ -1,7 +1,6 @@
 """Descriptions of quantities."""
 
 from __future__ import annotations
-from mpmath import exp
 
 from abc import abstractmethod
 from datetime import date
@@ -51,7 +50,7 @@ def scale_union_of_intervals(
     return sympy.Union(*scaled_intervals)
 
 
-def scale_finiteset(elements: FiniteSet, scalar: Union[int, float]) -> FiniteSet:
+def scale_finiteset(elements: FiniteSet[int | float], scalar: int | float) -> FiniteSet:
     """
     Scale up set of finite numbers by multiplying by a scalar.
 
