@@ -63,6 +63,7 @@ class StatementTemplate:
         """
         self.template = template
         self._placeholders: List[str] = []
+        self._placeholder_tokens: List[str] = []
         self._t_template = TStringTemplate(template)
         self._refresh_parsed_template()
 
@@ -74,15 +75,17 @@ class StatementTemplate:
 
     def make_content_singular(self) -> None:
         """Convert template text for self.context to singular "was"."""
-        for placeholder in self.placeholders:
-            named_pattern = "$" + placeholder + " were"
-            braced_pattern = "${" + placeholder + "} were"
-            self.template = self.template.replace(
-                named_pattern, "$" + placeholder + " was"
-            )
-            self.template = self.template.replace(
-                braced_pattern, "$" + placeholder + " was"
-            )
+        strings = list(self._t_template.strings)
+        for idx in range(1, len(strings)):
+            if strings[idx].startswith(" were"):
+                strings[idx] = " was" + strings[idx][5:]
+
+        rebuilt_template: List[str] = [strings[0]]
+        for idx, token in enumerate(self._placeholder_tokens):
+            rebuilt_template.append(token)
+            rebuilt_template.append(strings[idx + 1])
+        self.template = "".join(rebuilt_template)
+
         self._refresh_parsed_template()
         return None
 
@@ -90,6 +93,7 @@ class StatementTemplate:
         """Parse $placeholders into a templatelib.Template-backed representation."""
         fragments: List[str | Interpolation] = []
         placeholders_in_order: List[str] = []
+        placeholder_tokens: List[str] = []
         start = 0
 
         for match in self._PLACEHOLDER_PATTERN.finditer(self.template):
@@ -104,12 +108,17 @@ class StatementTemplate:
                 placeholder = named or braced
                 if placeholder is not None:
                     placeholders_in_order.append(placeholder)
+                    if named is not None:
+                        placeholder_tokens.append(f"${named}")
+                    else:
+                        placeholder_tokens.append(f"${{{braced}}}")
                     fragments.append(Interpolation(placeholder, placeholder, None, ""))
 
             start = match.end()
 
         fragments.append(self.template[start:])
         self._placeholders = list(dict.fromkeys(placeholders_in_order))
+        self._placeholder_tokens = placeholder_tokens
         self._t_template = TStringTemplate(*fragments)
 
     def substitute(
