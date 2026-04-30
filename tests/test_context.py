@@ -91,7 +91,10 @@ class TestContextRegisters:
         context = ContextRegister()
         with pytest.raises(TypeError):
             context.insert_pair(
-                Entity(name="Bob"), Predicate(content="events transpired")
+                Entity(name="Bob"),
+                Predicate(
+                    content="events transpired"
+                ),  # ty: ignore[invalid-argument-type]
             )
 
     def test_failed_match(self):

@@ -1631,6 +1631,11 @@ class TermSequence(Tuple[Optional[Term], ...]):
         r"""
         Find ways for a series of pairs of :class:`.Terms` terms to satisfy a comparison.
 
+        Iteratively propagates a frontier of possible :class:`ContextRegister`\s
+        through each pair of :class:`Term`\s in order. For each pair, every
+        candidate register from the previous step is extended with the new
+        pair's valid assignments, yielding only globally consistent registers.
+
         :param context:
             keys representing terms in ``self`` and
             values representing terms in ``other``. The
@@ -1638,49 +1643,40 @@ class TermSequence(Tuple[Optional[Term], ...]):
             in ``self`` and ``other``.
 
         :yields:
-            every way that ``matches`` can be updated to be consistent
-            with each element of ``self.need_matches`` having the relationship
-            ``self.comparison`` with the item at the corresponding index of
-            ``self.available``.
+            every way that ``context`` can be updated to be consistent
+            with each element of ``self`` having the relationship
+            ``operation`` with the item at the corresponding index of
+            ``other``.
         """
-
-        def update_register(
-            register: ContextRegister,
-            factor_pairs: List[Tuple[Optional[Term], Optional[Term]]],
-            i: int = 0,
-        ):
-            """
-            Recursively search through Factor pairs trying out context assignments.
-
-            This has the potential to take a long time to fail if the problem is
-            unsatisfiable. It will reduce risk to check that every :class:`Factor` pair
-            is satisfiable before checking that they're all satisfiable together.
-            """
-            if i == len(factor_pairs):
-                yield register
-            else:
-                left, right = factor_pairs[i]
-                if left is not None or right is None:
-                    if left is None:
-                        yield from update_register(
-                            register, factor_pairs=factor_pairs, i=i + 1
-                        )
-                    else:
-                        new_mapping_choices: List[ContextRegister] = []
-                        for incoming_register in left.update_context_register(
-                            right, register, operation
-                        ):
-                            if incoming_register not in new_mapping_choices:
-                                new_mapping_choices.append(incoming_register)
-                                yield from update_register(
-                                    incoming_register,
-                                    factor_pairs=factor_pairs,
-                                    i=i + 1,
-                                )
-
         context = context or ContextRegister()
-        ordered_pairs = list(zip_longest(self, other))
-        yield from update_register(register=context, factor_pairs=ordered_pairs)
+        ordered_pairs: List[Tuple[Optional[Term], Optional[Term]]] = list(
+            zip_longest(self, other)
+        )
+
+        # frontier holds the distinct ContextRegisters consistent with all pairs so far
+        frontier: List[ContextRegister] = [context]
+
+        for left, right in ordered_pairs:
+            next_frontier: List[ContextRegister] = []
+            if left is None and right is not None:
+                # left is None but right is not: no constraint can be satisfied
+                return
+            for register in frontier:
+                if left is None:
+                    # right is also None (zip_longest pads with None); no new constraint
+                    if register not in next_frontier:
+                        next_frontier.append(register)
+                else:
+                    for incoming_register in left.update_context_register(
+                        right, register, operation
+                    ):
+                        if incoming_register not in next_frontier:
+                            next_frontier.append(incoming_register)
+            frontier = next_frontier
+            if not frontier:
+                return
+
+        yield from frontier
 
 
 # Type annotation of formats for describing the context of a comparison
