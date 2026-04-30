@@ -258,7 +258,10 @@ class TestStatements:
     def test_term_cannot_be_string(self):
         city = Predicate(content="$place was a city")
         with pytest.raises(TypeError):
-            Statement(city, terms=["New York"])
+            Statement(
+                predicate=city,
+                terms=["New York"],  # ty: ignore[invalid-argument-type]
+            )
 
     def test_expand_string_from_statement(self, make_complex_fact):
         source = make_complex_fact["relevant_murder"]
@@ -767,7 +770,7 @@ class TestImplication:
         assert not absent_narrower >= absent_broader
 
         with pytest.raises(TypeError):
-            absent_narrower.implies(3)
+            absent_narrower.implies(3)  # ty: ignore[invalid-argument-type]
 
     def test_equal_factors_not_gt(self):
         fact = Statement(
@@ -929,7 +932,7 @@ class TestContradiction:
         fact = Statement(predicate=predicate, terms=Entity(name="Alice"))
 
         with pytest.raises(TypeError):
-            fact.contradicts(predicate)
+            fact.contradicts(predicate)  # ty: ignore[invalid-argument-type]
 
     def test_factor_contradiction_absent_predicate(self):
         predicate = Predicate(content="$person was a person")
@@ -1209,7 +1212,7 @@ class TestContradiction:
         assert not false_fact.contradicts(absent_fact)
         assert not absent_fact.contradicts(false_fact)
         with pytest.raises(TypeError):
-            absent_fact.contradicts(3)
+            absent_fact.contradicts(3)  # ty: ignore[invalid-argument-type]
 
     def test_inconsistent_statements_about_different_entities(self):
         """
