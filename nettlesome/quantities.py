@@ -62,7 +62,7 @@ def scale_finiteset(elements: FiniteSet, scalar: Union[int, float]) -> FiniteSet
 
 
 def scale_ranges(
-    ranges: Union[Interval, sympy.Union], scalar: Union[int, float]
+    ranges: Union[Interval, FiniteSet, sympy.Union], scalar: Union[int, float]
 ) -> Union[Interval, FiniteSet, sympy.Union]:
     """
     Scale up set of interval ranges by multiplying by a scalar.
@@ -200,7 +200,7 @@ class QuantityRange(BaseModel):
         """Compare for same meaning."""
         if not isinstance(other, self.__class__):
             return False
-        return Eq(self.interval, other.interval)
+        return bool(Eq(self.interval, other.interval))
 
     def reverse_meaning(self) -> None:
         """
@@ -437,7 +437,7 @@ class Comparison(BaseModel, PhraseABC):
         expression: str | int | float | date | PlainQuantity,
         sign: str = "==",
         include_negatives: bool | None = None,
-        truth: bool = True,
+        truth: bool | None = True,
     ) -> Comparison:
         """
         Create a Comparison object.
