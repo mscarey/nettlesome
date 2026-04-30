@@ -599,7 +599,7 @@ class TestImplication:
         assert not concrete > Entity(name="Tim")
 
     def test_statement_does_not_imply_comparison(self):
-        phrase = Comparison(
+        phrase = Comparison.new(
             content="the distance north from $south to $north was",
             sign=">",
             expression="180 miles",
@@ -625,7 +625,7 @@ class TestImplication:
 
     def test_statement_implies_because_of_quantity(self):
         statement = Statement(
-            predicate=Comparison(
+            predicate=Comparison.new(
                 content="the distance north from $south to $north was",
                 sign=">",
                 expression="180 miles",
@@ -633,7 +633,7 @@ class TestImplication:
             terms=[Entity(name="Austin"), Entity(name="Dallas")],
         )
         statement_meters = Statement(
-            predicate=Comparison(
+            predicate=Comparison.new(
                 content="the distance north from $south to $north was",
                 sign=">",
                 expression="180 meters",
@@ -645,7 +645,7 @@ class TestImplication:
 
     def test_statement_implies_with_int_and_float(self):
         statement = Statement(
-            predicate=Comparison(
+            predicate=Comparison.new(
                 content="the distance north from $south to $north was",
                 sign=">",
                 expression=180,
@@ -653,7 +653,7 @@ class TestImplication:
             terms=[Entity(name="Austin"), Entity(name="Dallas")],
         )
         statement_float = Statement(
-            predicate=Comparison(
+            predicate=Comparison.new(
                 content="the distance north from $south to $north was",
                 sign=">",
                 expression=170.22,
@@ -665,7 +665,7 @@ class TestImplication:
 
     def test_statement_implies_with_ints(self):
         statement_higher = Statement(
-            predicate=Comparison(
+            predicate=Comparison.new(
                 content="the distance north from $south to $north was",
                 sign=">",
                 expression=180,
@@ -673,7 +673,7 @@ class TestImplication:
             terms=[Entity(name="Austin"), Entity(name="Dallas")],
         )
         statement_lower = Statement(
-            predicate=Comparison(
+            predicate=Comparison.new(
                 content="the distance north from $south to $north was",
                 sign=">",
                 expression=170,
@@ -697,13 +697,13 @@ class TestImplication:
 
     def test_comparison_implies_no_truth_value(self):
         fact = Statement(
-            predicate=Comparison(
+            predicate=Comparison.new(
                 content="${person}'s weight was", sign=">", expression="150 pounds"
             ),
             terms=[Entity(name="Alice")],
         )
         whether = Statement(
-            predicate=Comparison(
+            predicate=Comparison.new(
                 content="${person}'s weight was",
                 sign=">",
                 expression="150 pounds",
@@ -717,13 +717,13 @@ class TestImplication:
 
     def test_factor_implies_because_of_exact_quantity(self):
         fact_exact = Statement(
-            predicate=Comparison(
+            predicate=Comparison.new(
                 content="${person}'s height was", sign="=", expression="66 inches"
             ),
             terms=[Entity(name="Alice")],
         )
         fact_greater = Statement(
-            predicate=Comparison(
+            predicate=Comparison.new(
                 content="${person}'s height was", sign=">", expression="60 inches"
             ),
             terms=[Entity(name="Alice")],
@@ -734,13 +734,13 @@ class TestImplication:
 
     def test_no_implication_pint_quantity_and_int(self):
         fact_exact = Statement(
-            predicate=Comparison(
+            predicate=Comparison.new(
                 content="${person}'s height was", sign="=", expression=66
             ),
             terms=[Entity(name="Alice")],
         )
         fact_greater = Statement(
-            predicate=Comparison(
+            predicate=Comparison.new(
                 content="${person}'s height was", sign=">", expression="60 inches"
             ),
             terms=[Entity(name="Alice")],
@@ -751,7 +751,7 @@ class TestImplication:
     def test_absent_factor_implies_absent_factor_with_lesser_quantity(self):
         absent_broader = AbsenceOf(
             absent=Statement(
-                predicate=Comparison(
+                predicate=Comparison.new(
                     content="the distance north from $south to $north was",
                     sign="<",
                     expression="200 miles",
@@ -761,7 +761,7 @@ class TestImplication:
         )
         absent_narrower = AbsenceOf(
             absent=Statement(
-                predicate=Comparison(
+                predicate=Comparison.new(
                     content="the distance north from $south to $north was",
                     sign="<",
                     expression="50 miles",
@@ -883,12 +883,12 @@ class TestImplication:
 
 class TestContradiction:
     def test_factor_different_predicate_truth_contradicts(self):
-        predicate = Comparison(
+        predicate = Comparison.new(
             content="the distance between $place1 and $place2 was",
             sign=">",
             expression=30 * miles,
         )
-        predicate_opposite = Comparison(
+        predicate_opposite = Comparison.new(
             content="the distance between $place1 and $place2 was",
             sign="<",
             expression=Q_("30 miles"),
@@ -959,12 +959,12 @@ class TestContradiction:
         assert absent_fact.contradicts(fact, context=explanation)
 
     def test_absences_of_contradictory_facts_consistent(self):
-        predicate = Comparison(
+        predicate = Comparison.new(
             content="the distance between $place1 and $place2 was",
             sign=">",
             expression=Q_("30 miles"),
         )
-        predicate_opposite = Comparison(
+        predicate_opposite = Comparison.new(
             content="the distance between $place1 and $place2 was",
             sign="<",
             expression=Q_("30 miles"),
@@ -976,12 +976,12 @@ class TestContradiction:
         )
 
     def test_absences_of_contradictory_facts_consistent_sympy(self):
-        predicate = Comparison(
+        predicate = Comparison.new(
             content="the distance between $place1 and $place2 was",
             sign=">",
             expression=30 * miles,
         )
-        predicate_opposite = Comparison(
+        predicate_opposite = Comparison.new(
             content="the distance between $place1 and $place2 was",
             sign="<",
             expression=30 * miles,
@@ -1067,12 +1067,12 @@ class TestContradiction:
         assert specific_fact.contradicts(absent_general_fact)
 
     def test_no_contradiction_with_more_specific_absent(self):
-        predicate_less = Comparison(
+        predicate_less = Comparison.new(
             content="${vehicle}'s speed was",
             sign="<",
             expression=Q_("30 miles per hour"),
         )
-        predicate_more = Comparison(
+        predicate_more = Comparison.new(
             content="${vehicle}'s speed was",
             sign="<",
             expression=Q_("60 miles per hour"),
@@ -1087,12 +1087,12 @@ class TestContradiction:
         assert not absent_specific_fact.contradicts(general_fact)
 
     def test_no_contradiction_with_more_specific_absent_sympy(self):
-        predicate_less = Comparison(
+        predicate_less = Comparison.new(
             content="${vehicle}'s speed was",
             sign="<",
             expression=30 * miles / hour,
         )
-        predicate_more = Comparison(
+        predicate_more = Comparison.new(
             content="${vehicle}'s speed was",
             sign="<",
             expression=60 * miles / hour,
@@ -1222,12 +1222,12 @@ class TestContradiction:
         Alice and Bob are both generics. So it's possible to reach a
         contradiction if you assume they correspond to one another.
         """
-        p_small_weight = Comparison(
+        p_small_weight = Comparison.new(
             content="the amount of gold $person possessed was",
             sign="<",
             expression=Q_("1 gram"),
         )
-        p_large_weight = Comparison(
+        p_large_weight = Comparison.new(
             content="the amount of gold $person possessed was",
             sign=">=",
             expression=Q_("100 kilograms"),
@@ -1243,12 +1243,12 @@ class TestContradiction:
         Alice and Bob are both generics. So it's possible to reach a
         contradiction if you assume they correspond to one another.
         """
-        p_small_weight = Comparison(
+        p_small_weight = Comparison.new(
             content="the amount of gold $person possessed was",
             sign="<",
             expression=1 * gram,
         )
-        p_large_weight = Comparison(
+        p_large_weight = Comparison.new(
             content="the amount of gold $person possessed was",
             sign=">=",
             expression=100 * kilograms,
@@ -1265,12 +1265,12 @@ class TestContradiction:
         Alice in the first context corresponds with Alice in the second.
         So there's no contradiction.
         """
-        p_small_weight = Comparison(
+        p_small_weight = Comparison.new(
             content="the amount of gold $person possessed was",
             sign="<",
             expression=Q_("1 gram"),
         )
-        p_large_weight = Comparison(
+        p_large_weight = Comparison.new(
             content="the amount of gold $person possessed was",
             sign=">=",
             expression=Q_("100 kilograms"),
@@ -1289,12 +1289,12 @@ class TestContradiction:
         Alice in the first context corresponds with Alice in the second.
         So there's no contradiction.
         """
-        p_small_weight = Comparison(
+        p_small_weight = Comparison.new(
             content="the amount of gold $person possessed was",
             sign="<",
             expression=1 * gram,
         )
-        p_large_weight = Comparison(
+        p_large_weight = Comparison.new(
             content="the amount of gold $person possessed was",
             sign=">=",
             expression=100 * kilograms,

@@ -70,7 +70,7 @@ class TestContinuedExplanation:
         )
         explanation = bob_lived.explain_implication(carl_lived)
 
-        distance_long = Comparison(
+        distance_long = Comparison.new(
             content="the distance from the center of $city to $residence was",
             sign=">=",
             expression="50 miles",
@@ -80,7 +80,7 @@ class TestContinuedExplanation:
             terms=[Entity(name="Houston"), Entity(name="Bob's house")],
         )
 
-        distance_short = Comparison(
+        distance_short = Comparison.new(
             content="the distance from the center of $city to $residence was",
             sign="<=",
             expression="10 kilometers",

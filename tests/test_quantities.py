@@ -96,7 +96,7 @@ class TestCompareQuantities:
             )
 
     def test_comparison_from_expression_without_sign(self):
-        comparison = Comparison(
+        comparison = Comparison.new(
             **{"content": "{}'s favorite number was", "expression": 42}
         )
         assert comparison.sign == "=="

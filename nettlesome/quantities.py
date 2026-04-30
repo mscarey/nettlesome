@@ -1,6 +1,7 @@
 """Descriptions of quantities."""
 
 from __future__ import annotations
+from mpmath import exp
 
 from abc import abstractmethod
 from datetime import date
@@ -493,37 +494,7 @@ class Comparison(BaseModel, PhraseABC):
     @model_validator(mode="before")
     def set_quantity_range(cls, values):
         """Reverse the sign of a Comparison if necessary."""
-        if not values.get("quantity_range"):
-            try:
-                quantity = cls.expression_to_quantity(values.pop("expression", None))
-            except AttributeError:
-                raise ValueError(
-                    "A Comparison must have a quantity_range, "
-                    "a quantity, or an expression."
-                )
-            sign = values.pop("sign", "==")
-            include_negatives = values.pop("include_negatives", None)
-            if isinstance(quantity, date):
-                values["quantity_range"] = DateRange(
-                    sign=sign,
-                    quantity=quantity,
-                    include_negatives=include_negatives,
-                )
-            elif isinstance(quantity, (str, Quantity)):
-                if isinstance(quantity, str):
-                    quantity = Q_(quantity)
-                values["quantity_range"] = UnitRange(
-                    sign=sign,
-                    quantity_magnitude=Decimal(quantity.magnitude),
-                    quantity_units=str(quantity.units),
-                    include_negatives=include_negatives,
-                )
-            else:
-                values["quantity_range"] = DecimalRange(
-                    sign=sign,
-                    quantity=quantity,
-                    include_negatives=include_negatives,
-                )
+
         if values.get("truth") is False:
             values["truth"] = True
             values["quantity_range"].reverse_meaning()
@@ -725,8 +696,7 @@ class Comparison(BaseModel, PhraseABC):
         return Comparison(
             content=self.content,
             truth=not self.truth,
-            sign=self.quantity_range.sign,
-            expression=self.quantity_range.quantity,
+            quantity_range=self.quantity_range,
         )
 
     def __str__(self):

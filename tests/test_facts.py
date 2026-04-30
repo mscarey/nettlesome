@@ -311,7 +311,7 @@ class TestImplication:
             assert not make_statement["crime"] > make_predicate["crime"]
 
     def test_factor_implies_because_of_quantity(self, make_statement):
-        meters = Comparison(
+        meters = Comparison.new(
             content="the distance between $place1 and $place2 was",
             sign=">=",
             expression=Q_("10 meters"),
@@ -319,7 +319,7 @@ class TestImplication:
         left = Statement(
             predicate=meters, terms=[Entity(name="Al"), Entity(name="Bob")]
         )
-        more = Comparison(
+        more = Comparison.new(
             content="the distance between $place1 and $place2 was",
             truth=True,
             sign=">",
@@ -515,12 +515,12 @@ class TestContradiction:
         Alice and Bob are both generics. So it's possible to reach a
         contradiction if you assume they correspond to one another.
         """
-        p_small_weight = Comparison(
+        p_small_weight = Comparison.new(
             content="the amount of gold $person possessed was",
             sign="<",
             expression=Q_("1 gram"),
         )
-        p_large_weight = Comparison(
+        p_large_weight = Comparison.new(
             content="the amount of gold $person possessed was",
             sign=">=",
             expression=Q_("100 kilograms"),
@@ -537,12 +537,12 @@ class TestContradiction:
         Alice in the first context corresponds with Alice in the second.
         So there's no contradiction.
         """
-        p_small_weight = Comparison(
+        p_small_weight = Comparison.new(
             content="the amount of gold $person possessed was",
             sign="<",
             expression=Q_("1 gram"),
         )
-        p_large_weight = Comparison(
+        p_large_weight = Comparison.new(
             content="the amount of gold $person possessed was",
             sign=">=",
             expression=Q_("100 kilograms"),
@@ -675,13 +675,13 @@ class TestAddition:
         dave = Entity(name="Dave")
         speed_template = "${driver}'s driving speed was"
         fast_fact = Statement(
-            predicate=Comparison(
+            predicate=Comparison.new(
                 content=speed_template, sign=">=", expression="100 miles per hour"
             ),
             terms=[dave],
         )
         slow_fact = Statement(
-            predicate=Comparison(
+            predicate=Comparison.new(
                 content=speed_template,
                 sign=">=",
                 expression="20 miles per hour",

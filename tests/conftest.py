@@ -46,101 +46,101 @@ def make_predicate() -> Dict[str, Predicate]:
 
 
 @pytest.fixture(scope="class")
-def make_comparison() -> Dict[str, Predicate]:
+def make_comparison() -> Dict[str, Predicate | Comparison]:
     return {
-        "small_weight": Comparison(
+        "small_weight": Comparison.new(
             content="the amount of gold $person possessed was",
             sign=">=",
             expression=Q_("1 gram"),
         ),
-        "large_weight": Comparison(
+        "large_weight": Comparison.new(
             content="the amount of gold $person possessed was",
             sign=">=",
             expression=Q_("100 kilograms"),
         ),
-        "quantity=3": Comparison(
+        "quantity=3": Comparison.new(
             content="The number of mice was", sign="==", expression=3
         ),
-        "quantity>=4": Comparison(
+        "quantity>=4": Comparison.new(
             content="The number of mice was", sign=">=", expression=4
         ),
-        "quantity>5": Comparison(
+        "quantity>5": Comparison.new(
             content="The number of mice was", sign=">", expression=5
         ),
-        "acres": Comparison(
+        "acres": Comparison.new(
             content="the distance between $place1 and $place2 was",
             sign=">=",
             expression=Q_("10 acres"),
         ),
-        "exact": Comparison(
+        "exact": Comparison.new(
             content="the distance between $place1 and $place2 was",
             sign="==",
             expression=Q_("25 feet"),
         ),
-        "float_distance": Comparison(
+        "float_distance": Comparison.new(
             content="the distance between $place1 and $place2 was",
             truth=True,
             sign="<",
             expression=20.0,
         ),
-        "higher_int": Comparison(
+        "higher_int": Comparison.new(
             content="the distance between $place1 and $place2 was",
             sign="<=",
             expression=30,
         ),
-        "int_distance": Comparison(
+        "int_distance": Comparison.new(
             content="the distance between $place1 and $place2 was",
             truth=True,
             sign="<",
             expression=20,
         ),
-        "int_higher": Comparison(
+        "int_higher": Comparison.new(
             content="the distance between $place1 and $place2 was",
             sign="<=",
             expression=30,
         ),
-        "less": Comparison(
+        "less": Comparison.new(
             content="the distance between $place1 and $place2 was",
             truth=True,
             sign="<",
             expression=Q_("35 feet"),
         ),
-        "less_whether": Comparison(
+        "less_whether": Comparison.new(
             content="the distance between $place1 and $place2 was",
             truth=None,
             sign="<",
             expression=Q_("35 feet"),
         ),
-        "less_than_20": Comparison(
+        "less_than_20": Comparison.new(
             content="the distance between $place1 and $place2 was",
             truth=True,
             sign="<",
             expression=Q_("20 feet"),
         ),
-        "meters": Comparison(
+        "meters": Comparison.new(
             content="the distance between $place1 and $place2 was",
             sign=">=",
             expression=Q_("10 meters"),
         ),
-        "not_equal": Comparison(
+        "not_equal": Comparison.new(
             content="the distance between $place1 and $place2 was",
             truth=True,
             sign="!=",
             expression=Q_("35 feet"),
         ),
-        "more": Comparison(
+        "more": Comparison.new(
             content="the distance between $place1 and $place2 was",
             truth=True,
             sign=">=",
             expression=Q_("35 feet"),
         ),
-        "not_more": Comparison(
+        "not_more": Comparison.new(
             content="the distance between $place1 and $place2 was",
             truth=False,
             sign=">",
             expression=Q_("35 feet"),
         ),
-        "way_more": Comparison(
+        "way_more": Comparison.new(
             content="the distance between $place1 and $place2 was",
             truth=True,
             sign=">=",

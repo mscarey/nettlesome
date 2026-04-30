@@ -21,7 +21,7 @@ class TestPredicateLoad:
         assert p7.template.placeholders == ["defendant", "victim"]
 
     def test_load_comparison(self):
-        p7 = Comparison(
+        p7 = Comparison.new(
             **{
                 "content": "the distance between $place1 and $place2 was",
                 "truth": True,
@@ -38,7 +38,7 @@ class TestPredicateLoad:
             "sign": "!=",
             "expression": "35 feet",
         }
-        p7 = Comparison(**data)
+        p7 = Comparison.new(**data)
         assert p7.sign == "!="
 
 
@@ -49,7 +49,7 @@ class TestPredicateDump:
         assert dumped["truth"] is True
 
     def test_dump_to_dict_with_units(self):
-        predicate = Comparison(
+        predicate = Comparison.new(
             content="the distance between $place1 and $place2 was",
             truth=True,
             sign="<>",
@@ -60,7 +60,7 @@ class TestPredicateDump:
         assert dumped["quantity_range"]["quantity_units"] == "foot"
 
     def test_round_trip(self):
-        predicate = Comparison(
+        predicate = Comparison.new(
             **{"content": "{}'s favorite number was", "sign": "==", "expression": 42}
         )
         dumped = predicate.model_dump()
@@ -68,7 +68,7 @@ class TestPredicateDump:
         assert "{}'s favorite number was exactly equal to 42" in str(new_statement)
 
     def test_dump_comparison_with_date_expression(self):
-        copyright_date_range = Comparison(
+        copyright_date_range = Comparison.new(
             content="the date when $work was created was",
             sign=">=",
             expression=date(1978, 1, 1),
