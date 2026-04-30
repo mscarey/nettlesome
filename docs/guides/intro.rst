@@ -295,7 +295,7 @@ same distance away from ``site1``.)
     >>>         less_than_1_mile,
     >>>         terms=[Entity(name="the police cordon"), Entity(name="the political convention")])])
     >>> str(protest_facts)
-    "FactorGroup(['the statement that the distance between <the political convention> and <the police cordon> was greater than 100 yard', 'the statement that the distance between <the police cordon> and <the political convention> was less than 1 mile'])"
+    "FactorGroup(sequence=['the statement that the distance between <the political convention> and <the police cordon> was greater than 100 yard', 'the statement that the distance between <the police cordon> and <the political convention> was less than 1 mile'])"
 
     >>> more_than_50_meters = Comparison(
     >>>     "the distance between $site1 and $site2 was",

@@ -9,6 +9,8 @@ import textwrap
 from typing import Callable, ClassVar, Dict, Iterator, List
 from typing import Optional, Sequence, Tuple, Union
 
+from pydantic import BaseModel
+
 from nettlesome.factors import Factor, AbsenceOf
 from nettlesome.terms import (
     Comparable,
@@ -37,40 +39,26 @@ def unique_explanations(func: Callable):
     return wrapper
 
 
-class FactorGroup(Comparable):
+class FactorGroup(Comparable, BaseModel):
     r"""Terms to be used together in a comparison."""
 
-    term_class = Factor
-    absence_class = AbsenceOf
+    term_class: ClassVar[type] = Factor
+    absence_class: ClassVar[type] = AbsenceOf
     generic: bool = False
     context_factor_names: ClassVar[Tuple[str, ...]] = ()
+    sequence: Sequence[Factor | AbsenceOf]
 
-    def __init__(
-        self,
-        factors: FactorGroup | Sequence[Factor | AbsenceOf] | Factor | AbsenceOf = (),
-    ):
-        """Normalize ``factors`` as sequence attribute."""
-        if isinstance(factors, FactorGroup):
-            self.sequence: Tuple[Factor, ...] = factors.sequence
-        elif isinstance(factors, Sequence):
-            self.sequence = tuple(factors)
-        else:
-            self.sequence = (factors,)
-        for factor in self.sequence:
-            if not isinstance(factor, (self.term_class, self.absence_class)):
-                raise TypeError(
-                    f'Object "{factor} could not be included in '
-                    f"{self.__class__.__name__} because it is "
-                    f"type {factor.__class__.__name__}, not type {self.term_class.__name__}"
-                )
-
-    def _at_index(self, key: int) -> Factor:
+    def _at_index(self, key: int) -> Factor | AbsenceOf:
         return self.sequence[key]
 
-    def __getitem__(self, key: Union[int, slice]) -> Union[Factor, FactorGroup]:
+    def __getitem__(
+        self, key: Union[int, slice]
+    ) -> Union[Factor | AbsenceOf, FactorGroup]:
         if isinstance(key, slice):
             start, stop, step = key.indices(len(self))
-            return self.__class__([self._at_index(i) for i in range(start, stop, step)])
+            return self.__class__(
+                sequence=[self._at_index(i) for i in range(start, stop, step)]
+            )
         return self._at_index(key)
 
     def __iter__(self):
@@ -91,7 +79,7 @@ class FactorGroup(Comparable):
 
     def _add_group(self, other: FactorGroup) -> FactorGroup:
         combined = self.sequence[:] + other.sequence[:]
-        return self.__class__(combined)
+        return self.__class__(sequence=combined)
 
     def add(
         self,
@@ -110,7 +98,9 @@ class FactorGroup(Comparable):
         """Combine all Factors into a single FactorGroup."""
         if isinstance(other, self.__class__):
             return self._add_group(other)
-        to_add = self.__class__(other)
+        to_add = self.__class__(
+            sequence=[other] if isinstance(other, Factor) else list(other)
+        )
         added = self._add_group(to_add)
         added.internally_consistent()
         return added
@@ -227,14 +217,14 @@ class FactorGroup(Comparable):
         nettlesome finds only two Explanations for how a contradiction can exist.
 
             >>> from nettlesome import Statement, Entity
-            >>> nafta = FactorGroup([
+            >>> nafta = FactorGroup(sequence=[
             ... Statement(predicate="$country1 signed a treaty with $country2",
             ...     terms=[Entity(name="Mexico"), Entity(name="USA")]),
             ... Statement(predicate="$country2 signed a treaty with $country3",
             ...     terms=[Entity(name="USA"), Entity(name="Canada")]),
             ... Statement(predicate="$country3 signed a treaty with $country1",
             ...    terms=[Entity(name="USA"), Entity(name="Canada")])])
-            >>> brexit = FactorGroup([
+            >>> brexit = FactorGroup(sequence=[
             ... Statement(predicate="$country1 signed a treaty with $country2",
             ...     terms=[Entity(name="UK"), Entity(name="European Union")]),
             ... Statement(predicate="$country2 signed a treaty with $country3",
@@ -275,14 +265,14 @@ class FactorGroup(Comparable):
             a :class:`.Factor` in the output of ``self``.
 
         >>> from nettlesome import Statement, Entity
-        >>> nafta = FactorGroup([
+        >>> nafta = FactorGroup(sequence=[
         ... Statement(predicate="$country1 signed a treaty with $country2",
         ...        terms=[Entity(name="Mexico"), Entity(name="USA")]),
         ... Statement(predicate="$country2 signed a treaty with $country3",
         ...        terms=[Entity(name="USA"), Entity(name="Canada")]),
         ... Statement(predicate="$country3 signed a treaty with $country1",
         ...    terms=[Entity(name="USA"), Entity(name="Canada")])])
-        >>> brexit = FactorGroup([
+        >>> brexit = FactorGroup(sequence=[
         ... Statement(predicate="$country1 signed a treaty with $country2",
         ...         terms=[Entity(name="UK"), Entity(name="European Union")]),
         ... Statement(predicate="$country2 signed a treaty with $country3",
@@ -304,7 +294,7 @@ class FactorGroup(Comparable):
         """Generate explanations for how other may imply self."""
         reversed = explanation.reversed_context()
         if isinstance(other, Factor):
-            other = FactorGroup(other)
+            other = FactorGroup(sequence=[other])
         if isinstance(other, FactorGroup):
             yield from other._explanations_implication(self, explanation=reversed)
 
@@ -325,7 +315,11 @@ class FactorGroup(Comparable):
         context: Optional[ContextRegister] = None,
     ) -> Iterator[ContextRegister]:
         """Yield contexts that allow ``self`` and ``other`` to be combined with the union operation."""
-        to_match = FactorGroup(other) if isinstance(other, Comparable) else other
+        to_match = (
+            FactorGroup(sequence=other.sequence)
+            if isinstance(other, FactorGroup)
+            else other
+        )
         context = context or ContextRegister()
         for partial in self._explanations_union_partial(to_match, context):
             for guess in self.possible_contexts(to_match, partial):
@@ -491,9 +485,9 @@ class FactorGroup(Comparable):
         if isinstance(value, FactorGroup):
             return value
         if isinstance(value, Factor):
-            return FactorGroup([value])
+            return FactorGroup(sequence=[value])
         elif isinstance(value, Sequence):
-            return FactorGroup(value)
+            return FactorGroup(sequence=list(value))
         return None
 
     def explanations_same_meaning(
@@ -568,7 +562,7 @@ class FactorGroup(Comparable):
                 elif current.implies_same_context(item):
                     unchecked.remove(item)
             result.append(current)
-        return self.__class__(result)
+        return self.__class__(sequence=result)
 
     def internally_consistent(self) -> None:
         """
@@ -588,7 +582,7 @@ class FactorGroup(Comparable):
     def new_context(self, changes: ContextRegister) -> FactorGroup:
         """Use ContextRegister to choose changes to ``self``'s context."""
         result = [factor.new_context(changes) for factor in self]
-        return self.__class__(result)
+        return self.__class__(sequence=result)
 
     def __or__(self, other: Union[FactorGroup, Factor]) -> Optional[FactorGroup]:
         return self.union(other, context=None)
@@ -601,7 +595,9 @@ class FactorGroup(Comparable):
         """Make new FactorGroup with the set of unique Factors from both ``self`` and ``other``."""
         context = context or ContextRegister()
         if not isinstance(other, self.__class__):
-            other = self.__class__(other)
+            other = self.__class__(
+                sequence=[other] if isinstance(other, Factor) else list(other)
+            )
         return self._union(other=other, context=context)
 
     def _union(

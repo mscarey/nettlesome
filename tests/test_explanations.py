@@ -90,8 +90,8 @@ class TestContinuedExplanation:
             terms=[Entity(name="El Paso"), Entity(name="Carl's house")],
         )
 
-        left = FactorGroup(statement_long)
-        right = FactorGroup(statement_short)
+        left = FactorGroup(sequence=[statement_long])
+        right = FactorGroup(sequence=[statement_short])
         new_explanation = left.explain_contradiction(right, context=explanation)
 
         expected = "the statement that <bob> lived at <bob's house>"
@@ -103,32 +103,32 @@ class TestContinuedExplanation:
         assert new_explanation.reasons[1].operation == contradicts
 
     def test_two_implying_groups(self, make_statement):
-        left_weight = FactorGroup(make_statement["large_weight"])
-        right_weight = FactorGroup(make_statement["small_weight"])
+        left_weight = FactorGroup(sequence=[make_statement["large_weight"]])
+        right_weight = FactorGroup(sequence=[make_statement["small_weight"]])
         explanation = left_weight.explain_implication(right_weight)
-        left_more = FactorGroup(make_statement["way_more"])
-        right_more = FactorGroup(make_statement["more"])
+        left_more = FactorGroup(sequence=[make_statement["way_more"]])
+        right_more = FactorGroup(sequence=[make_statement["more"]])
         new = left_more.explain_implication(right_more, context=explanation)
         assert len(new.reasons) == 2
         assert new.reasons[0].operation == operator.ge
         assert new.reasons[1].operation == operator.ge
 
     def test_consistent_and_same_meaning(self, make_statement):
-        left_weight = FactorGroup(make_statement["small_weight_bob"])
-        right_weight = FactorGroup(make_statement["large_weight"])
+        left_weight = FactorGroup(sequence=[make_statement["small_weight_bob"]])
+        right_weight = FactorGroup(sequence=[make_statement["large_weight"]])
         explanation = left_weight.explain_consistent_with(right_weight)
         new_explanation = make_statement["crime_bob"].explain_same_meaning(
             make_statement["crime"], context=explanation
         )
         assert "Because <Bob> is like <Alice>" in str(new_explanation)
-        assert "FactorGroup([" not in str(new_explanation)
+        assert "FactorGroup(sequence=[" not in str(new_explanation)
 
     def test_same_meaning_factors_not_grouped(self, make_statement):
-        left_weight = make_statement["small_weight_bob"]
-        right_weight = make_statement["large_weight"]
+        left_weight = FactorGroup(sequence=[make_statement["small_weight_bob"]])
+        right_weight = FactorGroup(sequence=[make_statement["large_weight"]])
         explanation = left_weight.explain_consistent_with(right_weight)
-        new = FactorGroup(make_statement["crime_bob"]).explain_same_meaning(
-            FactorGroup(make_statement["crime"]), context=explanation
+        new = FactorGroup(sequence=[make_statement["crime_bob"]]).explain_same_meaning(
+            FactorGroup(sequence=[make_statement["crime"]]), context=explanation
         )
         assert "Because <Bob> is like <Alice>" in str(new)
         assert new.reasons[1].operation == means
@@ -138,8 +138,12 @@ class TestContinuedExplanation:
         explanation = make_statement["crime"].explain_same_meaning(
             make_statement["crime_bob"]
         )
-        left = FactorGroup([make_statement["shooting_craig"], make_statement["less"]])
-        right = FactorGroup([make_statement["murder_craig"], make_statement["more"]])
+        left = FactorGroup(
+            sequence=[make_statement["shooting_craig"], make_statement["less"]]
+        )
+        right = FactorGroup(
+            sequence=[make_statement["murder_craig"], make_statement["more"]]
+        )
         new = left.explain_contradiction(right, context=explanation)
         assert len(new.reasons) == 2
         assert new.reasons[1].operation == contradicts
@@ -149,7 +153,7 @@ class TestContinuedExplanation:
             make_statement["crime_craig"]
         )
         left = FactorGroup(
-            [
+            sequence=[
                 make_statement["large_weight"],
                 make_statement["murder"],
                 make_statement["no_context"],
@@ -157,7 +161,7 @@ class TestContinuedExplanation:
             ]
         )
         right = FactorGroup(
-            [
+            sequence=[
                 make_statement["large_weight_craig"],
                 make_statement["murder_craig"],
                 make_statement["shooting_craig"],
@@ -172,7 +176,7 @@ class TestContinuedExplanation:
             make_statement["crime"]
         )
         left = FactorGroup(
-            [
+            sequence=[
                 make_statement["large_weight"],
                 make_statement["murder_entity_order"],
                 make_statement["no_context"],
@@ -180,7 +184,7 @@ class TestContinuedExplanation:
             ]
         )
         right = FactorGroup(
-            [
+            sequence=[
                 make_statement["large_weight_craig"],
                 make_statement["murder_craig"],
                 make_statement["shooting_craig"],
@@ -196,8 +200,12 @@ class TestApplyOperation:
         explanation = make_statement["crime"].explain_same_meaning(
             make_statement["crime_bob"]
         )
-        left = FactorGroup([make_statement["shooting_craig"], make_statement["less"]])
-        right = FactorGroup([make_statement["murder_craig"], make_statement["more"]])
+        left = FactorGroup(
+            sequence=[make_statement["shooting_craig"], make_statement["less"]]
+        )
+        right = FactorGroup(
+            sequence=[make_statement["murder_craig"], make_statement["more"]]
+        )
         explanation.operation = contradicts
         gen = explanation.operate(left, right)
         new = next(gen)
@@ -208,8 +216,12 @@ class TestApplyOperation:
         explanation = make_statement["crime"].explain_same_meaning(
             make_statement["crime_bob"]
         )
-        left = FactorGroup([make_statement["shooting_craig"], make_statement["less"]])
-        right = FactorGroup([make_statement["murder_craig"], make_statement["more"]])
+        left = FactorGroup(
+            sequence=[make_statement["shooting_craig"], make_statement["less"]]
+        )
+        right = FactorGroup(
+            sequence=[make_statement["murder_craig"], make_statement["more"]]
+        )
         explanation.operation = consistent_with
         gen = explanation.operate(left, right)
         new = next(gen)
@@ -221,8 +233,8 @@ class TestApplyOperation:
         explanation = make_statement["crime_bob"].explain_same_meaning(
             make_statement["crime"]
         )
-        left = FactorGroup([make_statement["small_weight_bob"]])
-        right = FactorGroup([make_statement["large_weight"]])
+        left = FactorGroup(sequence=[make_statement["small_weight_bob"]])
+        right = FactorGroup(sequence=[make_statement["large_weight"]])
         new = left.explain_implied_by(right, explanation)
         assert len(new.reasons) == 2
         assert new.reasons[1].operation == operator.ge
@@ -231,8 +243,12 @@ class TestApplyOperation:
         explanation = make_statement["crime"].explain_same_meaning(
             make_statement["crime_bob"]
         )
-        left = FactorGroup([make_statement["shooting_craig"], make_statement["less"]])
-        right = FactorGroup([make_statement["murder_craig"], make_statement["more"]])
+        left = FactorGroup(
+            sequence=[make_statement["shooting_craig"], make_statement["less"]]
+        )
+        right = FactorGroup(
+            sequence=[make_statement["murder_craig"], make_statement["more"]]
+        )
         explanation.operation = operator.lt
         gen = explanation.operate(left, right)
         with pytest.raises(ValueError):
@@ -260,10 +276,13 @@ class TestSameMeaning:
 
     def test_not_same_meaning_more_reasons(self, make_statement):
         left = FactorGroup(
-            [make_statement["shooting"], make_statement["crime"]]
+            sequence=[make_statement["shooting"], make_statement["crime"]]
         ).explain_same_meaning(
             FactorGroup(
-                [make_statement["shooting_craig"], make_statement["crime_craig"]]
+                sequence=[
+                    make_statement["shooting_craig"],
+                    make_statement["crime_craig"],
+                ]
             )
         )
         right = make_statement["murder"].explain_same_meaning(

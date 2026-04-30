@@ -152,14 +152,14 @@ were asserted about the parties in ``nafta``, there would be a conflict
 about whether one pair of Entities signed a treaty with each other.
 
     >>> from nettlesome import FactorGroup
-    >>> nafta = FactorGroup([
+    >>> nafta = FactorGroup(sequence=[
     ...     Statement(predicate="$country1 signed a treaty with $country2",
     ...               terms=[Entity(name="Mexico"), Entity(name="USA")]),
     ...     Statement(predicate="$country2 signed a treaty with $country3",
     ...               terms=[Entity(name="USA"), Entity(name="Canada")]),
     ...     Statement(predicate="$country3 signed a treaty with $country1",
     ...           terms=[Entity(name="USA"), Entity(name="Canada")])])
-    >>> brexit = FactorGroup([
+    >>> brexit = FactorGroup(sequence=[
     ...     Statement(predicate="$country1 signed a treaty with $country2",
     ...               terms=[Entity(name="UK"), Entity(name="European Union")]),
     ...     Statement(predicate="$country2 signed a treaty with $country3",

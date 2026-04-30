@@ -220,15 +220,22 @@ class TestLikelyContext:
         assert context.check_match(Entity(name="Alice"), Entity(name="Alice"))
 
     def test_likely_context_two_factors(self, make_statement):
-        left = FactorGroup([make_statement["murder"], make_statement["large_weight"]])
+        left = FactorGroup(
+            sequence=[make_statement["murder"], make_statement["large_weight"]]
+        )
         right = make_statement["small_weight_bob"]
         context = next(left.likely_contexts(right))
         assert context.check_match(Entity(name="Alice"), Entity(name="Bob"))
 
     def test_likely_context_two_by_two(self, make_statement):
-        left = FactorGroup([make_statement["murder"], make_statement["large_weight"]])
+        left = FactorGroup(
+            sequence=[make_statement["murder"], make_statement["large_weight"]]
+        )
         right = FactorGroup(
-            (make_statement["murder_entity_order"], make_statement["small_weight_bob"])
+            sequence=(
+                make_statement["murder_entity_order"],
+                make_statement["small_weight_bob"],
+            )
         )
         context = next(left.likely_contexts(right))
         assert context.check_match(Entity(name="Alice"), Entity(name="Bob"))
@@ -245,11 +252,14 @@ class TestLikelyContext:
             predicate="$work was copyrightable",
             terms=[Entity(name="the Lotus menu command hierarchy")],
         )
-        left = FactorGroup([copyrightable, copyright_registered])
+        left = FactorGroup(sequence=[copyrightable, copyright_registered])
         right = FactorGroup(
-            Statement(
-                predicate="$work was copyrightable", terms=[Entity(name="the Java API")]
-            )
+            sequence=[
+                Statement(
+                    predicate="$work was copyrightable",
+                    terms=[Entity(name="the Java API")],
+                )
+            ]
         )
         context = next(left.likely_contexts(right))
         assert (
@@ -310,8 +320,8 @@ class TestLikelyContext:
             terms=[Entity(name="the Java API"), Entity(name="the Java language")],
         )
 
-        left = FactorGroup([lotus_program, controlled])
-        right = FactorGroup([language_program, part])
+        left = FactorGroup(sequence=[lotus_program, controlled])
+        right = FactorGroup(sequence=[language_program, part])
 
         new = left | right
         text = (
@@ -363,8 +373,8 @@ class TestChangeRegisters:
         assert next(gen)[0].name == "apple"
 
     def test_no_iterables_in_register(self):
-        left = FactorGroup()
-        right = FactorGroup()
+        left = FactorGroup(sequence=[])
+        right = FactorGroup(sequence=[])
         context = ContextRegister()
         with pytest.raises(TypeError):
             context.insert_pair(left, right)
