@@ -41,9 +41,7 @@ class Statement(Factor, BaseModel):
         a series of :class:`~nettlesome.factors.Factor` objects that fill in
         the blank spaces in the ``predicate`` statement.
 
-    :param absent:
-        whether the absence, rather than the presence, of the legal
-        fact described above is being asserted.
+    :param name:
 
     :param generic:
         whether this object could be replaced by another generic

@@ -318,7 +318,7 @@ class FactorGroup(Comparable, BaseModel):
         to_match = (
             FactorGroup(sequence=other.sequence)
             if isinstance(other, FactorGroup)
-            else other
+            else FactorGroup(sequence=[other])
         )
         context = context or ContextRegister()
         for partial in self._explanations_union_partial(to_match, context):
