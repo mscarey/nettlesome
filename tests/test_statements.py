@@ -31,7 +31,7 @@ class TestStatements:
     def test_cannot_use_string_for_term(self):
         predicate = Predicate(content="$person visited $place")
         entity = Entity(name="Austin")
-        with pytest.raises(AttributeError):
+        with pytest.raises(TypeError):
             Statement(
                 predicate=predicate,
                 terms=[entity, "Dallas as a string"],
@@ -898,12 +898,12 @@ class TestContradiction:
         assert fact_opposite.contradicts(fact)
 
     def test_factor_different_predicate_truth_contradicts_sympy(self):
-        predicate = Comparison(
+        predicate = Comparison.new(
             content="the distance between $place1 and $place2 was",
             sign=">",
             expression=30 * miles,
         )
-        predicate_opposite = Comparison(
+        predicate_opposite = Comparison.new(
             content="the distance between $place1 and $place2 was",
             sign="<",
             expression=30 * miles,

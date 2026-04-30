@@ -56,7 +56,7 @@ class Statement(Factor, BaseModel):
     """
 
     predicate: Union[Predicate, Comparison]
-    terms: List[Union[Entity, "Statement", "Assertion"]]
+    terms: Sequence[Union[Entity, "Statement", "Assertion"]]
     name: str = ""
     generic: bool = False
 

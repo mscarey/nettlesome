@@ -44,6 +44,8 @@ class Entity(Term, BaseModel, extra="forbid"):
             name = values.pop("type", None)
             if name and name.lower() != cls.__name__.lower():
                 raise ValueError(f"Expected type {cls.__name__}, not {name}")
+        if isinstance(values, str):
+            raise TypeError(f"Expected a dict or {cls.__name__} object, not a string")
         return values
 
     def __str__(self):
