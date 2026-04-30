@@ -61,11 +61,10 @@ class StatementTemplate:
             whether "were" after a placeholder should be converted to
             singular "was"
         """
-        self.template = template
         self._placeholders: List[str] = []
         self._placeholder_tokens: List[str] = []
         self._t_template = TStringTemplate(template)
-        self._refresh_parsed_template()
+        self._refresh_parsed_template(template)
 
         if make_singular:
             self.make_content_singular()
@@ -80,24 +79,25 @@ class StatementTemplate:
             if strings[idx].startswith(" were"):
                 strings[idx] = " was" + strings[idx][5:]
 
-        rebuilt_template: List[str] = [strings[0]]
+        fragments: List[str | Interpolation] = [strings[0]]
         for idx, token in enumerate(self._placeholder_tokens):
-            rebuilt_template.append(token)
-            rebuilt_template.append(strings[idx + 1])
-        self.template = "".join(rebuilt_template)
-
-        self._refresh_parsed_template()
+            placeholder_name = token[1:-1]
+            fragments.append(
+                Interpolation(placeholder_name, placeholder_name, None, "")
+            )
+            fragments.append(strings[idx + 1])
+        self._t_template = TStringTemplate(*fragments)
         return None
 
-    def _refresh_parsed_template(self) -> None:
+    def _refresh_parsed_template(self, template_text: str) -> None:
         """Parse {placeholders} into a templatelib.Template-backed representation."""
         fragments: List[str | Interpolation] = []
         placeholders_in_order: List[str] = []
         placeholder_tokens: List[str] = []
         start = 0
 
-        for match in self._PLACEHOLDER_PATTERN.finditer(self.template):
-            fragments.append(self.template[start : match.start()])
+        for match in self._PLACEHOLDER_PATTERN.finditer(template_text):
+            fragments.append(template_text[start : match.start()])
             named = match.group("named")
             if named is not None:
                 placeholders_in_order.append(named)
@@ -106,10 +106,20 @@ class StatementTemplate:
 
             start = match.end()
 
-        fragments.append(self.template[start:])
+        fragments.append(template_text[start:])
         self._placeholders = list(dict.fromkeys(placeholders_in_order))
         self._placeholder_tokens = placeholder_tokens
         self._t_template = TStringTemplate(*fragments)
+
+    @property
+    def template(self) -> str:
+        """Text representation reconstructed from the stored t-template."""
+        strings = self._t_template.strings
+        rebuilt_template: List[str] = [strings[0]]
+        for idx, token in enumerate(self._placeholder_tokens):
+            rebuilt_template.append(token)
+            rebuilt_template.append(strings[idx + 1])
+        return "".join(rebuilt_template)
 
     def substitute(
         self, mapping: Optional[Mapping[str, Any]] = None, /, **kwargs: Any
@@ -139,14 +149,20 @@ class StatementTemplate:
 
         Does not modify this object's template attribute.
         """
-        result = self.template[:]
+        strings = list(self._t_template.strings)
         placeholders = self.placeholders
         self._check_number_of_terms(placeholders, context)
         for idx, factor in enumerate(context):
-            if factor.__dict__.get("plural") is True:
-                pattern = "{" + placeholders[idx] + "} was"
-                result = result.replace(pattern, "{" + placeholders[idx] + "} were")
-        return result
+            if factor.__dict__.get("plural") is True and strings[idx + 1].startswith(
+                " was"
+            ):
+                strings[idx + 1] = " were" + strings[idx + 1][4:]
+
+        rebuilt_template: List[str] = [strings[0]]
+        for idx, token in enumerate(self._placeholder_tokens):
+            rebuilt_template.append(token)
+            rebuilt_template.append(strings[idx + 1])
+        return "".join(rebuilt_template)
 
     @property
     def placeholders(self) -> List[str]:
