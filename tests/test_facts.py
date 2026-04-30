@@ -180,7 +180,7 @@ class TestFacts:
         no_license = Statement(
             predicate="$business was licensed as a money transmitting business",
             truth=False,
-            terms=Entity(name="Helix"),
+            terms=[Entity(name="Helix")],
         )
         assert no_license.predicate.truth is False
 
@@ -272,10 +272,10 @@ class TestSameMeaning:
         directory = Entity(name="Rural's telephone directory", plural=False)
         listings = Entity(name="Rural's telephone listings", plural=True)
         directory_original = Statement(
-            predicate=Predicate(content="$thing was original"), terms=directory
+            predicate=Predicate(content="$thing was original"), terms=[directory]
         )
         listings_original = Statement(
-            predicate=Predicate(content="$thing were original"), terms=listings
+            predicate=Predicate(content="$thing were original"), terms=[listings]
         )
         assert directory_original.means(listings_original)
 
@@ -527,8 +527,8 @@ class TestContradiction:
         )
         alice = Entity(name="Alice")
         bob = Entity(name="Bob")
-        alice_rich = Statement(predicate=p_large_weight, terms=alice)
-        bob_poor = Statement(predicate=p_small_weight, terms=bob)
+        alice_rich = Statement(predicate=p_large_weight, terms=[alice])
+        bob_poor = Statement(predicate=p_small_weight, terms=[bob])
         assert alice_rich.contradicts(bob_poor)
 
     def test_inconsistent_statements_about_corresponding_entities(self):
@@ -549,8 +549,8 @@ class TestContradiction:
         )
         alice = Entity(name="Alice")
         bob = Entity(name="Bob")
-        alice_rich = Statement(predicate=p_large_weight, terms=alice)
-        bob_poor = Statement(predicate=p_small_weight, terms=bob)
+        alice_rich = Statement(predicate=p_large_weight, terms=[alice])
+        bob_poor = Statement(predicate=p_small_weight, terms=[bob])
         register = ContextRegister()
         register.insert_pair(alice, alice)
         assert not alice_rich.contradicts(bob_poor, context=register)
@@ -678,7 +678,7 @@ class TestAddition:
             predicate=Comparison(
                 content=speed_template, sign=">=", expression="100 miles per hour"
             ),
-            terms=dave,
+            terms=[dave],
         )
         slow_fact = Statement(
             predicate=Comparison(
@@ -686,7 +686,7 @@ class TestAddition:
                 sign=">=",
                 expression="20 miles per hour",
             ),
-            terms=dave,
+            terms=[dave],
         )
         new = fast_fact + slow_fact
         assert new.means(fast_fact)

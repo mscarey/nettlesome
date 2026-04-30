@@ -161,7 +161,7 @@ def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
             predicate=p["irrelevant_1"], terms=[Entity(name="Dan")]
         ),
         "irrelevant_2": Statement(
-            predicate=p["irrelevant_2"], terms=Entity(name="Dan")
+            predicate=p["irrelevant_2"], terms=[Entity(name="Dan")]
         ),
         "irrelevant_3": Statement(
             predicate=p["irrelevant_3"],
@@ -175,19 +175,19 @@ def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
             predicate=p["irrelevant_3"],
             terms=[Entity(name="Craig"), Entity(name="Alice")],
         ),
-        "crime": Statement(predicate=p["crime"], terms=Entity(name="Alice")),
-        "crime_bob": Statement(predicate=p["crime"], terms=Entity(name="Bob")),
-        "crime_craig": Statement(predicate=p["crime"], terms=Entity(name="Craig")),
+        "crime": Statement(predicate=p["crime"], terms=[Entity(name="Alice")]),
+        "crime_bob": Statement(predicate=p["crime"], terms=[Entity(name="Bob")]),
+        "crime_craig": Statement(predicate=p["crime"], terms=[Entity(name="Craig")]),
         "crime_generic": Statement(
-            predicate=p["crime"], terms=Entity(name="Alice"), generic=True
+            predicate=p["crime"], terms=[Entity(name="Alice")], generic=True
         ),
         "crime_specific_person": Statement(
-            predicate=p["crime"], terms=Entity(name="Alice", generic=False)
+            predicate=p["crime"], terms=[Entity(name="Alice", generic=False)]
         ),
         "absent_no_crime": AbsenceOf(
-            absent=Statement(predicate=p["no_crime"], terms=Entity(name="Alice"))
+            absent=Statement(predicate=p["no_crime"], terms=[Entity(name="Alice")])
         ),
-        "no_crime": Statement(predicate=p["no_crime"], terms=Entity(name="Alice")),
+        "no_crime": Statement(predicate=p["no_crime"], terms=[Entity(name="Alice")]),
         "no_crime_entity_order": Statement(
             predicate=p["no_crime"], terms=[Entity(name="Bob")]
         ),
@@ -242,19 +242,19 @@ def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
         ),
         "large_weight": Statement(
             predicate=c["large_weight"],
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         ),
         "large_weight_craig": Statement(
             predicate=c["large_weight"],
-            terms=Entity(name="Craig"),
+            terms=[Entity(name="Craig")],
         ),
         "small_weight": Statement(
             predicate=c["small_weight"],
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         ),
         "small_weight_bob": Statement(
             predicate=c["small_weight"],
-            terms=Entity(name="Bob"),
+            terms=[Entity(name="Bob")],
         ),
         "friends": Statement(
             predicate=p["friends"], terms=[Entity(name="Alice"), Entity(name="Bob")]

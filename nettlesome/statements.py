@@ -73,8 +73,6 @@ class Statement(Factor, BaseModel):
             ].template.get_term_sequence_from_mapping(values["terms"])
         if not values.get("terms"):
             values["terms"] = []
-        elif isinstance(values.get("terms"), Term):
-            values["terms"] = [values["terms"]]
         return values
 
     @field_validator("terms")

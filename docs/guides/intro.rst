@@ -175,7 +175,7 @@ to other, generic Entities. In that case, you can set the Entity’s
 ``generic`` attribute to False and it’ll no longer be found to have the
 same meaning as generic Entities.
 
-    >>> harry_statement = Statement(not_at_school, terms=Entity(name="Harry Potter", generic=False))
+    >>> harry_statement = Statement(not_at_school, terms=[Entity(name="Harry Potter", generic=False)])
     >>> harry_statement.means(singular_statement)
     False
 
@@ -200,7 +200,7 @@ using the `pint <https://pint.readthedocs.io/>`_ library.
     >>>     "the weight of ${driver}'s vehicle was",
     >>>     sign=">",
     >>>     expression="26000 pounds")
-    >>> pounds_statement = Statement(weight_in_pounds, terms=Entity(name="Alice"))
+    >>> pounds_statement = Statement(weight_in_pounds, terms=[Entity(name="Alice")])
     >>> str(pounds_statement)
     "the statement that the weight of <Alice>'s vehicle was greater than 26000 pound"
 
@@ -213,7 +213,7 @@ or :meth:`~nettlesome.quantities.Comparison.contradicts`\.
     >>>     "the weight of ${driver}'s vehicle was",
     >>>     sign="<=",
     >>>     expression="3000 kilograms")
-    >>> kilos_statement = Statement(weight_in_kilos, terms=Entity(name="Alice"))
+    >>> kilos_statement = Statement(weight_in_kilos, terms=[Entity(name="Alice")])
     >>>> str(kilos_statement)
     "the statement that the weight of <Alice>'s vehicle was no more than 3000 kilogram"
     >>> pounds_statement.contradicts(kilos_statement)

@@ -14,15 +14,15 @@ class TestContextRegisters:
     paid = Predicate(content="$employer paid $employee")
 
     def test_possible_context_without_empty_spaces(self):
-        left = Statement(predicate=self.bird, terms=Entity(name="Owl"))
-        right = Statement(predicate=self.bird, terms=Entity(name="Owl"))
+        left = Statement(predicate=self.bird, terms=[Entity(name="Owl")])
+        right = Statement(predicate=self.bird, terms=[Entity(name="Owl")])
         contexts = list(left.possible_contexts(right))
         assert len(contexts) == 1
         assert contexts[0].check_match(Entity(name="Owl"), Entity(name="Owl"))
 
     def test_possible_context_different_terms(self):
-        left = Statement(predicate=self.bird, terms=Entity(name="Foghorn"))
-        right = Statement(predicate=self.bird, terms=Entity(name="Woody"))
+        left = Statement(predicate=self.bird, terms=[Entity(name="Foghorn")])
+        right = Statement(predicate=self.bird, terms=[Entity(name="Woody")])
         contexts = list(left.possible_contexts(right))
         assert len(contexts) == 1
         assert contexts[0].check_match(Entity(name="Foghorn"), Entity(name="Woody"))
@@ -80,7 +80,7 @@ class TestContextRegisters:
         the Fact in f_relevant_murder.
         """
         statement = Statement(
-            predicate="$person was a defendant", terms=Entity(name="Alice")
+            predicate="$person was a defendant", terms=[Entity(name="Alice")]
         )
         complex_statement = make_complex_fact["relevant_murder"]
         gen = statement._context_registers(complex_statement, operator.ge)
@@ -243,12 +243,12 @@ class TestLikelyContext:
         )
         copyrightable = Statement(
             predicate="$work was copyrightable",
-            terms=Entity(name="the Lotus menu command hierarchy"),
+            terms=[Entity(name="the Lotus menu command hierarchy")],
         )
         left = FactorGroup([copyrightable, copyright_registered])
         right = FactorGroup(
             Statement(
-                predicate="$work was copyrightable", terms=Entity(name="the Java API")
+                predicate="$work was copyrightable", terms=[Entity(name="the Java API")]
             )
         )
         context = next(left.likely_contexts(right))
@@ -291,11 +291,11 @@ class TestLikelyContext:
         """
         language_program = Statement(
             predicate="$program was a computer program",
-            terms=Entity(name="the Java language"),
+            terms=[Entity(name="the Java language")],
         )
         lotus_program = Statement(
             predicate="$program was a computer program",
-            terms=Entity(name="Lotus 1-2-3"),
+            terms=[Entity(name="Lotus 1-2-3")],
         )
 
         controlled = Statement(

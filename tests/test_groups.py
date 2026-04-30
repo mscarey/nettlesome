@@ -176,8 +176,8 @@ class TestSameFactors:
             content=speed, sign=">", expression="36 kilometers per hour"
         )
         other = Comparison(content=speed, sign=">", expression="10 meters per second")
-        left = FactorGroup(Statement(predicate=comparison, terms=Entity(name="Ann")))
-        right = Statement(predicate=other, terms=Entity(name="Bob"))
+        left = FactorGroup(Statement(predicate=comparison, terms=[Entity(name="Ann")]))
+        right = Statement(predicate=other, terms=[Entity(name="Bob")])
         assert left.means(right)
 
     def test_list_instead_of_group(self):
@@ -189,8 +189,8 @@ class TestSameFactors:
         other_comparison = Comparison(
             content="${person}'s speed was", sign=">", expression="10 meters per second"
         )
-        left = FactorGroup(Statement(predicate=comparison, terms=Entity(name="Ann")))
-        right = [Statement(predicate=other_comparison, terms=Entity(name="Bob"))]
+        left = FactorGroup(Statement(predicate=comparison, terms=[Entity(name="Ann")]))
+        right = [Statement(predicate=other_comparison, terms=[Entity(name="Bob")])]
         assert left.means(right)
         assert "Because <Ann> is like <Bob>" in str(left.explain_same_meaning(right))
 
@@ -203,7 +203,7 @@ class TestSameFactors:
         other_comparison = Comparison(
             content="${person}'s speed was", sign=">", expression="10 meters per second"
         )
-        left = FactorGroup(Statement(predicate=comparison, terms=Entity(name="Ann")))
+        left = FactorGroup(Statement(predicate=comparison, terms=[Entity(name="Ann")]))
         assert not left.means(other_comparison)
 
     def test_empty_factorgroup_is_falsy(self):
@@ -221,7 +221,7 @@ class TestSameFactors:
                     ),
                 ),
                 make_statement["more"],
-                Statement(predicate="$city was sunny", terms=Entity(name="Oakland")),
+                Statement(predicate="$city was sunny", terms=[Entity(name="Oakland")]),
             ]
         )
         right = FactorGroup(
@@ -234,7 +234,7 @@ class TestSameFactors:
                     ),
                 ),
                 make_statement["more"],
-                Statement(predicate="$city was sunny", terms=Entity(name="Oakland")),
+                Statement(predicate="$city was sunny", terms=[Entity(name="Oakland")]),
             ]
         )
         assert not left.shares_all_factors_with(right)
@@ -250,7 +250,7 @@ class TestSameFactors:
                     ),
                 ),
                 make_statement["more"],
-                Statement(predicate="$city was sunny", terms=Entity(name="Oakland")),
+                Statement(predicate="$city was sunny", terms=[Entity(name="Oakland")]),
             ]
         )
         right = FactorGroup(
@@ -263,7 +263,7 @@ class TestSameFactors:
                     ),
                 ),
                 make_statement["more"],
-                Statement(predicate="$city was sunny", terms=Entity(name="Oakland")),
+                Statement(predicate="$city was sunny", terms=[Entity(name="Oakland")]),
             ]
         )
         assert not left.means(right)
@@ -831,13 +831,13 @@ class TestUnion:
             predicate=Comparison(
                 content="the number of bullets $person had was", sign=">=", expression=5
             ),
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         )
         bob_had_bullets = Statement(
             predicate=Comparison(
                 content="the number of bullets $person had was", sign=">=", expression=5
             ),
-            terms=Entity(name="Bob"),
+            terms=[Entity(name="Bob")],
         )
         left = FactorGroup([make_statement["shooting"], alice_had_bullets])
         right = FactorGroup([make_statement["shooting"], bob_had_bullets])
@@ -869,16 +869,16 @@ class TestConsistent:
     )
     predicate_farm = Predicate(content="$person had a farm")
     slower_specific_statement = Statement(
-        predicate=predicate_less_specific, terms=Entity(name="the car")
+        predicate=predicate_less_specific, terms=[Entity(name="the car")]
     )
     slower_general_statement = Statement(
-        predicate=predicate_less_general, terms=Entity(name="the pickup")
+        predicate=predicate_less_general, terms=[Entity(name="the pickup")]
     )
     faster_statement = Statement(
-        predicate=predicate_more, terms=Entity(name="the pickup")
+        predicate=predicate_more, terms=[Entity(name="the pickup")]
     )
     farm_statement = Statement(
-        predicate=predicate_farm, terms=Entity(name="Old MacDonald")
+        predicate=predicate_farm, terms=[Entity(name="Old MacDonald")]
     )
 
     def test_group_contradicts_single_factor(self):
@@ -1009,8 +1009,8 @@ class TestConsistent:
 
     def test_all_generic_terms_match_in_statement(self):
         predicate = Predicate(content="the telescope pointed at $object")
-        morning = Statement(predicate=predicate, terms=Entity(name="Morning Star"))
-        evening = Statement(predicate=predicate, terms=Entity(name="Evening Star"))
+        morning = Statement(predicate=predicate, terms=[Entity(name="Morning Star")])
+        evening = Statement(predicate=predicate, terms=[Entity(name="Evening Star")])
         left = FactorGroup(morning)
         right = FactorGroup(evening)
         context = ContextRegister()

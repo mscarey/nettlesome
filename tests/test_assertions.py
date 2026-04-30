@@ -9,7 +9,7 @@ from nettlesome.statements import Statement, Assertion
 class TestAssertion:
     namespaces = Statement(
         predicate="$concept was one honking great idea",
-        terms=Entity(name="namespaces", plural=True),
+        terms=[Entity(name="namespaces", plural=True)],
     )
     generic_authority = Assertion(
         statement=namespaces, authority=Entity(name="Twitter user")
@@ -32,7 +32,9 @@ class TestAssertion:
         assert str(self.generic_generic_authority).startswith("<the assertion")
 
     def test_include_of_in_string(self):
-        fact = Statement(predicate="$suspect stole bread", terms=Entity(name="Valjean"))
+        fact = Statement(
+            predicate="$suspect stole bread", terms=[Entity(name="Valjean")]
+        )
         accusation = Assertion(statement=fact, authority=Entity(name="Javert"))
         assert (
             "the assertion, by <Javert>, of the statement that <Valjean> stole bread"

@@ -34,12 +34,15 @@ class TestStatements:
         with pytest.raises(TypeError):
             Statement(
                 predicate=predicate,
-                terms=[entity, "Dallas as a string"],
+                terms=[
+                    entity,
+                    "Dallas as a string",
+                ],  # ty: ignore[invalid-argument-type]
             )
 
     def test_string_representation_of_factor(self):
         city = Predicate(content="$place was a city")
-        statement = Statement(predicate=city, terms=Entity(name="New York"))
+        statement = Statement(predicate=city, terms=[Entity(name="New York")])
         assert "<New York> was a city" in str(statement)
         assert ", terms=[Entity(" in repr(statement)
         assert "name='New York'" in repr(statement)
@@ -51,7 +54,7 @@ class TestStatements:
     def test_string_representation_of_absent_factor(self):
         predicate = Predicate(content="$company was the best brand")
         statement = AbsenceOf(
-            absent=Statement(predicate=predicate, terms=Entity(name="Acme"))
+            absent=Statement(predicate=predicate, terms=[Entity(name="Acme")])
         )
         assert "absence of the statement" in str(statement).lower()
 
@@ -126,7 +129,7 @@ class TestStatements:
             predicate=predicate_told,
             terms=[Entity(name="Henry"), Entity(name="Jenna"), shot],
         )
-        no_gun = Statement(predicate=predicate_no_gun, terms=Entity(name="Dan"))
+        no_gun = Statement(predicate=predicate_no_gun, terms=[Entity(name="Dan")])
 
         changes = ContextRegister.from_lists(
             [Entity(name="Alice"), Entity(name="Henry"), Entity(name="Jenna"), shot],
@@ -157,7 +160,7 @@ class TestStatements:
         shot = Statement(
             predicate=predicate_shot, terms=[Entity(name="Alice"), Entity(name="Bob")]
         )
-        no_gun = Statement(predicate=predicate_no_gun, terms=Entity(name="Dan"))
+        no_gun = Statement(predicate=predicate_no_gun, terms=[Entity(name="Dan")])
         told = Statement(
             predicate=predicate_told,
             terms=[Entity(name="Henry"), Entity(name="Jenna"), no_gun],
@@ -172,7 +175,7 @@ class TestStatements:
         shot = Statement(
             predicate=predicate_shot, terms=[Entity(name="Alice"), Entity(name="Bob")]
         )
-        no_gun = Statement(predicate=predicate_no_gun, terms=Entity(name="Dan"))
+        no_gun = Statement(predicate=predicate_no_gun, terms=[Entity(name="Dan")])
         told = Statement(
             predicate=predicate_told,
             terms=[Entity(name="Henry"), Entity(name="Jenna"), no_gun],
@@ -280,14 +283,14 @@ class TestStatements:
 
     def test_concrete_to_abstract(self):
         predicate = Predicate(content="$person had a farm")
-        statement = Statement(predicate=predicate, terms=Entity(name="Old MacDonald"))
+        statement = Statement(predicate=predicate, terms=[Entity(name="Old MacDonald")])
         assert str(statement).lower() == "the statement that <old macdonald> had a farm"
         generic_str = str(statement.make_generic()).lower()
         assert generic_str == "<the statement that <old macdonald> had a farm>"
 
     def test_entity_slots_as_length_of_factor(self):
         predicate = Predicate(content="$person had a farm")
-        statement = Statement(predicate=predicate, terms=Entity(name="Old MacDonald"))
+        statement = Statement(predicate=predicate, terms=[Entity(name="Old MacDonald")])
         assert len(statement.predicate) == 1
         assert len(statement) == 1
 
@@ -315,7 +318,7 @@ class TestStatements:
             "of ${program}'s code was necessary for $program to work",
             truth=False,
         )
-        fact = Statement(predicate=predicate, terms=Entity(name="Lotus 1-2-3"))
+        fact = Statement(predicate=predicate, terms=[Entity(name="Lotus 1-2-3")])
 
         assert fact.short_string.lower() == (
             "the statement it was false that the precise formulation "
@@ -520,10 +523,10 @@ class TestSameMeaning:
         directory = Entity(name="the telephone directory", plural=False)
         listings = Entity(name="the telephone listings", plural=True)
         directory_original = Statement(
-            predicate=Predicate(content="$thing was original"), terms=directory
+            predicate=Predicate(content="$thing was original"), terms=[directory]
         )
         listings_original = Statement(
-            predicate=Predicate(content="$thing were original"), terms=listings
+            predicate=Predicate(content="$thing were original"), terms=[listings]
         )
         assert directory_original.means(listings_original)
         assert "plural=True" in repr(listings_original)
@@ -551,11 +554,11 @@ class TestImplication:
     def test_specific_statement_implies_generic(self):
         concrete = Statement(
             predicate=Predicate(content="$person was a person"),
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         )
         generic = Statement(
             predicate=Predicate(content="$person was a person"),
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
             generic=True,
         )
         assert concrete > generic
@@ -564,11 +567,11 @@ class TestImplication:
     def test_specific_implies_generic_explain(self):
         concrete = Statement(
             predicate=Predicate(content="$person was a person"),
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         )
         generic = Statement(
             predicate=Predicate(content="$person was a person"),
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
             generic=True,
         )
 
@@ -578,11 +581,11 @@ class TestImplication:
     def test_specific_implies_generic_form_of_another_fact(self):
         concrete = Statement(
             predicate=Predicate(content="$person was a person"),
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         )
         generic_merperson = Statement(
             predicate=Predicate(content="$person was a merperson"),
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
             generic=True,
         )
 
@@ -591,7 +594,7 @@ class TestImplication:
     def test_specific_fact_does_not_imply_generic_entity(self):
         concrete = Statement(
             predicate=Predicate(content="$person was a person"),
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         )
         assert not concrete > Entity(name="Tim")
 
@@ -683,11 +686,11 @@ class TestImplication:
     def test_statement_implies_no_truth_value(self):
         fact = Statement(
             predicate=Predicate(content="$person was a person"),
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         )
         whether = Statement(
             predicate=Predicate(content="$person was a person", truth=None),
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         )
         assert fact >= whether
         assert not whether > fact
@@ -697,7 +700,7 @@ class TestImplication:
             predicate=Comparison(
                 content="${person}'s weight was", sign=">", expression="150 pounds"
             ),
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         )
         whether = Statement(
             predicate=Comparison(
@@ -706,7 +709,7 @@ class TestImplication:
                 expression="150 pounds",
                 truth=None,
             ),
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         )
 
         assert fact >= whether
@@ -717,13 +720,13 @@ class TestImplication:
             predicate=Comparison(
                 content="${person}'s height was", sign="=", expression="66 inches"
             ),
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         )
         fact_greater = Statement(
             predicate=Comparison(
                 content="${person}'s height was", sign=">", expression="60 inches"
             ),
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         )
 
         assert fact_exact >= fact_greater
@@ -734,13 +737,13 @@ class TestImplication:
             predicate=Comparison(
                 content="${person}'s height was", sign="=", expression=66
             ),
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         )
         fact_greater = Statement(
             predicate=Comparison(
                 content="${person}'s height was", sign=">", expression="60 inches"
             ),
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         )
         assert not fact_exact >= fact_greater
         assert not fact_greater >= fact_exact
@@ -775,7 +778,7 @@ class TestImplication:
     def test_equal_factors_not_gt(self):
         fact = Statement(
             predicate=Predicate(content="$person was a person"),
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         )
         assert fact >= fact
         assert fact <= fact
@@ -918,27 +921,27 @@ class TestContradiction:
     def test_same_predicate_true_vs_false(self):
         fact = Statement(
             predicate=Predicate(content="$person was a person"),
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         )
         fiction = Statement(
             predicate=Predicate(content="$person was a person", truth=False),
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         )
         assert fact.contradicts(fiction)
         assert fact.truth != fiction.truth
 
     def test_factor_does_not_contradict_predicate(self):
         predicate = Predicate(content="$person was a person")
-        fact = Statement(predicate=predicate, terms=Entity(name="Alice"))
+        fact = Statement(predicate=predicate, terms=[Entity(name="Alice")])
 
         with pytest.raises(TypeError):
             fact.contradicts(predicate)  # ty: ignore[invalid-argument-type]
 
     def test_factor_contradiction_absent_predicate(self):
         predicate = Predicate(content="$person was a person")
-        fact = Statement(predicate=predicate, terms=Entity(name="Alice"))
+        fact = Statement(predicate=predicate, terms=[Entity(name="Alice")])
         absent_fact = AbsenceOf(
-            absent=Statement(predicate=predicate, terms=Entity(name="Alice"))
+            absent=Statement(predicate=predicate, terms=[Entity(name="Alice")])
         )
 
         assert fact.contradicts(absent_fact)
@@ -946,9 +949,9 @@ class TestContradiction:
 
     def test_contradiction_with_empty_explanation_for_context(self):
         predicate = Predicate(content="$person was a person")
-        fact = Statement(predicate=predicate, terms=Entity(name="Alice"))
+        fact = Statement(predicate=predicate, terms=[Entity(name="Alice")])
         absent_fact = AbsenceOf(
-            absent=Statement(predicate=predicate, terms=Entity(name="Alice"))
+            absent=Statement(predicate=predicate, terms=[Entity(name="Alice")])
         )
         explanation = Explanation(reasons=[])
 
@@ -994,11 +997,11 @@ class TestContradiction:
     def test_factor_no_contradiction_no_truth_value(self):
         fact = Statement(
             predicate=Predicate(content="$person was a person"),
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         )
         fact_no_truth = Statement(
             predicate=Predicate(content="$person was a person"),
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         )
         assert not fact.contradicts(fact_no_truth)
         assert not fact_no_truth.contradicts(fact)
@@ -1231,8 +1234,8 @@ class TestContradiction:
         )
         alice = Entity(name="Alice")
         bob = Entity(name="Bob")
-        alice_rich = Statement(predicate=p_large_weight, terms=alice)
-        bob_poor = Statement(predicate=p_small_weight, terms=bob)
+        alice_rich = Statement(predicate=p_large_weight, terms=[alice])
+        bob_poor = Statement(predicate=p_small_weight, terms=[bob])
         assert alice_rich.contradicts(bob_poor)
 
     def test_inconsistent_statements_about_different_entities_sympy(self):
@@ -1252,8 +1255,8 @@ class TestContradiction:
         )
         alice = Entity(name="Alice")
         bob = Entity(name="Bob")
-        alice_rich = Statement(predicate=p_large_weight, terms=alice)
-        bob_poor = Statement(predicate=p_small_weight, terms=bob)
+        alice_rich = Statement(predicate=p_large_weight, terms=[alice])
+        bob_poor = Statement(predicate=p_small_weight, terms=[bob])
         assert alice_rich.contradicts(bob_poor)
 
     def test_inconsistent_statements_about_corresponding_entities(self):
@@ -1274,8 +1277,8 @@ class TestContradiction:
         )
         alice = Entity(name="Alice")
         bob = Entity(name="Bob")
-        alice_rich = Statement(predicate=p_large_weight, terms=alice)
-        bob_poor = Statement(predicate=p_small_weight, terms=bob)
+        alice_rich = Statement(predicate=p_large_weight, terms=[alice])
+        bob_poor = Statement(predicate=p_small_weight, terms=[bob])
         register = ContextRegister()
         register.insert_pair(alice, alice)
         assert not alice_rich.contradicts(bob_poor, context=register)
@@ -1298,8 +1301,8 @@ class TestContradiction:
         )
         alice = Entity(name="Alice")
         bob = Entity(name="Bob")
-        alice_rich = Statement(predicate=p_large_weight, terms=alice)
-        bob_poor = Statement(predicate=p_small_weight, terms=bob)
+        alice_rich = Statement(predicate=p_large_weight, terms=[alice])
+        bob_poor = Statement(predicate=p_small_weight, terms=[bob])
         register = ContextRegister()
         register.insert_pair(alice, alice)
         assert not alice_rich.contradicts(bob_poor, context=register)
@@ -1382,8 +1385,8 @@ class TestConsistent:
             sign=">=",
             expression=100 * kilograms,
         )
-        big = Statement(predicate=p_large_weight, terms=Entity(name="Alice"))
-        small = Statement(predicate=p_small_weight, terms=Entity(name="Bob"))
+        big = Statement(predicate=p_large_weight, terms=[Entity(name="Alice")])
+        small = Statement(predicate=p_small_weight, terms=[Entity(name="Bob")])
         register = ContextRegister()
         register.insert_pair(Entity(name="Alice"), Entity(name="Bob"))
         assert not small.consistent_with(big, register)
@@ -1408,7 +1411,7 @@ class TestConsistent:
             sign="<",
             expression=1 * gram,
         )
-        small = Statement(predicate=p_small_weight, terms=Entity(name="Bob"))
+        small = Statement(predicate=p_small_weight, terms=[Entity(name="Bob")])
         assert small.consistent_with(None)
 
     def test_explain_consistent(self):
@@ -1417,13 +1420,13 @@ class TestConsistent:
             sign="<",
             expression=1 * gram,
         )
-        small = Statement(predicate=p_small_weight, terms=Entity(name="Bob"))
+        small = Statement(predicate=p_small_weight, terms=[Entity(name="Bob")])
         p_smallish_weight = Comparison.new(
             content="the amount of gold $person possessed was",
             sign="<",
             expression=100 * gram,
         )
-        smallish = Statement(predicate=p_smallish_weight, terms=Entity(name="Karen"))
+        smallish = Statement(predicate=p_smallish_weight, terms=[Entity(name="Karen")])
         gen = small.explanations_consistent_with(smallish)
         explanation = next(gen)
         assert explanation.context["<Bob>"].compare_keys(Entity(name="Karen"))
@@ -1434,13 +1437,13 @@ class TestConsistent:
             sign="<",
             expression=1 * gram,
         )
-        small = Statement(predicate=p_small_weight, terms=Entity(name="Bob"))
+        small = Statement(predicate=p_small_weight, terms=[Entity(name="Bob")])
         p_smallish_weight = Comparison.new(
             content="the amount of gold $person possessed was",
             sign="<",
             expression=100 * gram,
         )
-        smallish = Statement(predicate=p_smallish_weight, terms=Entity(name="Karen"))
+        smallish = Statement(predicate=p_smallish_weight, terms=[Entity(name="Karen")])
         gen = smallish.explanations_consistent_with(small)
         explanation = next(gen)
         assert explanation.context["<Karen>"].compare_keys(Entity(name="Bob"))
@@ -1451,13 +1454,13 @@ class TestConsistent:
             sign="<",
             expression=1 * gram,
         )
-        small = Statement(predicate=p_small_weight, terms=Entity(name="Bob"))
+        small = Statement(predicate=p_small_weight, terms=[Entity(name="Bob")])
         p_smallish_weight = Comparison.new(
             content="the amount of gold $person possessed was",
             sign="<",
             expression=100 * gram,
         )
-        smallish = Statement(predicate=p_smallish_weight, terms=Entity(name="Karen"))
+        smallish = Statement(predicate=p_smallish_weight, terms=[Entity(name="Karen")])
         assert small.explain_contradiction(smallish) is None
 
 
@@ -1473,9 +1476,11 @@ class TestAddition:
             sign=">=",
             expression=60 * miles / hour,
         )
-        general_fact = Statement(predicate=predicate_less, terms=Entity(name="the car"))
+        general_fact = Statement(
+            predicate=predicate_less, terms=[Entity(name="the car")]
+        )
         specific_fact = Statement(
-            predicate=predicate_more, terms=Entity(name="the motorcycle")
+            predicate=predicate_more, terms=[Entity(name="the motorcycle")]
         )
         answer = specific_fact + general_fact
         assert answer.means(specific_fact)
@@ -1491,9 +1496,11 @@ class TestAddition:
             sign=">=",
             expression=60 * miles / hour,
         )
-        general_fact = Statement(predicate=predicate_less, terms=Entity(name="the car"))
+        general_fact = Statement(
+            predicate=predicate_less, terms=[Entity(name="the car")]
+        )
         specific_fact = Statement(
-            predicate=predicate_more, terms=Entity(name="the motorcycle")
+            predicate=predicate_more, terms=[Entity(name="the motorcycle")]
         )
         answer = general_fact + specific_fact
         assert "<the car>" in str(answer)
@@ -1502,11 +1509,11 @@ class TestAddition:
     def test_add_unrelated_factors(self):
         murder = Statement(
             predicate=Predicate(content="$person committed a murder"),
-            terms=Entity(name="Al"),
+            terms=[Entity(name="Al")],
         )
         crime = Statement(
             predicate=Predicate(content="$person committed a crime"),
-            terms=Entity(name="Al"),
+            terms=[Entity(name="Al")],
         )
         assert murder + crime is None
 
