@@ -798,7 +798,7 @@ class TestUnion:
         left = FactorGroup(make_statement["more"])
         right = FactorGroup(make_statement["more_meters"])
         added = left | right
-        assert len(added) == 1
+        assert added and len(added) == 1
         assert "35 foot" in str(added[0])
 
     def test_union_with_factor_outside_group(self, make_statement):
@@ -816,7 +816,7 @@ class TestUnion:
         left = FactorGroup(make_statement["no_shooting_entity_order"])
         right = FactorGroup(make_statement["shooting"])
         combined = left | right
-        assert len(combined) == 2
+        assert combined and len(combined) == 2
 
     def test_union_causes_contradiction(self, make_statement):
         """Test Factors about the same Term contradict so no union is possible."""
