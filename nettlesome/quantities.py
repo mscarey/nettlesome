@@ -228,11 +228,11 @@ class UnitRange(QuantityRange, BaseModel):
     include_negatives: Optional[bool] = None
 
     @property
-    def q(self) -> Quantity:
+    def q(self) -> PlainQuantity[Decimal]:
         return Quantity(self.quantity_magnitude, self.quantity_units)
 
     @property
-    def quantity(self) -> Quantity:
+    def quantity(self) -> PlainQuantity[Decimal]:
         return self.q
 
     @property
@@ -241,7 +241,7 @@ class UnitRange(QuantityRange, BaseModel):
         return S.Reals
 
     @property
-    def magnitude(self) -> Union[int, float]:
+    def magnitude(self) -> Decimal:
         """Get magnitude of pint Quantity."""
         super().magnitude  # for the coverage
         return self.q.magnitude
@@ -601,7 +601,7 @@ class Comparison(BaseModel, PhraseABC):
         return self.quantity_range.interval
 
     @property
-    def quantity(self) -> Union[int, float, date, Quantity]:
+    def quantity(self) -> Union[Decimal, date, PlainQuantity[Decimal]]:
         """
         Get the maximum or minimum of the range.
 
