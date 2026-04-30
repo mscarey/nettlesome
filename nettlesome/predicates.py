@@ -35,7 +35,7 @@ class StatementTemplate:
     """
 
     _PLACEHOLDER_PATTERN = re.compile(
-        r"\$(?:(?P<named>[_a-zA-Z][_a-zA-Z0-9]*)|\{(?P<braced>[_a-zA-Z][_a-zA-Z0-9]*)\}|(?P<escaped>\$))"
+        r"(?<!\{)\{(?P<named>[_a-zA-Z][_a-zA-Z0-9]*)\}(?!\})"
     )
 
     def __init__(self, template: str, make_singular: bool = True) -> None:
@@ -43,19 +43,19 @@ class StatementTemplate:
         Identify placeholders in template text, and make verbs singular if needed.
 
             >>> school_template = StatementTemplate(
-            ... "$group were at school", make_singular=True)
+            ... "{group} were at school", make_singular=True)
             >>> str(school_template)
-            'StatementTemplate("$group was at school")'
+            'StatementTemplate("{group} was at school")'
 
         The make_singular flag only affects verbs immediately after :class:`~nettlesome.terms.Term`\s.
 
-            >>> text = "$group thought the exams were difficult"
+            >>> text = "{group} thought the exams were difficult"
             >>> exams_template = StatementTemplate(text, make_singular=True)
             >>> str(exams_template)
-            'StatementTemplate("$group thought the exams were difficult")'
+            'StatementTemplate("{group} thought the exams were difficult")'
 
         :param template:
-            text for creating a :py:class:`string.Template`
+            text containing `{placeholder}` markers for term substitution
 
         :param make_singular:
             whether "were" after a placeholder should be converted to
@@ -90,7 +90,7 @@ class StatementTemplate:
         return None
 
     def _refresh_parsed_template(self) -> None:
-        """Parse $placeholders into a templatelib.Template-backed representation."""
+        """Parse {placeholders} into a templatelib.Template-backed representation."""
         fragments: List[str | Interpolation] = []
         placeholders_in_order: List[str] = []
         placeholder_tokens: List[str] = []
@@ -99,20 +99,10 @@ class StatementTemplate:
         for match in self._PLACEHOLDER_PATTERN.finditer(self.template):
             fragments.append(self.template[start : match.start()])
             named = match.group("named")
-            braced = match.group("braced")
-            escaped = match.group("escaped")
-
-            if escaped:
-                fragments.append("$")
-            else:
-                placeholder = named or braced
-                if placeholder is not None:
-                    placeholders_in_order.append(placeholder)
-                    if named is not None:
-                        placeholder_tokens.append(f"${named}")
-                    else:
-                        placeholder_tokens.append(f"${{{braced}}}")
-                    fragments.append(Interpolation(placeholder, placeholder, None, ""))
+            if named is not None:
+                placeholders_in_order.append(named)
+                placeholder_tokens.append(f"{{{named}}}")
+                fragments.append(Interpolation(named, named, None, ""))
 
             start = match.end()
 
@@ -154,14 +144,8 @@ class StatementTemplate:
         self._check_number_of_terms(placeholders, context)
         for idx, factor in enumerate(context):
             if factor.__dict__.get("plural") is True:
-                named_pattern = "$" + placeholders[idx] + " was"
-                braced_pattern = "${" + placeholders[idx] + "} was"
-                result = result.replace(
-                    named_pattern, "$" + placeholders[idx] + " were"
-                )
-                result = result.replace(
-                    braced_pattern, "$" + placeholders[idx] + " were"
-                )
+                pattern = "{" + placeholders[idx] + "} was"
+                result = result.replace(pattern, "{" + placeholders[idx] + "} were")
         return result
 
     @property
