@@ -160,6 +160,11 @@ class StatementTemplate:
         """List substrings of template text marked as placeholders."""
         return self._placeholders
 
+    @property
+    def text_fragments(self) -> Tuple[str, ...]:
+        """Literal text segments between placeholders in the parsed template."""
+        return self._t_template.strings
+
     def get_term_sequence_from_mapping(
         self, term_mapping: Mapping[str, Term]
     ) -> TermSequence:
@@ -362,16 +367,6 @@ class PhraseABC(metaclass=ABCMeta):
         """
         return StatementTemplate(self.content, make_singular=True)
 
-    def content_without_placeholders(self) -> str:
-        """
-        Get template text with placeholders replaced by identical bracket pairs.
-
-        Produces a string that will evaluate equal for two templates with
-        identical non-placedholder text.
-        """
-        changes = {p: "{}" for p in self.template.placeholders}
-        return self.template.substitute(**changes)
-
     def _content_with_terms(self, terms: Sequence[Term]) -> str:
         r"""
         Make a sentence by filling in placeholders with names of Factors.
@@ -397,10 +392,13 @@ class PhraseABC(metaclass=ABCMeta):
             whether ``self`` and ``other`` have :attr:`~Predicate.content` strings
             similar enough to be considered to have the same meaning.
         """
-        return (
-            self.content_without_placeholders().lower()
-            == other.content_without_placeholders().lower()
+        left_fragments = tuple(
+            fragment.lower() for fragment in self.template.text_fragments
         )
+        right_fragments = tuple(
+            fragment.lower() for fragment in other.template.text_fragments
+        )
+        return left_fragments == right_fragments
 
     def same_term_positions(self, other: PhraseABC) -> bool:
         """Test if self and other have same positions for interchangeable Terms."""
