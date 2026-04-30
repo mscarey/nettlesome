@@ -8,6 +8,7 @@ from decimal import Decimal
 from typing import Any, ClassVar, Dict, Optional, Union
 
 from pint import UnitRegistry, Quantity
+from pint.facets.plain import PlainQuantity
 from pydantic import BaseModel, field_validator, model_validator
 import sympy
 from sympy import Eq, Interval, Mul, oo, S
@@ -431,7 +432,7 @@ class Comparison(BaseModel, PhraseABC):
     def new(
         cls,
         content: str,
-        expression: str | int | float | date,
+        expression: str | int | float | date | PlainQuantity,
         sign: str = "==",
         include_negatives: bool | None = None,
         truth: bool = True,
@@ -542,7 +543,7 @@ class Comparison(BaseModel, PhraseABC):
 
     @classmethod
     def expression_to_quantity(
-        cls, value: Union[date, float, int, SympyQuantity]
+        cls, value: Union[date, float, int, SympyQuantity, PlainQuantity, str]
     ) -> Union[date, Decimal, str]:
         r"""
         Create numeric expression from text for Comparison class.
@@ -566,6 +567,8 @@ class Comparison(BaseModel, PhraseABC):
             return value
         if isinstance(value, (int, Decimal, float)):
             return Decimal(value)
+        if isinstance(value, PlainQuantity):
+            return str(Q_(str(value)))
         quantity = value.strip()
 
         try:
