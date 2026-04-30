@@ -1283,7 +1283,8 @@ class ContextRegister:
     def reversed(self):
         """Swap keys for values and vice versa."""
         return ContextRegister.from_lists(
-            to_replace=self.values(), replacements=self.reverse_matches.values()
+            to_replace=list(self.values()),
+            replacements=list(self.reverse_matches.values()),
         )
 
     def merged_with(

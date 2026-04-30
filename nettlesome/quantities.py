@@ -433,7 +433,7 @@ class Comparison(BaseModel, PhraseABC):
     def new(
         cls,
         content: str,
-        expression: str | int | float | date | PlainQuantity,
+        expression: str | int | float | date | Decimal | PlainQuantity,
         sign: str = "==",
         include_negatives: bool | None = None,
         truth: bool | None = True,
