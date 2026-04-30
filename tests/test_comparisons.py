@@ -129,7 +129,7 @@ class TestQuantityInterval:
         dogs = Comparison.new(
             content="the number of dogs was", sign=">", expression="3 gallons"
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             DecimalRange(quantity=dogs.quantity)
 
     def test_plural_in_Comparison(self):
@@ -497,7 +497,9 @@ class TestContradiction:
             sign=">",
             expression=10,
         )
-        no_cows = Predicate(content="the number of cows {person} owned was", truth=False)
+        no_cows = Predicate(
+            content="the number of cows {person} owned was", truth=False
+        )
         assert not more_cows.contradicts(no_cows)
         assert not no_cows.contradicts(more_cows)
 

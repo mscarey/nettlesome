@@ -1,7 +1,5 @@
 """Descriptions of quantities."""
 
-from __future__ import annotations
-
 from abc import abstractmethod
 from datetime import date
 from decimal import Decimal
@@ -223,7 +221,7 @@ class QuantityRange(BaseModel):
 class UnitRange(QuantityRange, BaseModel):
     """A range defined relative to a pint Quantity."""
 
-    quantity_magnitude: Decimal
+    quantity_magnitude: Decimal | int
     quantity_units: str
     sign: str = "=="
     include_negatives: Optional[bool] = None
@@ -345,6 +343,17 @@ class DecimalRange(QuantityRange, BaseModel):
     quantity: Decimal
     sign: str = "=="
     include_negatives: Optional[bool] = None
+
+    @field_validator("quantity", mode="before")
+    def convert_to_decimal(cls, value: Union[int, float, Decimal]) -> Decimal:
+        """Convert int or float to Decimal."""
+        if isinstance(value, Decimal):
+            return value
+        if isinstance(value, (int, float)):
+            return Decimal(value)
+        raise TypeError(
+            f"DecimalRange quantity must be an int, float, or Decimal, not {type(value)}."
+        )
 
     @property
     def domain(self) -> sympy.Set:
