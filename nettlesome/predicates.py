@@ -8,10 +8,11 @@ the `pint <https://pint.readthedocs.io/en/>`_ library).
 
 from __future__ import annotations
 from abc import ABCMeta
+import importlib
+import re
 
 from itertools import product
 
-from string import Template
 from typing import Any, Dict, Mapping
 from typing import List, Optional, Sequence, Set, Tuple
 
@@ -20,14 +21,22 @@ from pydantic import BaseModel
 from nettlesome.terms import Comparable, TermSequence
 from nettlesome.terms import Term
 
+templatelib = importlib.import_module("string.templatelib")
+Interpolation = templatelib.Interpolation
+TStringTemplate = templatelib.Template
 
-class StatementTemplate(Template):
+
+class StatementTemplate:
     r"""
     A text template for a Predicate.
 
     Should include placeholders for any replaceable :class:`~nettlesome.terms.Term`\s
     that can be substituted into the :class:`~nettlesome.predicates.Predicate`\.
     """
+
+    _PLACEHOLDER_PATTERN = re.compile(
+        r"\$(?:(?P<named>[_a-zA-Z][_a-zA-Z0-9]*)|\{(?P<braced>[_a-zA-Z][_a-zA-Z0-9]*)\}|(?P<escaped>\$))"
+    )
 
     def __init__(self, template: str, make_singular: bool = True) -> None:
         r"""
@@ -52,13 +61,10 @@ class StatementTemplate(Template):
             whether "were" after a placeholder should be converted to
             singular "was"
         """
-        super().__init__(template)
-        placeholders = [
-            m.group("named") or m.group("braced")
-            for m in self.pattern.finditer(self.template)
-            if m.group("named") or m.group("braced")
-        ]
-        self._placeholders = list(dict.fromkeys(placeholders))
+        self.template = template
+        self._placeholders: List[str] = []
+        self._t_template = TStringTemplate(template)
+        self._refresh_parsed_template()
 
         if make_singular:
             self.make_content_singular()
@@ -77,7 +83,56 @@ class StatementTemplate(Template):
             self.template = self.template.replace(
                 braced_pattern, "$" + placeholder + " was"
             )
+        self._refresh_parsed_template()
         return None
+
+    def _refresh_parsed_template(self) -> None:
+        """Parse $placeholders into a templatelib.Template-backed representation."""
+        fragments: List[str | Interpolation] = []
+        placeholders_in_order: List[str] = []
+        start = 0
+
+        for match in self._PLACEHOLDER_PATTERN.finditer(self.template):
+            fragments.append(self.template[start : match.start()])
+            named = match.group("named")
+            braced = match.group("braced")
+            escaped = match.group("escaped")
+
+            if escaped:
+                fragments.append("$")
+            else:
+                placeholder = named or braced
+                if placeholder is not None:
+                    placeholders_in_order.append(placeholder)
+                    fragments.append(Interpolation(placeholder, placeholder, None, ""))
+
+            start = match.end()
+
+        fragments.append(self.template[start:])
+        self._placeholders = list(dict.fromkeys(placeholders_in_order))
+        self._t_template = TStringTemplate(*fragments)
+
+    def substitute(
+        self, mapping: Optional[Mapping[str, Any]] = None, /, **kwargs: Any
+    ) -> str:
+        """Substitute placeholders in template text with values from mapping and kwargs."""
+        substitutions: Dict[str, Any] = {}
+        if mapping is not None:
+            substitutions.update(mapping)
+        substitutions.update(kwargs)
+
+        chunks: List[str] = []
+        for chunk in self._t_template:
+            if isinstance(chunk, str):
+                chunks.append(chunk)
+                continue
+
+            key = chunk.expression
+            if key not in substitutions:
+                raise KeyError(key)
+            chunks.append(str(substitutions[key]))
+
+        return "".join(chunks)
 
     def get_template_with_plurals(self, context: Sequence[Term]) -> str:
         """
