@@ -75,14 +75,14 @@ class TestCompareQuantities:
         assert len(make_comparison["meters"]) == 2
 
     def test_str_for_predicate_with_number_quantity(self, make_comparison):
-        assert "distance between $place1 and $place2 was less than 20" in str(
+        assert "distance between {place1} and {place2} was less than 20" in str(
             make_comparison["int_distance"]
         )
-        assert "distance between $place1 and $place2 was less than 20" in str(
+        assert "distance between {place1} and {place2} was less than 20" in str(
             make_comparison["float_distance"]
         )
         assert make_comparison["float_distance"].quantity_range.domain == S.Reals
-        assert "distance between $place1 and $place2 was less than 20 foot" in str(
+        assert "distance between {place1} and {place2} was less than 20 foot" in str(
             make_comparison["less_than_20"]
         )
 

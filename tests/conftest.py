@@ -13,35 +13,35 @@ from nettlesome.entities import Entity
 @pytest.fixture(scope="class")
 def make_predicate() -> Dict[str, Predicate]:
     return {
-        "make_predicate": Predicate(content="$person committed a crime"),
-        "murder": Predicate(content="$shooter murdered $victim"),
-        "murder_whether": Predicate(content="$shooter murdered $victim", truth=None),
-        "murder_false": Predicate(content="$shooter murdered $victim", truth=False),
+        "make_predicate": Predicate(content="{person} committed a crime"),
+        "murder": Predicate(content="{shooter} murdered {victim}"),
+        "murder_whether": Predicate(content="{shooter} murdered {victim}", truth=None),
+        "murder_false": Predicate(content="{shooter} murdered {victim}", truth=False),
         "irrelevant": Predicate(
-            content="$evidence is relevant to show $fact", truth=False
+            content="{evidence} is relevant to show {fact}", truth=False
         ),
-        "relevant": Predicate(content="$evidence is relevant to show $fact"),
+        "relevant": Predicate(content="{evidence} is relevant to show {fact}"),
         "relevant_whether": Predicate(
-            content="$evidence is relevant to show $fact", truth=None
+            content="{evidence} is relevant to show {fact}", truth=None
         ),
-        "shooting": Predicate(content="$shooter shot $victim"),
-        "shooting_self": Predicate(content="$shooter shot $shooter"),
-        "no_shooting": Predicate(content="$shooter shot $victim", truth=False),
-        "shooting_whether": Predicate(content="$shooter shot $victim", truth=None),
-        "plotted": Predicate(content="$plotter1 plotted with $plotter2"),
-        "crime": Predicate(content="$person1 committed a crime"),
-        "no_crime": Predicate(content="$person1 committed a crime", truth=False),
+        "shooting": Predicate(content="{shooter} shot {victim}"),
+        "shooting_self": Predicate(content="{shooter} shot {shooter}"),
+        "no_shooting": Predicate(content="{shooter} shot {victim}", truth=False),
+        "shooting_whether": Predicate(content="{shooter} shot {victim}", truth=None),
+        "plotted": Predicate(content="{plotter1} plotted with {plotter2}"),
+        "crime": Predicate(content="{person1} committed a crime"),
+        "no_crime": Predicate(content="{person1} committed a crime", truth=False),
         "three_entities": Predicate(
-            content="$planner told $intermediary to hire $shooter"
+            content="{planner} told {intermediary} to hire {shooter}"
         ),
-        "friends": Predicate(content="$person1 and $person2 were friends"),
-        "reliable": Predicate(content="$evidence was reliable"),
+        "friends": Predicate(content="{person1} and {person2} were friends"),
+        "reliable": Predicate(content="{evidence} was reliable"),
         "no_context": Predicate(content="context was included", truth=False),
         # Use the irrelevant predicates/factors to make sure they don't affect an outcome.
-        "irrelevant_0": Predicate(content="$person was a clown"),
-        "irrelevant_1": Predicate(content="$person was a bear"),
-        "irrelevant_2": Predicate(content="$place was a circus"),
-        "irrelevant_3": Predicate(content="$person performed at $place"),
+        "irrelevant_0": Predicate(content="{person} was a clown"),
+        "irrelevant_1": Predicate(content="{person} was a bear"),
+        "irrelevant_2": Predicate(content="{place} was a circus"),
+        "irrelevant_3": Predicate(content="{person} performed at {place}"),
     }
 
 
@@ -49,12 +49,12 @@ def make_predicate() -> Dict[str, Predicate]:
 def make_comparison() -> Dict[str, Predicate | Comparison]:
     return {
         "small_weight": Comparison.new(
-            content="the amount of gold $person possessed was",
+            content="the amount of gold {person} possessed was",
             sign=">=",
             expression=Q_("1 gram"),
         ),
         "large_weight": Comparison.new(
-            content="the amount of gold $person possessed was",
+            content="the amount of gold {person} possessed was",
             sign=">=",
             expression=Q_("100 kilograms"),
         ),
@@ -68,80 +68,80 @@ def make_comparison() -> Dict[str, Predicate | Comparison]:
             content="The number of mice was", sign=">", expression=5
         ),
         "acres": Comparison.new(
-            content="the distance between $place1 and $place2 was",
+            content="the distance between {place1} and {place2} was",
             sign=">=",
             expression=Q_("10 acres"),
         ),
         "exact": Comparison.new(
-            content="the distance between $place1 and $place2 was",
+            content="the distance between {place1} and {place2} was",
             sign="==",
             expression=Q_("25 feet"),
         ),
         "float_distance": Comparison.new(
-            content="the distance between $place1 and $place2 was",
+            content="the distance between {place1} and {place2} was",
             truth=True,
             sign="<",
             expression=20.0,
         ),
         "higher_int": Comparison.new(
-            content="the distance between $place1 and $place2 was",
+            content="the distance between {place1} and {place2} was",
             sign="<=",
             expression=30,
         ),
         "int_distance": Comparison.new(
-            content="the distance between $place1 and $place2 was",
+            content="the distance between {place1} and {place2} was",
             truth=True,
             sign="<",
             expression=20,
         ),
         "int_higher": Comparison.new(
-            content="the distance between $place1 and $place2 was",
+            content="the distance between {place1} and {place2} was",
             sign="<=",
             expression=30,
         ),
         "less": Comparison.new(
-            content="the distance between $place1 and $place2 was",
+            content="the distance between {place1} and {place2} was",
             truth=True,
             sign="<",
             expression=Q_("35 feet"),
         ),
         "less_whether": Comparison.new(
-            content="the distance between $place1 and $place2 was",
+            content="the distance between {place1} and {place2} was",
             truth=None,
             sign="<",
             expression=Q_("35 feet"),
         ),
         "less_than_20": Comparison.new(
-            content="the distance between $place1 and $place2 was",
+            content="the distance between {place1} and {place2} was",
             truth=True,
             sign="<",
             expression=Q_("20 feet"),
         ),
         "meters": Comparison.new(
-            content="the distance between $place1 and $place2 was",
+            content="the distance between {place1} and {place2} was",
             sign=">=",
             expression=Q_("10 meters"),
         ),
         "not_equal": Comparison.new(
-            content="the distance between $place1 and $place2 was",
+            content="the distance between {place1} and {place2} was",
             truth=True,
             sign="!=",
             expression=Q_("35 feet"),
         ),
         "more": Comparison.new(
-            content="the distance between $place1 and $place2 was",
+            content="the distance between {place1} and {place2} was",
             truth=True,
             sign=">=",
             expression=Q_("35 feet"),
         ),
         "not_more": Comparison.new(
-            content="the distance between $place1 and $place2 was",
+            content="the distance between {place1} and {place2} was",
             truth=False,
             sign=">",
             expression=Q_("35 feet"),
         ),
         "way_more": Comparison.new(
-            content="the distance between $place1 and $place2 was",
+            content="the distance between {place1} and {place2} was",
             truth=True,
             sign=">=",
             expression=Q_("30 miles"),

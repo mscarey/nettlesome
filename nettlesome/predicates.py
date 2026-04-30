@@ -249,8 +249,8 @@ class PhraseABC(metaclass=ABCMeta):
         The means method will return False based on any difference in
         the Predicate's template text, other than the placeholder names.
 
-        >>> talked = Predicate(content="$speaker talked to $listener")
-        >>> spoke = Predicate(content="$speaker spoke to $listener")
+        >>> talked = Predicate(content="{speaker} talked to {listener}")
+        >>> spoke = Predicate(content="{speaker} spoke to {listener}")
         >>> talked.means(spoke)
         False
 
@@ -258,9 +258,9 @@ class PhraseABC(metaclass=ABCMeta):
         which placeholders are marked as interchangeable.
 
         >>> game_between_others = Predicate(
-        ...     content="$organizer1 and $organizer2 planned for $player1 to play $game against $player2.")
+        ...     content="{organizer1} and {organizer2} planned for {player1} to play {game} against {player2}.")
         >>> game_between_each_other = Predicate(
-        ...     content="$organizer1 and $organizer2 planned for $organizer1 to play $game against $organizer2.")
+        ...     content="{organizer1} and {organizer2} planned for {organizer1} to play {game} against {organizer2}.")
         >>> game_between_others.means(game_between_each_other)
         False
 
@@ -286,13 +286,13 @@ class PhraseABC(metaclass=ABCMeta):
         text but a truth value of None.
 
             >>> lived_at = Predicate(
-            ...     content="$person lived at $place",
+            ...     content="{person} lived at {place}",
             ...     truth=True)
             >>> whether_lived_at = Predicate(
-            ...     content="$person lived at $place",
+            ...     content="{person} lived at {place}",
             ...     truth=None)
             >>> str(whether_lived_at)
-            'whether $person lived at $place'
+            'whether {person} lived at {place}'
             >>> lived_at.implies(whether_lived_at)
             True
             >>> whether_lived_at.implies(lived_at)
@@ -468,7 +468,7 @@ class Predicate(PhraseABC, BaseModel, extra="forbid"):
     term once.
 
         >>> # the template has two placeholders referring to the identical term
-        >>> opened = Predicate(content="$applicant opened a bank account for $applicant and $cosigner")
+        >>> opened = Predicate(content="{applicant} opened a bank account for {applicant} and {cosigner}")
 
     Sometimes, a Predicate or Comparison needs to mention two terms that are
     different from each other, but that have interchangeable positions in that
@@ -477,7 +477,7 @@ class Predicate(PhraseABC, BaseModel, extra="forbid"):
     except that the different placeholders should each end with a different digit.
 
         >>> # the template has two placeholders referring to different but interchangeable terms
-        >>> members = Predicate(content="$relative1 and $relative2 both were members of the same family")
+        >>> members = Predicate(content="{relative1} and {relative2} both were members of the same family")
 
     :param template:
         a clause containing an assertion in English in the past tense, with

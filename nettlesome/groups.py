@@ -218,18 +218,18 @@ class FactorGroup(Comparable, BaseModel):
 
             >>> from nettlesome import Statement, Entity
             >>> nafta = FactorGroup(sequence=[
-            ... Statement.new(predicate="$country1 signed a treaty with $country2",
+            ... Statement.new(predicate="{country1} signed a treaty with {country2}",
             ...     terms=[Entity(name="Mexico"), Entity(name="USA")]),
-            ... Statement.new(predicate="$country2 signed a treaty with $country3",
+            ... Statement.new(predicate="{country2} signed a treaty with {country3}",
             ...     terms=[Entity(name="USA"), Entity(name="Canada")]),
-            ... Statement.new(predicate="$country3 signed a treaty with $country1",
+            ... Statement.new(predicate="{country3} signed a treaty with {country1}",
             ...    terms=[Entity(name="USA"), Entity(name="Canada")])])
             >>> brexit = FactorGroup(sequence=[
-            ... Statement.new(predicate="$country1 signed a treaty with $country2",
+            ... Statement.new(predicate="{country1} signed a treaty with {country2}",
             ...     terms=[Entity(name="UK"), Entity(name="European Union")]),
-            ... Statement.new(predicate="$country2 signed a treaty with $country3",
+            ... Statement.new(predicate="{country2} signed a treaty with {country3}",
             ...     terms=[Entity(name="European Union"), Entity(name="Germany")]),
-            ... Statement.new(predicate="$country3 signed a treaty with $country1",
+            ... Statement.new(predicate="{country3} signed a treaty with {country1}",
             ...     terms=[Entity(name="Germany"), Entity(name="UK")], truth=False)])
             >>> explanations_usa_like_uk = nafta.explanations_contradiction(
             ...     brexit,
@@ -266,18 +266,18 @@ class FactorGroup(Comparable, BaseModel):
 
         >>> from nettlesome import Statement, Entity
         >>> nafta = FactorGroup(sequence=[
-        ... Statement.new(predicate="$country1 signed a treaty with $country2",
+        ... Statement.new(predicate="{country1} signed a treaty with {country2}",
         ...        terms=[Entity(name="Mexico"), Entity(name="USA")]),
-        ... Statement.new(predicate="$country2 signed a treaty with $country3",
+        ... Statement.new(predicate="{country2} signed a treaty with {country3}",
         ...        terms=[Entity(name="USA"), Entity(name="Canada")]),
-        ... Statement.new(predicate="$country3 signed a treaty with $country1",
+        ... Statement.new(predicate="{country3} signed a treaty with {country1}",
         ...    terms=[Entity(name="USA"), Entity(name="Canada")])])
         >>> brexit = FactorGroup(sequence=[
-        ... Statement.new(predicate="$country1 signed a treaty with $country2",
+        ... Statement.new(predicate="{country1} signed a treaty with {country2}",
         ...         terms=[Entity(name="UK"), Entity(name="European Union")]),
-        ... Statement.new(predicate="$country2 signed a treaty with $country3",
+        ... Statement.new(predicate="{country2} signed a treaty with {country3}",
         ...         terms=[Entity(name="European Union"), Entity(name="Germany")]),
-        ... Statement.new(predicate="$country3 signed a treaty with $country1",
+        ... Statement.new(predicate="{country3} signed a treaty with {country1}",
         ...     terms=[Entity(name="Germany"), Entity(name="UK")], truth=False)])
         >>> nafta.contradicts(brexit)
         True

@@ -20,7 +20,7 @@ class TestMakeGroup:
         group = FactorGroup(sequence=factor_list)
         assert isinstance(group, FactorGroup)
         assert group[1] == make_statement["shooting"]
-        assert "predicate=Predicate(content='$person1 committed" in repr(group)
+        assert "predicate=Predicate(content='{person1} committed" in repr(group)
 
     def test_group_from_item(self, make_statement):
         factor = make_statement["shooting"]
@@ -63,7 +63,7 @@ class TestMakeGroup:
         """Test that Statements aren't considered redundant because they relate to different entities."""
         left = Statement(
             predicate=Comparison.new(
-                content="the amount that ${taller}'s height exceeded ${shorter}'s height was",
+                content="the amount that {taller}'s height exceeded {shorter}'s height was",
                 sign=">=",
                 expression="2 inches",
             ),
@@ -71,7 +71,7 @@ class TestMakeGroup:
         )
         right = Statement(
             predicate=Comparison.new(
-                content="the amount that ${taller}'s height exceeded ${shorter}'s height was",
+                content="the amount that {taller}'s height exceeded {shorter}'s height was",
                 sign=">=",
                 expression="2 feet",
             ),
@@ -189,7 +189,7 @@ class TestSameFactors:
         assert not second_group.means(first_group)
 
     def test_term_outside_of_group(self):
-        speed = "${person}'s speed was"
+        speed = "{person}'s speed was"
         comparison = Comparison.new(
             content=speed, sign=">", expression="36 kilometers per hour"
         )
@@ -204,12 +204,12 @@ class TestSameFactors:
 
     def test_list_instead_of_group(self):
         comparison = Comparison.new(
-            content="${person}'s speed was",
+            content="{person}'s speed was",
             sign=">",
             expression="36 kilometers per hour",
         )
         other_comparison = Comparison.new(
-            content="${person}'s speed was", sign=">", expression="10 meters per second"
+            content="{person}'s speed was", sign=">", expression="10 meters per second"
         )
         left = FactorGroup(
             sequence=[Statement(predicate=comparison, terms=[Entity(name="Ann")])]
@@ -220,12 +220,12 @@ class TestSameFactors:
 
     def test_no_comparison_with_comparison(self):
         comparison = Comparison.new(
-            content="${person}'s speed was",
+            content="{person}'s speed was",
             sign=">",
             expression="36 kilometers per hour",
         )
         other_comparison = Comparison.new(
-            content="${person}'s speed was", sign=">", expression="10 meters per second"
+            content="{person}'s speed was", sign=">", expression="10 meters per second"
         )
         left = FactorGroup(
             sequence=[Statement(predicate=comparison, terms=[Entity(name="Ann")])]
@@ -240,7 +240,7 @@ class TestSameFactors:
         left = FactorGroup(
             sequence=[
                 Statement(
-                    predicate=Predicate(content="$suburb was a suburb of $city"),
+                    predicate=Predicate(content="{suburb} was a suburb of {city}"),
                     terms=(
                         Entity(name="Oakland"),
                         Entity(name="San Francisco"),
@@ -248,14 +248,14 @@ class TestSameFactors:
                 ),
                 make_statement["more"],
                 Statement.new(
-                    predicate="$city was sunny", terms=[Entity(name="Oakland")]
+                    predicate="{city} was sunny", terms=[Entity(name="Oakland")]
                 ),
             ]
         )
         right = FactorGroup(
             sequence=[
                 Statement.new(
-                    predicate=Predicate(content="$suburb was a suburb of $city"),
+                    predicate=Predicate(content="{suburb} was a suburb of {city}"),
                     terms=(
                         Entity(name="San Francisco"),
                         Entity(name="Oakland"),
@@ -263,7 +263,7 @@ class TestSameFactors:
                 ),
                 make_statement["more"],
                 Statement.new(
-                    predicate="$city was sunny", terms=[Entity(name="Oakland")]
+                    predicate="{city} was sunny", terms=[Entity(name="Oakland")]
                 ),
             ]
         )
@@ -273,7 +273,7 @@ class TestSameFactors:
         left = FactorGroup(
             sequence=[
                 Statement.new(
-                    predicate=Predicate(content="$suburb was a suburb of $city"),
+                    predicate=Predicate(content="{suburb} was a suburb of {city}"),
                     terms=(
                         Entity(name="Oakland"),
                         Entity(name="San Francisco"),
@@ -281,14 +281,14 @@ class TestSameFactors:
                 ),
                 make_statement["more"],
                 Statement.new(
-                    predicate="$city was sunny", terms=[Entity(name="Oakland")]
+                    predicate="{city} was sunny", terms=[Entity(name="Oakland")]
                 ),
             ]
         )
         right = FactorGroup(
             sequence=[
                 Statement(
-                    predicate=Predicate(content="$suburb was a suburb of $city"),
+                    predicate=Predicate(content="{suburb} was a suburb of {city}"),
                     terms=(
                         Entity(name="San Francisco"),
                         Entity(name="Oakland"),
@@ -296,7 +296,7 @@ class TestSameFactors:
                 ),
                 make_statement["more"],
                 Statement.new(
-                    predicate="$city was sunny", terms=[Entity(name="Oakland")]
+                    predicate="{city} was sunny", terms=[Entity(name="Oakland")]
                 ),
             ]
         )
@@ -306,15 +306,15 @@ class TestSameFactors:
         nafta = FactorGroup(
             sequence=[
                 Statement.new(
-                    predicate="$country1 signed a treaty with $country2",
+                    predicate="{country1} signed a treaty with {country2}",
                     terms=[Entity(name="Mexico"), Entity(name="USA")],
                 ),
                 Statement.new(
-                    predicate="$country2 signed a treaty with $country3",
+                    predicate="{country2} signed a treaty with {country3}",
                     terms=[Entity(name="USA"), Entity(name="Canada")],
                 ),
                 Statement.new(
-                    predicate="$country3 signed a treaty with $country1",
+                    predicate="{country3} signed a treaty with {country1}",
                     terms=[Entity(name="Canada"), Entity(name="Mexico")],
                 ),
             ]
@@ -322,15 +322,15 @@ class TestSameFactors:
         nato = FactorGroup(
             sequence=[
                 Statement.new(
-                    predicate="$country1 signed a treaty with $country2",
+                    predicate="{country1} signed a treaty with {country2}",
                     terms=[Entity(name="USA"), Entity(name="UK")],
                 ),
                 Statement.new(
-                    predicate="$country2 signed a treaty with $country3",
+                    predicate="{country2} signed a treaty with {country3}",
                     terms=[Entity(name="UK"), Entity(name="Germany")],
                 ),
                 Statement.new(
-                    predicate="$country3 signed a treaty with $country1",
+                    predicate="{country3} signed a treaty with {country1}",
                     terms=[Entity(name="Germany"), Entity(name="USA")],
                 ),
             ]
@@ -398,7 +398,7 @@ class TestImplication:
             sequence=[
                 Statement(
                     predicate=Comparison.new(
-                        content="the distance between $place1 and $place2 was",
+                        content="the distance between {place1} and {place2} was",
                         truth=True,
                         sign="<=",
                         expression="35 foot",
@@ -410,7 +410,7 @@ class TestImplication:
                 ),
                 Statement(
                     predicate=Comparison.new(
-                        content="the distance between ${monster} and a boat used by ${hero} was",
+                        content="the distance between {monster} and a boat used by {hero} was",
                         truth=True,
                         sign="<=",
                         expression="5 foot",
@@ -427,7 +427,7 @@ class TestImplication:
             sequence=[
                 Statement(
                     predicate=Comparison.new(
-                        content="the distance between $place1 and $place2 was",
+                        content="the distance between {place1} and {place2} was",
                         truth=True,
                         sign="<=",
                         expression="35 foot",
@@ -439,7 +439,7 @@ class TestImplication:
                 ),
                 Statement(
                     predicate=Comparison.new(
-                        content="the distance between $thing and a boat used by $person was",
+                        content="the distance between {thing} and a boat used by {person} was",
                         truth=True,
                         sign="<=",
                         expression="5 foot",
@@ -457,12 +457,12 @@ class TestImplication:
 
     def test_interchangeable_terms_in_different_orders(self):
         more_than_100_yards = Comparison.new(
-            content="the distance between $site1 and $site2 was",
+            content="the distance between {site1} and {site2} was",
             sign=">",
             expression="100 yards",
         )
         less_than_1_mile = Comparison.new(
-            content="the distance between $site1 and $site2 was",
+            content="the distance between {site1} and {site2} was",
             sign="<",
             expression="1 mile",
         )
@@ -487,12 +487,12 @@ class TestImplication:
         )
         assert "between <the political convention> and " in str(protest_facts)
         more_than_50_meters = Comparison.new(
-            content="the distance between $site1 and $site2 was",
+            content="the distance between {site1} and {site2} was",
             sign=">",
             expression="50 meters",
         )
         less_than_2_km = Comparison.new(
-            content="the distance between $site1 and $site2 was",
+            content="the distance between {site1} and {site2} was",
             sign="<=",
             expression="2 km",
         )
@@ -553,7 +553,7 @@ class TestImpliedBy:
             sequence=[
                 Statement(
                     predicate=Predicate(
-                        content="${rural_s_telephone_directory} was a compilation of facts"
+                        content="{rural_s_telephone_directory} was a compilation of facts"
                     ),
                     terms=(Entity(name="Rural's telephone directory"),),
                 )
@@ -563,7 +563,7 @@ class TestImpliedBy:
             sequence=[
                 Statement(
                     predicate=Predicate(
-                        content="${rural_s_telephone_directory} was an idea"
+                        content="{rural_s_telephone_directory} was an idea"
                     ),
                     terms=(Entity(name="Rural's telephone directory"),),
                 )
@@ -592,7 +592,7 @@ class TestImpliedBy:
 
 class TestContradiction:
     def test_contradiction_of_group(self):
-        lived_at = Predicate(content="$person lived at $residence")
+        lived_at = Predicate(content="{person} lived at {residence}")
         bob_lived = Statement(
             predicate=lived_at, terms=[Entity(name="Bob"), Entity(name="Bob's house")]
         )
@@ -600,7 +600,7 @@ class TestContradiction:
             predicate=lived_at, terms=[Entity(name="Carl"), Entity(name="Carl's house")]
         )
         distance_long = Comparison.new(
-            content="the distance from the center of $city to $residence was",
+            content="the distance from the center of {city} to {residence} was",
             sign=">=",
             expression="50 miles",
         )
@@ -609,7 +609,7 @@ class TestContradiction:
             terms=[Entity(name="Houston"), Entity(name="Bob's house")],
         )
         distance_short = Comparison.new(
-            content="the distance from the center of $city to $residence was",
+            content="the distance from the center of {city} to {residence} was",
             sign="<=",
             expression="10 kilometers",
         )
@@ -627,15 +627,15 @@ class TestContradiction:
         nafta = FactorGroup(
             sequence=[
                 Statement.new(
-                    predicate="$country1 signed a treaty with $country2",
+                    predicate="{country1} signed a treaty with {country2}",
                     terms=[Entity(name="Mexico"), Entity(name="USA")],
                 ),
                 Statement.new(
-                    predicate="$country2 signed a treaty with $country3",
+                    predicate="{country2} signed a treaty with {country3}",
                     terms=[Entity(name="USA"), Entity(name="Canada")],
                 ),
                 Statement.new(
-                    predicate="$country3 signed a treaty with $country1",
+                    predicate="{country3} signed a treaty with {country1}",
                     terms=[Entity(name="Canada"), Entity(name="Mexico")],
                 ),
             ]
@@ -643,15 +643,15 @@ class TestContradiction:
         brexit = FactorGroup(
             sequence=[
                 Statement.new(
-                    predicate="$country1 signed a treaty with $country2",
+                    predicate="{country1} signed a treaty with {country2}",
                     terms=[Entity(name="UK"), Entity(name="European Union")],
                 ),
                 Statement.new(
-                    predicate="$country2 signed a treaty with $country3",
+                    predicate="{country2} signed a treaty with {country3}",
                     terms=[Entity(name="European Union"), Entity(name="Germany")],
                 ),
                 Statement.new(
-                    predicate="$country3 signed a treaty with $country1",
+                    predicate="{country3} signed a treaty with {country1}",
                     terms=[Entity(name="Germany"), Entity(name="UK")],
                     truth=False,
                 ),
@@ -668,7 +668,7 @@ class TestContradiction:
         treaty = FactorGroup(
             sequence=[
                 Statement.new(
-                    predicate="$country1 signed a treaty with $country2",
+                    predicate="{country1} signed a treaty with {country2}",
                     terms=[Entity(name="UK"), Entity(name="European Union")],
                 ),
             ]
@@ -685,7 +685,7 @@ class TestContradiction:
         left = FactorGroup(
             sequence=[
                 Statement.new(
-                    predicate="$shooter shot $victim",
+                    predicate="{shooter} shot {victim}",
                     terms=[Entity(name="Alice"), Entity(name="Bob")],
                 )
             ]
@@ -693,7 +693,7 @@ class TestContradiction:
         right = FactorGroup(
             sequence=[
                 Statement.new(
-                    predicate="$shooter shot $victim",
+                    predicate="{shooter} shot {victim}",
                     terms=[Entity(name="Craig"), Entity(name="Dan")],
                 )
             ]
@@ -711,7 +711,7 @@ class TestContradiction:
             sequence=[
                 Statement.new(
                     predicate=Comparison.new(
-                        content="the number of dollars that $payer paid to $payee was",
+                        content="the number of dollars that {payer} paid to {payee} was",
                         sign=">",
                         expression=10000,
                     ),
@@ -719,7 +719,7 @@ class TestContradiction:
                 ),
                 Statement.new(
                     predicate=Comparison.new(
-                        content="the number of dollars that $payer paid to $payee was",
+                        content="the number of dollars that {payer} paid to {payee} was",
                         sign=">",
                         expression=1000,
                     ),
@@ -731,7 +731,7 @@ class TestContradiction:
             sequence=[
                 Statement.new(
                     predicate=Comparison.new(
-                        content="the number of dollars that $payer paid to $payee was",
+                        content="the number of dollars that {payer} paid to {payee} was",
                         sign=">",
                         expression=100,
                     ),
@@ -739,7 +739,7 @@ class TestContradiction:
                 ),
                 Statement.new(
                     predicate=Comparison.new(
-                        content="the number of dollars that $payer paid to $payee was",
+                        content="the number of dollars that {payer} paid to {payee} was",
                         sign=">",
                         expression=10,
                     ),
@@ -759,7 +759,7 @@ class TestContradiction:
 
     def test_absence_contradicts_group(self):
         shot_fact = Statement.new(
-            predicate=Predicate(content="$shooter shot $victim"),
+            predicate=Predicate(content="{shooter} shot {victim}"),
             terms=[Entity(name="Alice"), Entity(name="Bob")],
         )
         shot_absence = AbsenceOf(absent=shot_fact)
@@ -770,15 +770,15 @@ class TestContradiction:
         nafta = FactorGroup(
             sequence=[
                 Statement.new(
-                    predicate="$country1 signed a treaty with $country2",
+                    predicate="{country1} signed a treaty with {country2}",
                     terms=[Entity(name="Mexico"), Entity(name="USA")],
                 ),
                 Statement.new(
-                    predicate="$country2 signed a treaty with $country3",
+                    predicate="{country2} signed a treaty with {country3}",
                     terms=[Entity(name="USA"), Entity(name="Canada")],
                 ),
                 Statement.new(
-                    predicate="$country3 signed a treaty with $country1",
+                    predicate="{country3} signed a treaty with {country1}",
                     terms=[Entity(name="Canada"), Entity(name="Mexico")],
                 ),
             ]
@@ -786,15 +786,15 @@ class TestContradiction:
         nato = FactorGroup(
             sequence=[
                 Statement.new(
-                    predicate="$country1 signed a treaty with $country2",
+                    predicate="{country1} signed a treaty with {country2}",
                     terms=[Entity(name="USA"), Entity(name="UK")],
                 ),
                 Statement.new(
-                    predicate="$country2 signed a treaty with $country3",
+                    predicate="{country2} signed a treaty with {country3}",
                     terms=[Entity(name="UK"), Entity(name="Germany")],
                 ),
                 Statement.new(
-                    predicate="$country3 signed a treaty with $country1",
+                    predicate="{country3} signed a treaty with {country1}",
                     terms=[Entity(name="Germany"), Entity(name="USA")],
                 ),
             ]
@@ -873,13 +873,13 @@ class TestUnion:
         """Test that Factor is not mistaken as redundant."""
         alice_had_bullets = Statement(
             predicate=Comparison.new(
-                content="the number of bullets $person had was", sign=">=", expression=5
+                content="the number of bullets {person} had was", sign=">=", expression=5
             ),
             terms=[Entity(name="Alice")],
         )
         bob_had_bullets = Statement(
             predicate=Comparison.new(
-                content="the number of bullets $person had was", sign=">=", expression=5
+                content="the number of bullets {person} had was", sign=">=", expression=5
             ),
             terms=[Entity(name="Bob")],
         )
@@ -897,21 +897,21 @@ class TestUnion:
 
 class TestConsistent:
     predicate_less_specific = Comparison.new(
-        content="${vehicle}'s speed was",
+        content="{vehicle}'s speed was",
         sign="<",
         expression="30 miles per hour",
     )
     predicate_less_general = Comparison.new(
-        content="${vehicle}'s speed was",
+        content="{vehicle}'s speed was",
         sign="<",
         expression="60 miles per hour",
     )
     predicate_more = Comparison.new(
-        content="${vehicle}'s speed was",
+        content="{vehicle}'s speed was",
         sign=">",
         expression="55 miles per hour",
     )
-    predicate_farm = Predicate(content="$person had a farm")
+    predicate_farm = Predicate(content="{person} had a farm")
     slower_specific_statement = Statement(
         predicate=predicate_less_specific, terms=[Entity(name="the car")]
     )
@@ -957,7 +957,7 @@ class TestConsistent:
             sequence=[
                 Statement(
                     predicate=Comparison.new(
-                        content="the number of dollars that $payer paid to $payee was",
+                        content="the number of dollars that {payer} paid to {payee} was",
                         sign=">",
                         expression=10000,
                     ),
@@ -965,7 +965,7 @@ class TestConsistent:
                 ),
                 Statement(
                     predicate=Comparison.new(
-                        content="the number of dollars that $payer paid to $payee was",
+                        content="the number of dollars that {payer} paid to {payee} was",
                         sign=">",
                         expression=1000,
                     ),
@@ -977,7 +977,7 @@ class TestConsistent:
             sequence=[
                 Statement.new(
                     predicate=Comparison.new(
-                        content="the number of dollars that $payer paid to $payee was",
+                        content="the number of dollars that {payer} paid to {payee} was",
                         sign=">",
                         expression=100,
                     ),
@@ -985,7 +985,7 @@ class TestConsistent:
                 ),
                 Statement.new(
                     predicate=Comparison.new(
-                        content="the number of dollars that $payer paid to $payee was",
+                        content="the number of dollars that {payer} paid to {payee} was",
                         sign=">",
                         expression=10,
                     ),
@@ -1072,7 +1072,7 @@ class TestConsistent:
             group.internally_consistent()
 
     def test_all_generic_terms_match_in_statement(self):
-        predicate = Predicate(content="the telescope pointed at $object")
+        predicate = Predicate(content="the telescope pointed at {object}")
         morning = Statement(predicate=predicate, terms=[Entity(name="Morning Star")])
         evening = Statement(predicate=predicate, terms=[Entity(name="Evening Star")])
         left = FactorGroup(sequence=[morning])

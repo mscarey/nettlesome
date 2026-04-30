@@ -17,7 +17,7 @@ from nettlesome.groups import FactorGroup
 
 
 class TestContext:
-    sale = Predicate(content="$seller sold $product to $buyer")
+    sale = Predicate(content="{seller} sold {product} to {buyer}")
     fact_al = Statement(
         predicate=sale,
         terms=[Entity(name="Al"), Entity(name="the bull"), Entity(name="Betty")],
@@ -61,7 +61,7 @@ class TestMakeExplanation:
 
 class TestContinuedExplanation:
     def test_implication_and_contradiction(self):
-        lived_at = Predicate(content="$person lived at $residence")
+        lived_at = Predicate(content="{person} lived at {residence}")
         bob_lived = Statement(
             predicate=lived_at, terms=[Entity(name="Bob"), Entity(name="Bob's house")]
         )
@@ -71,7 +71,7 @@ class TestContinuedExplanation:
         explanation = bob_lived.explain_implication(carl_lived)
 
         distance_long = Comparison.new(
-            content="the distance from the center of $city to $residence was",
+            content="the distance from the center of {city} to {residence} was",
             sign=">=",
             expression="50 miles",
         )
@@ -81,7 +81,7 @@ class TestContinuedExplanation:
         )
 
         distance_short = Comparison.new(
-            content="the distance from the center of $city to $residence was",
+            content="the distance from the center of {city} to {residence} was",
             sign="<=",
             expression="10 kilometers",
         )

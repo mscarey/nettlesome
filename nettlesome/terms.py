@@ -365,10 +365,10 @@ class Comparable(ABC):
 
             >>> from nettlesome import Statement, Entity
             >>> hades_curse = Statement(
-            ...    predicate="$deity cursed $target",
+            ...    predicate="{deity} cursed {target}",
             ...    terms=[Entity(name="Hades"), Entity(name="Persephone")])
             >>> aphrodite_curse = Statement(
-            ...    predicate="$deity cursed $target",
+            ...    predicate="{deity} cursed {target}",
             ...    terms=[Entity(name="Aphrodite"), Entity(name="Narcissus")])
             >>> print(hades_curse.explain_same_meaning(aphrodite_curse))
             Because <Hades> is like <Aphrodite>, and <Persephone> is like <Narcissus>,
@@ -413,18 +413,18 @@ class Comparable(ABC):
 
         >>> from nettlesome import Statement, Entity, FactorGroup
         >>> nafta = FactorGroup(sequence=[
-        ...     Statement.new(predicate="$country1 signed a treaty with $country2",
+        ...     Statement.new(predicate="{country1} signed a treaty with {country2}",
         ...               terms=[Entity(name="Mexico"), Entity(name="USA")]),
-        ...     Statement.new(predicate="$country2 signed a treaty with $country3",
+        ...     Statement.new(predicate="{country2} signed a treaty with {country3}",
         ...               terms=[Entity(name="USA"), Entity(name="Canada")]),
-        ...     Statement.new(predicate="$country3 signed a treaty with $country1",
+        ...     Statement.new(predicate="{country3} signed a treaty with {country1}",
         ...           terms=[Entity(name="USA"), Entity(name="Canada")])])
         >>> brexit = FactorGroup(sequence=[
-        ...     Statement.new(predicate="$country1 signed a treaty with $country2",
+        ...     Statement.new(predicate="{country1} signed a treaty with {country2}",
         ...               terms=[Entity(name="UK"), Entity(name="European Union")]),
-        ...     Statement.new(predicate="$country2 signed a treaty with $country3",
+        ...     Statement.new(predicate="{country2} signed a treaty with {country3}",
         ...               terms=[Entity(name="European Union"), Entity(name="Germany")]),
-        ...     Statement.new(predicate="$country3 signed a treaty with $country1",
+        ...     Statement.new(predicate="{country3} signed a treaty with {country1}",
         ...          terms=[Entity(name="Germany"), Entity(name="UK")], truth=False)])
         >>> print(nafta.explain_contradiction(brexit))
         Because <Mexico> is like <Germany>, and <USA> is like <UK>,
@@ -721,13 +721,13 @@ class Comparable(ABC):
         is implied by some Statement in ``self``.
 
             >>> from nettlesome import Entity, Comparison, Statement, FactorGroup
-            >>> over_100y = Comparison(content="the distance between $site1 and $site2 was", sign=">", expression="100 yards")
-            >>> under_1mi = Comparison(content="the distance between $site1 and $site2 was", sign="<", expression="1 mile")
+            >>> over_100y = Comparison(content="the distance between {site1} and {site2} was", sign=">", expression="100 yards")
+            >>> under_1mi = Comparison(content="the distance between {site1} and {site2} was", sign="<", expression="1 mile")
             >>> protest_facts = FactorGroup(
             ...     [Statement(predicate=over_100y, terms=[Entity(name="the political convention"), Entity(name="the police cordon")]),
             ...      Statement(predicate=under_1mi, terms=[Entity(name="the police cordon"), Entity(name="the political convention")])])
-            >>> over_50m = Comparison(content="the distance between $site1 and $site2 was", sign=">", expression="50 meters")
-            >>> under_2km = Comparison(content="the distance between $site1 and $site2 was", sign="<=", expression="2 km")
+            >>> over_50m = Comparison(content="the distance between {site1} and {site2} was", sign=">", expression="50 meters")
+            >>> under_2km = Comparison(content="the distance between {site1} and {site2} was", sign="<=", expression="2 km")
             >>> speech_zone_facts = FactorGroup(
             ...     [Statement(predicate=over_50m, terms=[Entity(name="the free speech zone"), Entity(name="the courthouse")]),
             ...      Statement(predicate=under_2km, terms=[Entity(name="the free speech zone"), Entity(name="the courthouse")])])
@@ -870,9 +870,9 @@ class Comparable(ABC):
         and compares them.
 
         >>> from nettlesome import Statement, Entity
-        >>> hades_curse = Statement(predicate="$deity cursed $target",
+        >>> hades_curse = Statement(predicate="{deity} cursed {target}",
         ...    terms=[Entity(name="Hades"), Entity(name="Persephone")])
-        >>> aphrodite_curse = Statement(predicate="$deity cursed $target",
+        >>> aphrodite_curse = Statement(predicate="{deity} cursed {target}",
         ...    terms=[Entity(name="Aphrodite"), Entity(name="Narcissus")])
         >>> hades_curse.means(aphrodite_curse)
         True

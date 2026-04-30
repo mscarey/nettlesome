@@ -388,12 +388,12 @@ class Comparison(BaseModel, PhraseABC):
 
         >>> # example comparing a pint Quantity
         >>> drug_comparison_with_upper_bound = Comparison(
-        ...     content="the weight of marijuana that $defendant possessed was",
+        ...     content="the weight of marijuana that {defendant} possessed was",
         ...     sign=">",
         ...     expression="10 grams",
         ...     truth=False)
         >>> str(drug_comparison_with_upper_bound)
-        'that the weight of marijuana that $defendant possessed was no more than 10 gram'
+        'that the weight of marijuana that {defendant} possessed was no more than 10 gram'
 
     When the number needed for a Comparison isn’t a physical quantity that can be described
     with the units in the pint library library, you should phrase the text in the template
@@ -403,11 +403,11 @@ class Comparison(BaseModel, PhraseABC):
 
         >>> # example comparing an integer
         >>> three_children = Comparison(
-        ...     content="the number of children in ${taxpayer}'s household was",
+        ...     content="the number of children in {taxpayer}'s household was",
         ...     sign="=",
         ...     expression=3)
         >>> str(three_children)
-        "that the number of children in ${taxpayer}'s household was exactly equal to 3"
+        "that the number of children in {taxpayer}'s household was exactly equal to 3"
 
     :param sign:
         A string representing an equality or inequality sign like ``==``,
@@ -565,7 +565,7 @@ class Comparison(BaseModel, PhraseABC):
         Get the range of numbers covered by the UnitInterval.
 
         >>> weight=Comparison(
-        ...     content="the amount of gold $person possessed was",
+        ...     content="the amount of gold {person} possessed was",
         ...     sign=">=",
         ...     expression="10 grams")
         >>> weight.interval
@@ -584,7 +584,7 @@ class Comparison(BaseModel, PhraseABC):
             the range
 
             >>> weight=Comparison(
-            ...     content="the amount of gold $person possessed was",
+            ...     content="the amount of gold {person} possessed was",
             ...     sign=">=",
             ...     expression="10 grams")
             >>> weight.quantity
@@ -598,7 +598,7 @@ class Comparison(BaseModel, PhraseABC):
         Get operator describing the relationship between the quantity and the range.
 
             >>> weight=Comparison(
-            ...     content="the amount of gold $person possessed was",
+            ...     content="the amount of gold {person} possessed was",
             ...     sign=">=",
             ...     expression="10 grams")
             >>> str(weight.quantity_range)
@@ -620,17 +620,17 @@ class Comparison(BaseModel, PhraseABC):
         May be based on template text, truth values, and :class:`.QuantityRange`\s.
 
         >>> small_weight=Comparison(
-        ...     content="the amount of gold $person possessed was",
+        ...     content="the amount of gold {person} possessed was",
         ...     sign=">=",
         ...     expression=Q_("1 gram"))
         >>> large_weight=Comparison(
-        ...     content="the amount of gold $person possessed was",
+        ...     content="the amount of gold {person} possessed was",
         ...     sign=">=",
         ...     expression=Q_("100 kilograms"))
         >>> str(large_weight)
-        'that the amount of gold $person possessed was at least 100 kilogram'
+        'that the amount of gold {person} possessed was at least 100 kilogram'
         >>> str(small_weight)
-        'that the amount of gold $person possessed was at least 1 gram'
+        'that the amount of gold {person} possessed was at least 1 gram'
         >>> large_weight.implies(small_weight)
         True
         """
@@ -670,15 +670,15 @@ class Comparison(BaseModel, PhraseABC):
         numeric range of the :class:`~.QuantityRange`\s for ``self`` and ``other``.
 
             >>> earlier = Comparison(
-            ...     content="the date $dentist became a licensed dentist was",
+            ...     content="the date {dentist} became a licensed dentist was",
             ...     sign="<", expression=date(1990, 1, 1))
             >>> later = Comparison(
-            ...     content="the date $dentist became a licensed dentist was",
+            ...     content="the date {dentist} became a licensed dentist was",
             ...     sign=">", expression=date(2010, 1, 1))
             >>> str(earlier)
-            'that the date $dentist became a licensed dentist was less than 1990-01-01'
+            'that the date {dentist} became a licensed dentist was less than 1990-01-01'
             >>> str(later)
-            'that the date $dentist became a licensed dentist was greater than 2010-01-01'
+            'that the date {dentist} became a licensed dentist was greater than 2010-01-01'
             >>> earlier.contradicts(later)
             True
             >>> later.contradicts(earlier)
