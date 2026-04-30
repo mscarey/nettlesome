@@ -46,11 +46,11 @@ class TestContextRegisters:
         assert changes != [[Entity(name="Alice")], [Entity(name="Dan")]]
 
     def test_cannot_update_context_register_from_lists(self):
-        left = Statement(
+        left = Statement.new(
             predicate="$shooter shot $victim",
             terms=[Entity(name="Alice"), Entity(name="Bob")],
         )
-        right = Statement(
+        right = Statement.new(
             predicate="$shooter shot $victim",
             terms=[Entity(name="Craig"), Entity(name="Dan")],
         )
@@ -79,7 +79,7 @@ class TestContextRegisters:
         Yields no context_register because the Term in f1 doesn't imply
         the Fact in f_relevant_murder.
         """
-        statement = Statement(
+        statement = Statement.new(
             predicate="$person was a defendant", terms=[Entity(name="Alice")]
         )
         complex_statement = make_complex_fact["relevant_murder"]
@@ -159,7 +159,7 @@ class TestContextRegisters:
         Test that _registers_for_interchangeable_context swaps the first two
         items in the ContextRegister
         """
-        factor = Statement(
+        factor = Statement.new(
             predicate="$person1 and $person2 met with each other",
             terms=[Entity(name="Al"), Entity(name="Ed")],
         )
@@ -181,12 +181,12 @@ class TestContextRegisters:
             ContextRegister.create([Entity(name="Alice"), Entity(name="Bob")])
 
     def test_no_duplicate_context_interchangeable_terms(self):
-        left = Statement(
+        left = Statement.new(
             predicate=Predicate(content="$country1 signed a treaty with $country2"),
             terms=(Entity(name="Mexico"), Entity(name="USA")),
         )
 
-        right = Statement(
+        right = Statement.new(
             predicate=Predicate(content="$country3 signed a treaty with $country1"),
             terms=(Entity(name="Germany"), Entity(name="UK")),
         )
@@ -241,21 +241,21 @@ class TestLikelyContext:
         assert context.check_match(Entity(name="Alice"), Entity(name="Bob"))
 
     def test_likely_context_different_terms(self):
-        copyright_registered = Statement(
+        copyright_registered = Statement.new(
             predicate="$entity registered a copyright covering $work",
             terms=[
                 Entity(name="Lotus Development Corporation"),
                 Entity(name="the Lotus menu command hierarchy"),
             ],
         )
-        copyrightable = Statement(
+        copyrightable = Statement.new(
             predicate="$work was copyrightable",
             terms=[Entity(name="the Lotus menu command hierarchy")],
         )
         left = FactorGroup(sequence=[copyrightable, copyright_registered])
         right = FactorGroup(
             sequence=[
-                Statement(
+                Statement.new(
                     predicate="$work was copyrightable",
                     terms=[Entity(name="the Java API")],
                 )
@@ -270,11 +270,11 @@ class TestLikelyContext:
         )
 
     def test_likely_context_from_factor_meaning(self):
-        left = Statement(
+        left = Statement.new(
             predicate="$part provided the means by which users controlled and operated $whole",
             terms=[Entity(name="the Java API"), Entity(name="the Java language")],
         )
-        right = Statement(
+        right = Statement.new(
             predicate="$part provided the means by which users controlled and operated $whole",
             terms=[
                 Entity(name="the Lotus menu command hierarchy"),
@@ -299,23 +299,23 @@ class TestLikelyContext:
 
         Tests that Factors from "left" should be keys and Factors from "right" values.
         """
-        language_program = Statement(
+        language_program = Statement.new(
             predicate="$program was a computer program",
             terms=[Entity(name="the Java language")],
         )
-        lotus_program = Statement(
+        lotus_program = Statement.new(
             predicate="$program was a computer program",
             terms=[Entity(name="Lotus 1-2-3")],
         )
 
-        controlled = Statement(
+        controlled = Statement.new(
             predicate="$part provided the means by which users controlled and operated $whole",
             terms=[
                 Entity(name="the Lotus menu command hierarchy"),
                 Entity(name="Lotus 1-2-3"),
             ],
         )
-        part = Statement(
+        part = Statement.new(
             predicate="$part was a literal element of $whole",
             terms=[Entity(name="the Java API"), Entity(name="the Java language")],
         )

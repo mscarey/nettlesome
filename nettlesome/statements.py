@@ -60,20 +60,34 @@ class Statement(Factor, BaseModel):
     name: str = ""
     generic: bool = False
 
-    @model_validator(mode="before")
-    def move_truth_to_predicate(cls, values):
-        if isinstance(values.get("predicate"), str):
-            values["predicate"] = Predicate(content=values["predicate"])
-        if "truth" in values:
-            values["predicate"].truth = values["truth"]
-            del values["truth"]
-        if isinstance(values.get("terms"), Mapping):
-            values["terms"] = values[
-                "predicate"
-            ].template.get_term_sequence_from_mapping(values["terms"])
-        if not values.get("terms"):
-            values["terms"] = []
-        return values
+    @classmethod
+    def new(
+        cls,
+        predicate: Union[Predicate, Comparison, str],
+        terms: Optional[Sequence[Union[Entity, "Statement", "Assertion"]]] = None,
+        truth: Optional[bool] = True,
+        generic: bool = False,
+    ) -> "Statement":
+        """
+        Create a Statement, allowing for a string to be passed as the predicate.
+
+        :param predicate:
+            a natural-language clause with zero or more slots
+            to insert ``terms`` that are typically the
+            subject and objects of the clause. Can be passed as a string, in which case it will be converted to a Predicate.
+
+        :param terms:
+            a series of :class:`~nettlesome.factors.Factor` objects that fill in
+            the blank spaces in the ``predicate`` statement.
+
+        :param truth:
+            a new "truth" attribute for the "predicate", if needed.
+        """
+        if isinstance(predicate, str):
+            predicate = Predicate(content=predicate, truth=truth)
+        if isinstance(terms, Mapping):
+            terms = predicate.template.get_term_sequence_from_mapping(terms)
+        return cls(predicate=predicate, terms=terms or [], generic=generic)
 
     @field_validator("terms")
     @classmethod

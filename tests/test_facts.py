@@ -101,7 +101,7 @@ class TestFacts:
             [Entity(name="Death Star 3"), Entity(name="Kylo Ren")],
             [Entity(name="Death Star 1"), Entity(name="Darth Vader")],
         )
-        statement = Statement(
+        statement = Statement.new(
             predicate="$person blew up a planet with $weapon",
             terms=[Entity(name="Kylo Ren"), Entity(name="Death Star 3")],
         )
@@ -167,7 +167,7 @@ class TestFacts:
         )
 
     def test_length_with_specific_term(self):
-        statement = Statement(
+        statement = Statement.new(
             predicate="$person paid tax to $state",
             terms=[
                 Entity(name="Alice"),
@@ -177,7 +177,7 @@ class TestFacts:
         assert len(statement) == 1
 
     def test_truth_param(self):
-        no_license = Statement(
+        no_license = Statement.new(
             predicate="$business was licensed as a money transmitting business",
             truth=False,
             terms=[Entity(name="Helix")],
@@ -198,21 +198,21 @@ class TestSameMeaning:
         )
 
     def test_generic_terms_equal(self):
-        generic = Statement(predicate="something happened", generic=True)
-        generic_false = Statement(
+        generic = Statement.new(predicate="something happened", generic=True)
+        generic_false = Statement.new(
             predicate=Predicate(content="something happened", truth=False), generic=True
         )
         assert generic.means(generic_false)
         assert generic_false.means(generic)
 
     def test_generic_and_specific_factors_unequal(self):
-        generic = Statement(predicate="something happened", generic=True)
-        specific = Statement(predicate="something happened", generic=False)
+        generic = Statement.new(predicate="something happened", generic=True)
+        specific = Statement.new(predicate="something happened", generic=False)
         assert not generic.means(specific)
 
     def test_cannot_repeat_term_in_termsequence(self, make_predicate):
         with pytest.raises(DuplicateTermError):
-            Statement(
+            Statement.new(
                 predicate="$person1 shot $person2",
                 terms=[Entity(name="Al"), Entity(name="Al")],
             )
@@ -221,12 +221,12 @@ class TestSameMeaning:
         assert not make_statement["shooting"].means(make_statement["murder"])
 
     def test_unequal_because_one_factor_is_absent(self, make_predicate):
-        left = Statement(
+        left = Statement.new(
             predicate=make_predicate["shooting"],
             terms=[Entity(name="Al"), Entity(name="Bo")],
         )
         right = AbsenceOf(
-            absent=Statement(
+            absent=Statement.new(
                 predicate=make_predicate["shooting"],
                 terms=[Entity(name="Al"), Entity(name="Bob")],
             )
@@ -253,7 +253,7 @@ class TestSameMeaning:
         ann = Entity(name="Ann", generic=False)
         bob = Entity(name="Bob", generic=False)
 
-        ann_and_bob_were_family = Statement(
+        ann_and_bob_were_family = Statement.new(
             predicate=Predicate(
                 content="$relative1 and $relative2 both were members of the same family"
             ),

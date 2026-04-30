@@ -137,7 +137,7 @@ class TestCompare:
         assert self.lived_at > self.whether_lived_at
 
     def test_error_predicate_imply_factor(self):
-        assert not self.same > Statement(
+        assert not self.same > Statement.new(
             predicate="$animal was a cat", terms=[Entity(name="Mittens")]
         )
 

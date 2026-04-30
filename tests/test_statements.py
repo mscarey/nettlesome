@@ -68,7 +68,7 @@ class TestStatements:
 
     def test_terms_param_can_be_dict(self):
         predicate = Predicate(content="$advisor told $employer to hire $applicant")
-        three_entities = Statement(
+        three_entities = Statement.new(
             predicate=predicate,
             terms={
                 "advisor": Entity(name="Alice"),
@@ -209,7 +209,7 @@ class TestStatements:
 
     def test_too_much_info_to_change_context(self):
         """Test that new Statement is created with truncated ContextRegister."""
-        statement = Statement(
+        statement = Statement.new(
             predicate="$person1 loved $person2",
             terms=[Entity(name="Donald"), Entity(name="Daisy")],
         )
@@ -327,7 +327,7 @@ class TestStatements:
         assert len(fact.terms) == 1
 
     def test_indented_string(self):
-        sued = Statement(
+        sued = Statement.new(
             predicate="$plaintiff sued $defendant for unpaid taxes",
             terms=[
                 Entity(name="the State of Texas", generic=False),
@@ -424,7 +424,7 @@ class TestSameMeaning:
 
     def test_factor_reciprocal_unequal(self):
         predicate = Predicate(content="$advisor told $employer to hire $applicant")
-        three_entities = Statement(
+        three_entities = Statement.new(
             predicate=predicate,
             terms={
                 "advisor": Entity(name="Alice"),
@@ -435,7 +435,7 @@ class TestSameMeaning:
         repeating_predicate = Predicate(
             content="$applicant told $employer to hire $applicant"
         )
-        two_entities = Statement(
+        two_entities = Statement.new(
             predicate=repeating_predicate,
             terms={
                 "applicant": Entity(name="Alice"),
@@ -532,8 +532,8 @@ class TestSameMeaning:
         assert "plural=True" in repr(listings_original)
 
     def test_same_meaning_no_terms(self):
-        assert Statement(predicate=Predicate(content="good morning")).means(
-            Statement(predicate=Predicate(content="good morning"))
+        assert Statement.new(predicate=Predicate(content="good morning")).means(
+            Statement.new(predicate=Predicate(content="good morning"))
         )
 
     def test_changing_order_of_concrete_terms_changes_meaning(self):
@@ -548,8 +548,8 @@ class TestSameMeaning:
 
 class TestImplication:
     def test_statement_implies_none(self):
-        assert Statement(predicate=Predicate(content="good morning")).implies(None)
-        assert Statement(predicate=Predicate(content="good morning")) > None
+        assert Statement.new(predicate=Predicate(content="good morning")).implies(None)
+        assert Statement.new(predicate=Predicate(content="good morning")) > None
 
     def test_specific_statement_implies_generic(self):
         concrete = Statement(
@@ -853,7 +853,7 @@ class TestImplication:
         assert explanation.context["<Alice>"].name == "Alice"
 
     def test_interchangeable_implication_no_duplicate_explanations(self):
-        men = Statement(
+        men = Statement.new(
             predicate="$winner1 and $winner2 won the US Open against $loser1 and $loser2",
             terms=[
                 Entity(name="Pavić"),
@@ -862,7 +862,7 @@ class TestImplication:
                 Entity(name="Mektić"),
             ],
         )
-        women = Statement(
+        women = Statement.new(
             predicate="$winner1 and $winner2 won the US Open against $loser1 and $loser2",
             terms=[
                 Entity(name="Siegemund"),
@@ -1519,11 +1519,11 @@ class TestAddition:
 
     def test_add_with_specific_entity(self):
         """Result has specific factors from the implying Factor, but generic factors from the left."""
-        left = Statement(
+        left = Statement.new(
             predicate="$entity bought $item",
             terms=[Entity(name="Alice"), Entity(name="a box of pencils")],
         )
-        right = Statement(
+        right = Statement.new(
             predicate="$entity bought $item",
             terms=[
                 Entity(name="the State of Texas", generic=False),

@@ -259,7 +259,7 @@ def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
         "friends": Statement(
             predicate=p["friends"], terms=[Entity(name="Alice"), Entity(name="Bob")]
         ),
-        "no_context": Statement(predicate=p["no_context"]),
+        "no_context": Statement(predicate=p["no_context"], terms=[]),
         "exact": Statement(
             predicate=c["exact"],
             terms=[Entity(name="San Francisco"), Entity(name="Oakland")],

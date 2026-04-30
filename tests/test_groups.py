@@ -247,12 +247,14 @@ class TestSameFactors:
                     ),
                 ),
                 make_statement["more"],
-                Statement(predicate="$city was sunny", terms=[Entity(name="Oakland")]),
+                Statement.new(
+                    predicate="$city was sunny", terms=[Entity(name="Oakland")]
+                ),
             ]
         )
         right = FactorGroup(
             sequence=[
-                Statement(
+                Statement.new(
                     predicate=Predicate(content="$suburb was a suburb of $city"),
                     terms=(
                         Entity(name="San Francisco"),
@@ -260,7 +262,9 @@ class TestSameFactors:
                     ),
                 ),
                 make_statement["more"],
-                Statement(predicate="$city was sunny", terms=[Entity(name="Oakland")]),
+                Statement.new(
+                    predicate="$city was sunny", terms=[Entity(name="Oakland")]
+                ),
             ]
         )
         assert not left.shares_all_factors_with(right)
@@ -268,7 +272,7 @@ class TestSameFactors:
     def test_not_same_nonmatching_terms(self, make_statement):
         left = FactorGroup(
             sequence=[
-                Statement(
+                Statement.new(
                     predicate=Predicate(content="$suburb was a suburb of $city"),
                     terms=(
                         Entity(name="Oakland"),
@@ -276,7 +280,9 @@ class TestSameFactors:
                     ),
                 ),
                 make_statement["more"],
-                Statement(predicate="$city was sunny", terms=[Entity(name="Oakland")]),
+                Statement.new(
+                    predicate="$city was sunny", terms=[Entity(name="Oakland")]
+                ),
             ]
         )
         right = FactorGroup(
@@ -289,7 +295,9 @@ class TestSameFactors:
                     ),
                 ),
                 make_statement["more"],
-                Statement(predicate="$city was sunny", terms=[Entity(name="Oakland")]),
+                Statement.new(
+                    predicate="$city was sunny", terms=[Entity(name="Oakland")]
+                ),
             ]
         )
         assert not left.means(right)
@@ -297,15 +305,15 @@ class TestSameFactors:
     def test_interchangeable_same_meaning_no_repeated_explanations(self):
         nafta = FactorGroup(
             sequence=[
-                Statement(
+                Statement.new(
                     predicate="$country1 signed a treaty with $country2",
                     terms=[Entity(name="Mexico"), Entity(name="USA")],
                 ),
-                Statement(
+                Statement.new(
                     predicate="$country2 signed a treaty with $country3",
                     terms=[Entity(name="USA"), Entity(name="Canada")],
                 ),
-                Statement(
+                Statement.new(
                     predicate="$country3 signed a treaty with $country1",
                     terms=[Entity(name="Canada"), Entity(name="Mexico")],
                 ),
@@ -313,15 +321,15 @@ class TestSameFactors:
         )
         nato = FactorGroup(
             sequence=[
-                Statement(
+                Statement.new(
                     predicate="$country1 signed a treaty with $country2",
                     terms=[Entity(name="USA"), Entity(name="UK")],
                 ),
-                Statement(
+                Statement.new(
                     predicate="$country2 signed a treaty with $country3",
                     terms=[Entity(name="UK"), Entity(name="Germany")],
                 ),
-                Statement(
+                Statement.new(
                     predicate="$country3 signed a treaty with $country1",
                     terms=[Entity(name="Germany"), Entity(name="USA")],
                 ),
@@ -618,15 +626,15 @@ class TestContradiction:
     def test_interchangeable_contradiction_no_repeated_explanations(self):
         nafta = FactorGroup(
             sequence=[
-                Statement(
+                Statement.new(
                     predicate="$country1 signed a treaty with $country2",
                     terms=[Entity(name="Mexico"), Entity(name="USA")],
                 ),
-                Statement(
+                Statement.new(
                     predicate="$country2 signed a treaty with $country3",
                     terms=[Entity(name="USA"), Entity(name="Canada")],
                 ),
-                Statement(
+                Statement.new(
                     predicate="$country3 signed a treaty with $country1",
                     terms=[Entity(name="Canada"), Entity(name="Mexico")],
                 ),
@@ -634,15 +642,15 @@ class TestContradiction:
         )
         brexit = FactorGroup(
             sequence=[
-                Statement(
+                Statement.new(
                     predicate="$country1 signed a treaty with $country2",
                     terms=[Entity(name="UK"), Entity(name="European Union")],
                 ),
-                Statement(
+                Statement.new(
                     predicate="$country2 signed a treaty with $country3",
                     terms=[Entity(name="European Union"), Entity(name="Germany")],
                 ),
-                Statement(
+                Statement.new(
                     predicate="$country3 signed a treaty with $country1",
                     terms=[Entity(name="Germany"), Entity(name="UK")],
                     truth=False,
@@ -659,7 +667,7 @@ class TestContradiction:
     def test_register_for_none(self):
         treaty = FactorGroup(
             sequence=[
-                Statement(
+                Statement.new(
                     predicate="$country1 signed a treaty with $country2",
                     terms=[Entity(name="UK"), Entity(name="European Union")],
                 ),
@@ -676,7 +684,7 @@ class TestContradiction:
     def test_update_context_register_from_none(self):
         left = FactorGroup(
             sequence=[
-                Statement(
+                Statement.new(
                     predicate="$shooter shot $victim",
                     terms=[Entity(name="Alice"), Entity(name="Bob")],
                 )
@@ -684,7 +692,7 @@ class TestContradiction:
         )
         right = FactorGroup(
             sequence=[
-                Statement(
+                Statement.new(
                     predicate="$shooter shot $victim",
                     terms=[Entity(name="Craig"), Entity(name="Dan")],
                 )
@@ -701,7 +709,7 @@ class TestContradiction:
     def test_implication_no_repeated_explanations(self):
         large_payments = FactorGroup(
             sequence=[
-                Statement(
+                Statement.new(
                     predicate=Comparison.new(
                         content="the number of dollars that $payer paid to $payee was",
                         sign=">",
@@ -709,7 +717,7 @@ class TestContradiction:
                     ),
                     terms=[Entity(name="Alice"), Entity(name="Bob")],
                 ),
-                Statement(
+                Statement.new(
                     predicate=Comparison.new(
                         content="the number of dollars that $payer paid to $payee was",
                         sign=">",
@@ -721,7 +729,7 @@ class TestContradiction:
         )
         small_payments = FactorGroup(
             sequence=[
-                Statement(
+                Statement.new(
                     predicate=Comparison.new(
                         content="the number of dollars that $payer paid to $payee was",
                         sign=">",
@@ -729,7 +737,7 @@ class TestContradiction:
                     ),
                     terms={"payer": Entity(name="Fred"), "payee": Entity(name="Greg")},
                 ),
-                Statement(
+                Statement.new(
                     predicate=Comparison.new(
                         content="the number of dollars that $payer paid to $payee was",
                         sign=">",
@@ -750,7 +758,7 @@ class TestContradiction:
         assert len(limited_explanations) == 1
 
     def test_absence_contradicts_group(self):
-        shot_fact = Statement(
+        shot_fact = Statement.new(
             predicate=Predicate(content="$shooter shot $victim"),
             terms=[Entity(name="Alice"), Entity(name="Bob")],
         )
@@ -761,15 +769,15 @@ class TestContradiction:
     def test_interchangeable_implication_no_repeated_explanations(self):
         nafta = FactorGroup(
             sequence=[
-                Statement(
+                Statement.new(
                     predicate="$country1 signed a treaty with $country2",
                     terms=[Entity(name="Mexico"), Entity(name="USA")],
                 ),
-                Statement(
+                Statement.new(
                     predicate="$country2 signed a treaty with $country3",
                     terms=[Entity(name="USA"), Entity(name="Canada")],
                 ),
-                Statement(
+                Statement.new(
                     predicate="$country3 signed a treaty with $country1",
                     terms=[Entity(name="Canada"), Entity(name="Mexico")],
                 ),
@@ -777,15 +785,15 @@ class TestContradiction:
         )
         nato = FactorGroup(
             sequence=[
-                Statement(
+                Statement.new(
                     predicate="$country1 signed a treaty with $country2",
                     terms=[Entity(name="USA"), Entity(name="UK")],
                 ),
-                Statement(
+                Statement.new(
                     predicate="$country2 signed a treaty with $country3",
                     terms=[Entity(name="UK"), Entity(name="Germany")],
                 ),
-                Statement(
+                Statement.new(
                     predicate="$country3 signed a treaty with $country1",
                     terms=[Entity(name="Germany"), Entity(name="USA")],
                 ),
@@ -967,7 +975,7 @@ class TestConsistent:
         )
         small_payments = FactorGroup(
             sequence=[
-                Statement(
+                Statement.new(
                     predicate=Comparison.new(
                         content="the number of dollars that $payer paid to $payee was",
                         sign=">",
@@ -975,7 +983,7 @@ class TestConsistent:
                     ),
                     terms={"payer": Entity(name="Fred"), "payee": Entity(name="Greg")},
                 ),
-                Statement(
+                Statement.new(
                     predicate=Comparison.new(
                         content="the number of dollars that $payer paid to $payee was",
                         sign=">",

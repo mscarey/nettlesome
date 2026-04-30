@@ -494,7 +494,10 @@ class Comparison(BaseModel, PhraseABC):
     @model_validator(mode="before")
     def set_quantity_range(cls, values):
         """Reverse the sign of a Comparison if necessary."""
-
+        if isinstance(values, str):
+            raise TypeError(
+                f"Comparison objects should be initialized with keyword arguments, not a single string '{values}'."
+            )
         if values.get("truth") is False:
             values["truth"] = True
             values["quantity_range"].reverse_meaning()
