@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from abc import abstractproperty
+from abc import abstractmethod
 from datetime import date
 from decimal import Decimal
 from typing import Any, ClassVar, Dict, Optional, Union
@@ -158,7 +158,8 @@ class QuantityRange(BaseModel):
         """Get lower bound of the range that the Comparison may refer to."""
         return -oo if self._include_negatives else 0
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def magnitude(self) -> Union[Decimal, int, float]:
         """Get amount of max or minimum of the quantity range, without a unit."""
         pass

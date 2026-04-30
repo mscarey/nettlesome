@@ -78,7 +78,7 @@ class FactorGroup(Comparable, BaseModel):
         return result
 
     def _add_group(self, other: FactorGroup) -> FactorGroup:
-        combined = self.sequence[:] + other.sequence[:]
+        combined = list(self.sequence[:]) + list(other.sequence[:])
         return self.__class__(sequence=combined)
 
     def add(
