@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC
+from collections.abc import Sequence as SequenceABC
 from copy import deepcopy
 import functools
 from itertools import permutations, zip_longest
@@ -12,6 +13,8 @@ import textwrap
 from typing import Any, Callable, ClassVar, Dict, Iterator
 from typing import List, NamedTuple, Optional, Sequence, Tuple, Union
 from typing import KeysView, ValuesView, ItemsView
+
+from pydantic import BaseModel, ConfigDict
 
 
 logger = logging.getLogger(__name__)
@@ -1593,15 +1596,29 @@ class DuplicateTermError(Exception):
     pass
 
 
-class TermSequence(Tuple[Optional[Term], ...]):
+class TermSequence(BaseModel, SequenceABC[Optional[Term]]):
     """A sequence of Terms that can be compared in order."""
 
-    def __new__(cls, value: Union[Term, Sequence[Optional[Term]]] = ()):
-        """Convert Sequence of Terms to a subclass of Tuple."""
+    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
+
+    terms: Tuple[Optional[Term], ...] = ()
+
+    def __init__(self, value: Union[Term, Sequence[Optional[Term]]] = ()):
+        """Convert a Term or Sequence of Terms into an immutable model-backed sequence."""
         if isinstance(value, Term):
             value = (value,)
-        cls.validate_terms(value)
-        return tuple.__new__(TermSequence, value)
+        normalized = tuple(value)
+        self.validate_terms(normalized)
+        super().__init__(terms=normalized)
+
+    def __iter__(self):
+        return iter(self.terms)
+
+    def __len__(self) -> int:
+        return len(self.terms)
+
+    def __getitem__(self, index: int) -> Optional[Term]:
+        return self.terms[index]
 
     @classmethod
     def validate_terms(cls, terms: Sequence[Optional[Term]]) -> None:

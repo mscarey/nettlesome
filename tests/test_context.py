@@ -120,7 +120,8 @@ class TestContextRegisters:
         )
         right = ContextRegister()
         right.insert_pair(Entity(name="Bob"), Entity(name="Alice"))
-        assert len(left.merged_with(right)) == 3
+        merged = left.merged_with(right)
+        assert merged and len(merged) == 3
 
     def test_import_to_mapping_no_change(self):
         old_mapping = ContextRegister.from_lists(

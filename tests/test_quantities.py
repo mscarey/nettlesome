@@ -90,14 +90,12 @@ class TestCompareQuantities:
         with pytest.raises(TypeError):
             make_comparison["exact"].contradicts(
                 Statement(
-                    make_comparison["exact"],
+                    predicate=make_comparison["exact"],
                     terms=[Entity(name="thing"), Entity(name="place")],
                 )
             )
 
     def test_comparison_from_expression_without_sign(self):
-        comparison = Comparison.new(
-            **{"content": "{}'s favorite number was", "expression": 42}
-        )
+        comparison = Comparison.new(content="{}'s favorite number was", expression=42)
         assert comparison.sign == "=="
         assert str(comparison) == "that {}'s favorite number was exactly equal to 42"
