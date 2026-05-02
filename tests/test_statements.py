@@ -975,6 +975,8 @@ class TestContradiction:
         fact_opposite = AbsenceOf(
             absent=Statement(predicate=predicate_opposite, terms=terms)
         )
+        assert not fact.contradicts(fact_opposite)
+        assert not fact_opposite.contradicts(fact)
 
     def test_absences_of_contradictory_facts_consistent_sympy(self):
         predicate = Comparison.new(
