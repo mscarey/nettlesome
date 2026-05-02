@@ -8,7 +8,7 @@ import operator
 import textwrap
 from typing import Callable, ClassVar, Dict, Iterator, List
 from typing import Optional, Sequence, Tuple, Union
-
+from typing import Self
 from pydantic import BaseModel
 
 from nettlesome.factors import Factor, AbsenceOf
@@ -51,9 +51,7 @@ class FactorGroup(Comparable, BaseModel):
     def _at_index(self, key: int) -> Factor | AbsenceOf:
         return self.sequence[key]
 
-    def __getitem__(
-        self, key: Union[int, slice]
-    ) -> Union[Factor | AbsenceOf, FactorGroup]:
+    def __getitem__(self, key: Union[int, slice]) -> Union[Factor | AbsenceOf, Self]:
         if isinstance(key, slice):
             start, stop, step = key.indices(len(self))
             return self.__class__(
@@ -341,7 +339,7 @@ class FactorGroup(Comparable, BaseModel):
 
     def _verbose_comparison(
         self,
-        still_need_matches: Sequence[Factor | AbsenceOf],
+        still_need_matches: list[Factor | AbsenceOf],
         explanation: Explanation,
     ) -> Iterator[Explanation]:
         r"""
@@ -398,7 +396,7 @@ class FactorGroup(Comparable, BaseModel):
                 still_need_matches=list(other.sequence),
                 explanation=explanation,
             )
-        elif isinstance(other, (self.term_class, self.absence_class)):
+        elif isinstance(other, (Factor, AbsenceOf)):
             yield from self._verbose_comparison(
                 still_need_matches=[other],
                 explanation=explanation,
@@ -479,14 +477,16 @@ class FactorGroup(Comparable, BaseModel):
         )
 
     def from_comparable(
-        self, value: Union[Comparable, Sequence[Factor]]
+        self, value: Comparable | Sequence[Factor | AbsenceOf]
     ) -> Optional[FactorGroup]:
         """Create a FactorGroup from a Factor or sequence of Factors."""
         if isinstance(value, FactorGroup):
             return value
-        if isinstance(value, Factor):
+        if isinstance(value, (Factor, AbsenceOf)):
             return FactorGroup(sequence=[value])
-        elif isinstance(value, Sequence):
+        elif isinstance(value, Sequence) and all(
+            isinstance(item, (Factor, AbsenceOf)) for item in value
+        ):
             return FactorGroup(sequence=list(value))
         return None
 
@@ -496,7 +496,7 @@ class FactorGroup(Comparable, BaseModel):
         context: Optional[Union[ContextRegister, Explanation]] = None,
     ) -> Iterator[Explanation]:
         """Yield explanations for how ``self`` can have the same meaning as ``other``."""
-        context = context = Explanation.from_context(
+        context = Explanation.from_context(
             context=context, current=self, incoming=other
         )
         context.operation = means

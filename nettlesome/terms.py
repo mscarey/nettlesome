@@ -117,9 +117,11 @@ def new_context_helper(func: Callable):
     return wrapper
 
 
-def expand_string_from_source(term: Union[str, Term], source: Comparable) -> Term:
+def expand_string_from_source(
+    term: Union[str, Term], source: Comparable | None
+) -> Term:
     """Replace ``term`` with the real term it references, if ``term`` is a string reference."""
-    if isinstance(term, str):
+    if isinstance(term, str) and source is not None:
         result: Optional[Term] = source.get_factor(term)
     else:
         return term
@@ -1283,7 +1285,7 @@ class ContextRegister:
 
         return result
 
-    def reversed(self):
+    def reversed(self) -> ContextRegister:
         """Swap keys for values and vice versa."""
         return ContextRegister.from_lists(
             to_replace=list(self.values()),
