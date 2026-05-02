@@ -8,11 +8,10 @@ the `pint <https://pint.readthedocs.io/en/>`_ library).
 
 from __future__ import annotations
 from abc import ABCMeta
-import importlib
 import re
 
 from itertools import product
-
+from string import templatelib
 from typing import Any, Dict, Mapping
 from typing import List, Optional, Sequence, Set, Tuple
 
@@ -21,7 +20,7 @@ from pydantic import BaseModel
 from nettlesome.terms import Comparable, TermSequence
 from nettlesome.terms import Term
 
-templatelib = importlib.import_module("string.templatelib")
+
 Interpolation = templatelib.Interpolation
 TStringTemplate = templatelib.Template
 

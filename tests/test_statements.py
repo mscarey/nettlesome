@@ -1,20 +1,21 @@
 import operator
 
 import pytest
-from nettlesome.units import gram, hour, kilograms, miles
+from pydantic import ValidationError
 
-from nettlesome.terms import (
-    ContextRegister,
-    TermSequence,
-    Explanation,
-    means,
-    expand_string_from_source,
-)
 from nettlesome.entities import Entity
 from nettlesome.factors import AbsenceOf
 from nettlesome.predicates import Predicate
-from nettlesome.quantities import Comparison, Q_
+from nettlesome.quantities import Q_, Comparison
 from nettlesome.statements import Statement
+from nettlesome.terms import (
+    ContextRegister,
+    Explanation,
+    TermSequence,
+    expand_string_from_source,
+    means,
+)
+from nettlesome.units import gram, hour, kilograms, miles
 
 
 class TestStatements:
@@ -28,10 +29,18 @@ class TestStatements:
         )
         assert isinstance(shooting.terms, list)
 
-    def test_cannot_use_string_for_term(self):
+    def test_terms_cannot_be_string_in_list(self):
+        city = Predicate(content="{place} was a city")
+        with pytest.raises(ValidationError):
+            Statement(
+                predicate=city,
+                terms=["New York"],  # ty: ignore[invalid-argument-type]
+            )
+
+    def test_terms_list_cannot_contain_string(self):
         predicate = Predicate(content="{person} visited {place}")
         entity = Entity(name="Austin")
-        with pytest.raises(TypeError):
+        with pytest.raises(ValidationError):
             Statement(
                 predicate=predicate,
                 terms=[
@@ -257,14 +266,6 @@ class TestStatements:
         assert "<Darth Vader> managed" in str(different)
         assert isinstance(different.terms, list)
         assert isinstance(different.term_sequence, TermSequence)
-
-    def test_term_cannot_be_string(self):
-        city = Predicate(content="{place} was a city")
-        with pytest.raises(TypeError):
-            Statement(
-                predicate=city,
-                terms=["New York"],  # ty: ignore[invalid-argument-type]
-            )
 
     def test_expand_string_from_statement(self, make_complex_fact):
         source = make_complex_fact["relevant_murder"]

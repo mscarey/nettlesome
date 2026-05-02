@@ -33,20 +33,10 @@ class Entity(Term, BaseModel, extra="forbid"):
         to see whether a verb needs to be made plural.
     """
 
-    name: str = ""
+    name: str
     generic: bool = True
     plural: bool = False
     context_factor_names: ClassVar[Tuple[str, ...]] = ()
-
-    @model_validator(mode="before")
-    def validate_type(cls, values) -> dict:
-        if isinstance(values, dict):
-            name = values.pop("type", None)
-            if name and name.lower() != cls.__name__.lower():
-                raise ValueError(f"Expected type {cls.__name__}, not {name}")
-        if isinstance(values, str):
-            raise TypeError(f"Expected a dict or {cls.__name__} object, not a string")
-        return values
 
     def __str__(self):
         if self.generic:

@@ -13,21 +13,17 @@ from nettlesome.statements import Assertion
 class TestPredicateLoad:
     def test_load_predicate(self):
         p7 = Predicate(
-            **{
-                "content": "{defendant} stole {victim}'s car",
-                "truth": False,
-            }
+            content="{defendant} stole {victim}'s car",
+            truth=False,
         )
         assert p7.template.placeholders == ["defendant", "victim"]
 
     def test_load_comparison(self):
         p7 = Comparison.new(
-            **{
-                "content": "the distance between {place1} and {place2} was",
-                "truth": True,
-                "sign": "!=",
-                "expression": "35 feet",
-            }
+            content="the distance between {place1} and {place2} was",
+            truth=True,
+            sign="!=",
+            expression="35 feet",
         )
         assert p7.sign == "!="
 
@@ -92,12 +88,12 @@ class TestFactorLoad:
         dumped = loaded.model_dump()
         assert dumped["authority"]["name"] == "Bob"
 
-    def test_load_entity_with_type_field(self):
-        data = {"type": "Entity", "name": "Ed"}
+    def test_load_entity_without_type_field(self):
+        data: dict[str, str | bool] = {"name": "Ed"}
         loaded = Entity(**data)
         assert loaded.name == "Ed"
 
-    def test_load_entity_with_wrong_type_field(self):
-        data = {"type": "Statement", "name": "Ed"}
+    def test_load_entity_with_disallowed_type_field(self):
+        data = {"type": "Entity", "name": "Ed"}
         with pytest.raises(ValidationError):
             Entity(**data)
