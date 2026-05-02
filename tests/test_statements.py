@@ -21,13 +21,13 @@ from nettlesome.units import gram, hour, kilograms, miles
 class TestStatements:
     def test_Statement(self):
         """
-        Check that terms is created as a list, not TermSequence.
+        Check that terms is created as a TermSequence.
         """
         shooting = Statement(
             predicate=Predicate(content="{shooter} shot {victim}"),
             terms=[Entity(name="alice"), Entity(name="bob")],
         )
-        assert isinstance(shooting.terms, list)
+        assert isinstance(shooting.terms, TermSequence)
 
     def test_terms_cannot_be_string_in_list(self):
         city = Predicate(content="{place} was a city")
@@ -53,7 +53,7 @@ class TestStatements:
         city = Predicate(content="{place} was a city")
         statement = Statement(predicate=city, terms=[Entity(name="New York")])
         assert "<New York> was a city" in str(statement)
-        assert ", terms=[Entity(" in repr(statement)
+        assert "terms=TermSequence(" in repr(statement)
         assert "name='New York'" in repr(statement)
 
     def test_get_terms(self, make_statement):
@@ -264,8 +264,8 @@ class TestStatements:
             [Entity(name="Darth Vader"), Entity(name="the Death Star")]
         )
         assert "<Darth Vader> managed" in str(different)
-        assert isinstance(different.terms, list)
-        assert isinstance(different.term_sequence, TermSequence)
+        assert isinstance(different.terms, TermSequence)
+        assert different.term_sequence is different.terms
 
     def test_expand_string_from_statement(self, make_complex_fact):
         source = make_complex_fact["relevant_murder"]

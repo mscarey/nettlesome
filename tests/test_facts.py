@@ -47,7 +47,9 @@ class TestFacts:
             predicate=three_entities,
             terms=[Entity(name="Al"), Entity(name="Bob"), Entity(name="Cid")],
         )
-        two_entities = Predicate(content="{shooter} told {intermediary} to hire {shooter}")
+        two_entities = Predicate(
+            content="{shooter} told {intermediary} to hire {shooter}"
+        )
         statement_2 = Statement(
             predicate=two_entities, terms=[Entity(name="Al"), Entity(name="Bob")]
         )
@@ -129,8 +131,8 @@ class TestFacts:
         assert "Greg committed a crime" in str(different)
 
     def test_type_of_terms(self, make_statement):
-        assert isinstance(make_statement["crime"].terms, list)
-        assert isinstance(make_statement["crime"].term_sequence, TermSequence)
+        assert isinstance(make_statement["crime"].terms, TermSequence)
+        assert make_statement["crime"].term_sequence is make_statement["crime"].terms
 
     def test_concrete_to_abstract(self, make_statement):
         assert (

@@ -3,13 +3,14 @@
 from copy import deepcopy
 import operator
 
-from typing import ClassVar, Dict, Iterator, List, Mapping
-from typing import Optional, Self, Sequence, Tuple, Union
+from typing import Any, ClassVar, Dict, Iterator, List, Mapping
+from typing import Optional, Self, Sequence, Tuple, Union, cast
 
 from pydantic import (
     BaseModel,
     field_validator,
     model_validator,
+    field_serializer,
 )
 from slugify import slugify
 
@@ -54,7 +55,9 @@ class Statement(Factor, BaseModel):
     """
 
     predicate: Union[Predicate, Comparison]
-    terms: Sequence[Union[Entity, "Statement", "Assertion"]]
+    terms: Union[TermSequence, Sequence[Union[Entity, "Statement", "Assertion"]]] = (
+        TermSequence()
+    )
     name: str = ""
     generic: bool = False
 
@@ -62,7 +65,13 @@ class Statement(Factor, BaseModel):
     def new(
         cls,
         predicate: Union[Predicate, Comparison, str],
-        terms: Optional[Sequence[Union[Entity, "Statement", "Assertion"]]] = None,
+        terms: Optional[
+            Union[
+                TermSequence,
+                Mapping[str, Union[Entity, "Statement", "Assertion"]],
+                Sequence[Union[Entity, "Statement", "Assertion"]],
+            ]
+        ] = None,
         truth: Optional[bool] = True,
         generic: bool = False,
     ) -> "Statement":
@@ -84,17 +93,44 @@ class Statement(Factor, BaseModel):
         if isinstance(predicate, str):
             predicate = Predicate(content=predicate, truth=truth)
         if isinstance(terms, Mapping):
-            terms = predicate.template.get_term_sequence_from_mapping(terms)
-        return cls(predicate=predicate, terms=terms or [], generic=generic)
+            terms = predicate.template.get_term_sequence_from_mapping(
+                cast(Mapping[str, Term], terms)
+            )
+        return cls(predicate=predicate, terms=terms or TermSequence(), generic=generic)
 
-    @field_validator("terms")
+    @field_validator("terms", mode="before")
     @classmethod
     def validate_terms(cls, v):
-        """Normalize ``terms`` to initialize Statement."""
+        """Normalize ``terms`` to a TermSequence during initialization."""
+        if isinstance(v, TermSequence):
+            return v
+        if v is None:
+            return TermSequence()
 
-        # make TermSequence for validation, then ignore it
-        TermSequence.validate_terms(v)
-        return v
+        try:
+            normalized = tuple(cls._normalize_term(term) for term in v)
+        except TypeError as exc:
+            raise ValueError(str(exc)) from exc
+        return TermSequence(normalized)
+
+    @classmethod
+    def _normalize_term(cls, term: Any) -> Union[Entity, "Statement", "Assertion"]:
+        if isinstance(term, (Entity, Statement, Assertion)):
+            return term
+        if isinstance(term, Mapping):
+            if "statement" in term or "authority" in term:
+                return Assertion(**term)
+            if "predicate" in term:
+                return cls(**term)
+            return Entity(**term)
+        raise TypeError(
+            f"'{term}' cannot be included in TermSequence because it is not type Term."
+        )
+
+    @field_serializer("terms")
+    def serialize_terms(self, terms: TermSequence):
+        """Serialize terms using the existing flat sequence shape."""
+        return list(terms)
 
     @model_validator(mode="after")
     def validate_terms_for_predicate(self) -> Self:
@@ -110,7 +146,7 @@ class Statement(Factor, BaseModel):
     @property
     def term_sequence(self) -> TermSequence:
         """Return a TermSequence of the terms in this Statement."""
-        return TermSequence(self.terms)
+        return cast(TermSequence, self.terms)
 
     @property
     def short_string(self) -> str:
@@ -124,8 +160,9 @@ class Statement(Factor, BaseModel):
 
         Intended for use as a sympy :class:`~sympy.core.symbol.Symbol`
         """
-        terms = [term for term in self.terms if term is not None]
-        subject = self.predicate._content_with_terms(terms).removesuffix(" was")
+        subject = self.predicate._content_with_terms(
+            self.terms_without_nulls
+        ).removesuffix(" was")
         return slugify(subject)
 
     @property
@@ -141,7 +178,7 @@ class Statement(Factor, BaseModel):
     @property
     def wrapped_string(self):
         """Wrap text in string representation of ``self``."""
-        content = str(self.predicate._content_with_terms(self.terms))
+        content = str(self.predicate._content_with_terms(self.terms_without_nulls))
         unwrapped = self.predicate._add_truth_to_content(content)
         text = wrapped(super().__str__().format(unwrapped))
         return text
@@ -167,7 +204,7 @@ class Statement(Factor, BaseModel):
 
     def __str__(self):
         """Create one-line string representation for inclusion in other Facts."""
-        content = str(self.predicate._content_with_terms(self.terms))
+        content = str(self.predicate._content_with_terms(self.terms_without_nulls))
         unwrapped = self.predicate._add_truth_to_content(content)
         return super().__str__().format(unwrapped)
 
@@ -224,10 +261,9 @@ class Statement(Factor, BaseModel):
             a version of ``self`` with the new context.
         """
         result = deepcopy(self)
-        new_terms = TermSequence(
+        result.terms = TermSequence(
             [factor.new_context(changes=changes) for factor in self.terms_without_nulls]
         )
-        result.terms = list(new_terms)
         return result
 
     def _registers_for_interchangeable_context(
