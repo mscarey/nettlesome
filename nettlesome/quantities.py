@@ -442,7 +442,8 @@ class Comparison(BaseModel, PhraseABC):
     def new(
         cls,
         content: str,
-        expression: str | int | float | date | Decimal | PlainQuantity,
+        expression: str | int | float | date | Decimal | SympyQuantity | PlainQuantity,
+        # date | float | int | SympyQuantity | PlainQuantity | str
         sign: str = "==",
         include_negatives: bool | None = None,
         truth: bool | None = True,
@@ -526,8 +527,8 @@ class Comparison(BaseModel, PhraseABC):
 
     @classmethod
     def expression_to_quantity(
-        cls, value: Union[date, float, int, SympyQuantity, PlainQuantity, str]
-    ) -> Union[date, Decimal, str]:
+        cls, value: str | int | float | date | Decimal | SympyQuantity | PlainQuantity
+    ) -> date | Decimal | str:
         r"""
         Create numeric expression from text for Comparison class.
 
@@ -584,7 +585,7 @@ class Comparison(BaseModel, PhraseABC):
         return self.quantity_range.interval
 
     @property
-    def quantity(self) -> Union[Decimal, date, PlainQuantity[Decimal]]:
+    def quantity(self) -> Union[Decimal, date, PlainQuantity[Decimal | int]]:
         """
         Get the maximum or minimum of the range.
 
@@ -702,9 +703,9 @@ class Comparison(BaseModel, PhraseABC):
 
         return self.quantity_range.contradicts(other.quantity_range)
 
-    def negated(self) -> Comparison:
+    def negated(self) -> Self:
         """Copy ``self``, with the opposite truth value."""
-        return Comparison(
+        return self.__class__(
             content=self.content,
             truth=not self.truth,
             quantity_range=self.quantity_range,
