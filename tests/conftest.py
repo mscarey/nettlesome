@@ -150,7 +150,7 @@ def make_comparison() -> Dict[str, Predicate | Comparison]:
 
 
 @pytest.fixture(scope="class")
-def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
+def make_statement(make_predicate, make_comparison) -> Dict[str, Statement | AbsenceOf]:
     p = make_predicate
     c = make_comparison
     return {

@@ -162,7 +162,7 @@ class QuantityRange(BaseModel):
         """Get amount of max or minimum of the quantity range, without a unit."""
         pass
 
-    def consistent_dimensionality(self, other: QuantityRange) -> bool:
+    def consistent_dimensionality(self, other: Self) -> bool:
         """Test if ``other`` has a quantity parameter consistent with ``self``."""
         return isinstance(other, self.__class__)
 
@@ -227,11 +227,11 @@ class UnitRange(QuantityRange, BaseModel):
     include_negatives: Optional[bool] = None
 
     @property
-    def q(self) -> PlainQuantity[Decimal]:
+    def q(self) -> PlainQuantity[Decimal | int]:
         return Quantity(self.quantity_magnitude, self.quantity_units)
 
     @property
-    def quantity(self) -> PlainQuantity[Decimal]:
+    def quantity(self) -> PlainQuantity[Decimal | int]:
         return self.q
 
     @property
@@ -240,7 +240,7 @@ class UnitRange(QuantityRange, BaseModel):
         return S.Reals
 
     @property
-    def magnitude(self) -> Decimal:
+    def magnitude(self) -> Decimal | int:
         """Get magnitude of pint Quantity."""
         super().magnitude  # for the coverage
         return self.q.magnitude
