@@ -81,7 +81,7 @@ class FactorGroup(Comparable, BaseModel):
 
     def add(
         self,
-        other: Union[FactorGroup, Sequence[Factor], Factor],
+        other: Union[FactorGroup, Sequence[Factor | AbsenceOf], Factor | AbsenceOf],
     ) -> Optional[FactorGroup]:
         """Combine all Factors into a single FactorGroup."""
         try:
@@ -91,13 +91,13 @@ class FactorGroup(Comparable, BaseModel):
 
     def add_or_raise_error(
         self,
-        other: Union[FactorGroup, Sequence[Factor], Factor],
+        other: Union[FactorGroup, Sequence[Factor | AbsenceOf], Factor | AbsenceOf],
     ) -> FactorGroup:
         """Combine all Factors into a single FactorGroup."""
         if isinstance(other, self.__class__):
             return self._add_group(other)
         to_add = self.__class__(
-            sequence=[other] if isinstance(other, Factor) else list(other)
+            sequence=[other] if isinstance(other, Factor | AbsenceOf) else list(other)
         )
         added = self._add_group(to_add)
         added.internally_consistent()
@@ -625,10 +625,11 @@ class FactorGroup(Comparable, BaseModel):
     def _union_from_explanation_allow_contradiction(
         self, other: FactorGroup, context: ContextRegister
     ) -> Optional[FactorGroup]:
-        updated_context = context.reversed() if context else None
+        updated_context = context.reversed()
         try:
             result = self + other.new_context(changes=updated_context)
         except DuplicateTermError:
             return None
-        result = result.drop_implied_factors()
+        if result is not None:
+            result = result.drop_implied_factors()
         return result
