@@ -121,8 +121,11 @@ def expand_string_from_source(
     term: Union[str, Term], source: Comparable | None
 ) -> Term:
     """Replace ``term`` with the real term it references, if ``term`` is a string reference."""
-    if isinstance(term, str) and source is not None:
-        result: Optional[Term] = source.get_factor(term)
+    if isinstance(term, str):
+        if source is not None:
+            result: Optional[Term] = source.get_factor(term)
+        else:
+            result = None
     else:
         return term
     if result is None:
