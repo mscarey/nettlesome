@@ -57,7 +57,8 @@ class TestStatements:
         assert "name='New York'" in repr(statement)
 
     def test_get_terms(self, make_statement):
-        terms = make_statement["friends"].terms
+        terms = make_statement["friends"].terms.items
+        assert len(terms) == 2
         assert terms[0].name == "Alice"
 
     def test_string_representation_of_absent_factor(self):
@@ -325,7 +326,7 @@ class TestStatements:
             "the statement it was false that the precise formulation "
             "of <lotus 1-2-3>'s code was necessary for <lotus 1-2-3> to work"
         )
-        assert len(fact.terms) == 1
+        assert len(fact.terms.items) == 1
 
     def test_indented_string(self):
         sued = Statement.new(
@@ -1534,5 +1535,5 @@ class TestAddition:
             ],
         )
         new = left + right
-        assert new.terms[0].name == "the State of Texas"
-        assert new.terms[1].name == "a box of pencils"
+        assert new.terms.items[0].name == "the State of Texas"
+        assert new.terms.items[1].name == "a box of pencils"

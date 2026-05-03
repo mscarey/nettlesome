@@ -1,12 +1,12 @@
-from nettlesome.terms import ContextRegister, TermSequence
 import operator
 
 import pytest
+from pydantic import ValidationError
 
-from nettlesome.predicates import Predicate
 from nettlesome.entities import Entity
+from nettlesome.predicates import Predicate
 from nettlesome.statements import Statement
-from nettlesome.terms import means
+from nettlesome.terms import ContextRegister, TermSequence, means
 
 
 class TestMakeEntities:
@@ -53,13 +53,13 @@ class TestMakeEntities:
 
     def test_term_sequence_from_one_term(self):
         entity = Entity(name="Austin")
-        sequence = TermSequence(entity)
-        assert sequence[0].name == entity.name
+        sequence = TermSequence(items=(entity,))
+        assert sequence.items[0].name == entity.name
 
     def test_cannot_put_string_in_term_sequence(self):
         entity = Entity(name="Austin")
-        with pytest.raises(TypeError):
-            TermSequence([entity, "Dallas as a string"])
+        with pytest.raises(ValidationError):
+            TermSequence(items=(entity, "Dallas as a string"))
 
 
 class TestSameMeaning:
