@@ -55,9 +55,7 @@ class Statement(Factor, BaseModel):
     """
 
     predicate: Union[Predicate, Comparison]
-    terms: Union[TermSequence, Sequence[Union[Entity, "Statement", "Assertion"]]] = (
-        TermSequence()
-    )
+    terms: TermSequence = TermSequence()
     name: str = ""
     generic: bool = False
 
@@ -111,7 +109,7 @@ class Statement(Factor, BaseModel):
             normalized = tuple(cls._normalize_term(term) for term in v)
         except TypeError as exc:
             raise ValueError(str(exc)) from exc
-        return TermSequence(normalized)
+        return TermSequence(items=normalized)
 
     @classmethod
     def _normalize_term(cls, term: Any) -> Union[Entity, "Statement", "Assertion"]:
@@ -134,10 +132,10 @@ class Statement(Factor, BaseModel):
 
     @model_validator(mode="after")
     def validate_terms_for_predicate(self) -> Self:
-        if self.predicate and len(self.terms) != len(self.predicate):
+        if self.predicate and len(self.terms.items) != len(self.predicate):
             message = (
                 "The number of items in 'terms' must be "
-                + f"{len(self.predicate)}, not {len(self.terms)}, "
+                + f"{len(self.predicate)}, not {len(self.terms.items)}, "
                 + f"to match predicate.context_slots for '{self.predicate}'"
             )
             raise ValueError(message)
@@ -173,7 +171,7 @@ class Statement(Factor, BaseModel):
         No Terms should be None for the Statement class, so this method is like an
         assertion for type checking.
         """
-        return [term for term in self.terms if term is not None]
+        return [term for term in self.terms.items if term is not None]
 
     @property
     def wrapped_string(self):
@@ -262,7 +260,10 @@ class Statement(Factor, BaseModel):
         """
         result = deepcopy(self)
         result.terms = TermSequence(
-            [factor.new_context(changes=changes) for factor in self.terms_without_nulls]
+            items=tuple(
+                factor.new_context(changes=changes)
+                for factor in self.terms_without_nulls
+            )
         )
         return result
 
@@ -286,8 +287,8 @@ class Statement(Factor, BaseModel):
         already_returned: List[ContextRegister] = [matches]
 
         for term_permutation in gen:
-            left = [term for term in self.terms if term is not None]
-            right = [term for term in term_permutation if term is not None]
+            left = [term for term in self.terms.items if term is not None]
+            right = [term for term in term_permutation.items if term is not None]
             changes = ContextRegister.from_lists(left, right)
             changed_registry = matches.replace_keys(changes)
             if all(
@@ -299,8 +300,8 @@ class Statement(Factor, BaseModel):
     def term_permutations(self) -> Iterator[TermSequence]:
         """Generate permutations of context factors that preserve same meaning."""
         for pattern in self.predicate.term_index_permutations():
-            sorted_terms = [x for _, x in sorted(zip(pattern, self.terms))]
-            yield TermSequence(sorted_terms)
+            sorted_terms = [x for _, x in sorted(zip(pattern, self.terms.items))]
+            yield TermSequence(items=tuple(sorted_terms))
 
 
 class Assertion(Factor, BaseModel):

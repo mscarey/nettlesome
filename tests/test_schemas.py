@@ -84,7 +84,8 @@ class TestFactorLoad:
             "authority": {"name": "Bob"},
         }
         loaded = Assertion(**data)
-        assert loaded.statement.terms[0].name == "Alice"
+        item = loaded.statement.terms.items[0]
+        assert item is not None and item.name == "Alice"
         dumped = loaded.model_dump()
         assert dumped["authority"]["name"] == "Bob"
 

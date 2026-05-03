@@ -1,9 +1,7 @@
 """Base classes for Terms and Factors that can be compared."""
 
 from __future__ import annotations
-
 from abc import ABC
-from collections.abc import Sequence as SequenceABC
 from copy import deepcopy
 import functools
 from itertools import permutations, zip_longest
@@ -14,7 +12,7 @@ from typing import Any, Callable, ClassVar, Dict, Iterator
 from typing import List, NamedTuple, Optional, Sequence, Tuple, Union
 from typing import KeysView, ValuesView, ItemsView
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator, Field
 
 
 logger = logging.getLogger(__name__)
@@ -186,7 +184,7 @@ class Comparable(ABC):
         """
         answers: Dict[str, Term] = {}
 
-        for context in self.term_sequence:
+        for context in self.term_sequence.items:
             if context is not None:
                 answers.update(context.recursive_terms)
         return answers
@@ -205,7 +203,7 @@ class Comparable(ABC):
         for factor_name in self.context_factor_names:
             next_factor: Optional[Term] = self.__dict__.get(factor_name)
             context.append(next_factor)
-        return TermSequence(context)
+        return TermSequence(items=tuple(context))
 
     def __ge__(self, other: Optional[Comparable]) -> bool:
         """
@@ -305,9 +303,11 @@ class Comparable(ABC):
         For instance, "<Ann> and <Bob> both were members of the same family" has a
         second ordering "<Bob> and <Ann> both were members of the same family".
         """
-        for i, self_factor in enumerate(ordering):
-            if not (self_factor is other.term_sequence[i] is None):
-                if not (self_factor and relation(self_factor, other.term_sequence[i])):
+        for i, self_factor in enumerate(ordering.items):
+            if not (self_factor is other.term_sequence.items[i] is None):
+                if not (
+                    self_factor and relation(self_factor, other.term_sequence.items[i])
+                ):
                     return False
         return True
 
@@ -653,7 +653,7 @@ class Comparable(ABC):
             themselves as values.
         """
         generics: Dict[str, Term] = {}
-        for factor in self.term_sequence:
+        for factor in self.term_sequence.items:
             if factor is not None:
                 for generic in factor.generic_terms():
                     generics[generic.short_string] = generic
@@ -1601,39 +1601,21 @@ class DuplicateTermError(Exception):
     pass
 
 
-class TermSequence(BaseModel, SequenceABC[Optional[Term]]):
+class TermSequence(BaseModel):
     """A sequence of Terms that can be compared in order."""
 
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
-    terms: Tuple[Optional[Term], ...] = ()
+    items: Tuple[Optional[Term], ...] = ()
 
-    def __init__(self, value: Union[Term, Sequence[Optional[Term]]] = ()):
-        """Convert a Term or Sequence of Terms into an immutable model-backed sequence."""
-        if isinstance(value, Term):
-            value = (value,)
-        normalized = tuple(value)
-        self.validate_terms(normalized)
-        super().__init__(terms=normalized)
-
-    def __iter__(self):
-        return iter(self.terms)
-
-    def __len__(self) -> int:
-        return len(self.terms)
-
-    def __getitem__(self, index: int) -> Optional[Term]:
-        return self.terms[index]
-
+    @field_validator("items")
     @classmethod
-    def validate_terms(cls, terms: Sequence[Optional[Term]]) -> None:
+    def validate_terms(
+        cls, value: Sequence[Optional[Term]]
+    ) -> tuple[Optional[Term], ...]:
         seen: List[str] = []
-        for term in terms:
+        for term in value:
             if term is not None:
-                if not isinstance(term, Term):
-                    raise TypeError(
-                        f"'{term}' cannot be included in TermSequence because it is not type Term."
-                    )
                 if term.key in seen:
                     raise DuplicateTermError(
                         f"Term '{term}' may not appear more than once in TermSequence. "
@@ -1643,7 +1625,7 @@ class TermSequence(BaseModel, SequenceABC[Optional[Term]]):
                         "Term shares the same key text, please change one of them."
                     )
                 seen.append(term.key)
-        return None
+        return tuple(value)
 
     def ordered_comparison(
         self,
@@ -1673,7 +1655,7 @@ class TermSequence(BaseModel, SequenceABC[Optional[Term]]):
         """
         context = context or ContextRegister()
         ordered_pairs: List[Tuple[Optional[Term], Optional[Term]]] = list(
-            zip_longest(self, other)
+            zip_longest(self.items, other.items)
         )
 
         # frontier holds the distinct ContextRegisters consistent with all pairs so far

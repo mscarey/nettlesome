@@ -168,9 +168,9 @@ class TestContextRegisters:
             terms=[Entity(name="Al"), Entity(name="Ed")],
         )
         first_pattern, second_pattern = list(factor.term_permutations())
-        assert first_pattern[0].name == second_pattern[1].name
-        assert first_pattern[1].name == second_pattern[0].name
-        assert first_pattern[0].name != first_pattern[1].name
+        assert first_pattern.items[0].name == second_pattern.items[1].name
+        assert first_pattern.items[1].name == second_pattern.items[0].name
+        assert first_pattern.items[0].name != first_pattern.items[1].name
 
     def test_wrong_type_in_input_list(self, make_statement):
         explanation = Explanation(reasons=[])
