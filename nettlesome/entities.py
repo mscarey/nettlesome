@@ -5,7 +5,7 @@ from typing import ClassVar, Optional, Tuple
 
 from pydantic import BaseModel
 
-from nettlesome.terms import Comparable, ContextRegister, Term
+from nettlesome.terms import Comparable, ContextRegister, Term, TermSequence
 
 
 class Entity(Term, BaseModel, extra="forbid"):

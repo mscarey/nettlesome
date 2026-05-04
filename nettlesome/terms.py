@@ -1,6 +1,5 @@
 """Base classes for Terms and Factors that can be compared."""
 
-from __future__ import annotations
 from abc import ABC
 from copy import deepcopy
 import functools
@@ -12,7 +11,7 @@ from typing import Any, Callable, ClassVar, Dict, Iterator
 from typing import List, NamedTuple, Optional, Sequence, Tuple, Union
 from typing import KeysView, ValuesView, ItemsView
 
-from pydantic import BaseModel, ConfigDict, field_validator, Field
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 logger = logging.getLogger(__name__)
@@ -1320,6 +1319,14 @@ class ContextRegister:
         return self_mapping
 
 
+OPERATION_NAMES: Dict[Callable, str] = {
+    operator.ge: "IMPLIES",
+    means: "MEANS",
+    contradicts: "CONTRADICTS",
+    consistent_with: "IS CONSISTENT WITH",
+}
+
+
 class FactorMatch(NamedTuple):
     """A pair of corresponding Factors, with the operation that they can satisfy."""
 
@@ -1327,17 +1334,10 @@ class FactorMatch(NamedTuple):
     operation: Callable
     right: Comparable
 
-    operation_names: ClassVar[Dict[Callable, str]] = {
-        operator.ge: "IMPLIES",
-        means: "MEANS",
-        contradicts: "CONTRADICTS",
-        consistent_with: "IS CONSISTENT WITH",
-    }
-
     @property
     def short_string(self) -> str:
         """Summarize self without line breaks."""
-        relation = self.operation_names[self.operation]
+        relation = OPERATION_NAMES[self.operation]
         return f"{self.left.short_string} {relation} {self.right.short_string}"
 
     @property
@@ -1346,7 +1346,7 @@ class FactorMatch(NamedTuple):
         return self.short_string
 
     def __str__(self):
-        relation = self.operation_names[self.operation]
+        relation = OPERATION_NAMES[self.operation]
         indent = "  "
         left = textwrap.indent(str(self.left), prefix=indent)
         right = textwrap.indent(str(self.right), prefix=indent)
@@ -1606,7 +1606,7 @@ class TermSequence(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
-    items: Tuple[Optional[Term], ...] = ()
+    items: Tuple[Optional[Union["Entity", "Factor"]], ...] = ()
 
     @field_validator("items")
     @classmethod
