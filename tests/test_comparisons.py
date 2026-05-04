@@ -61,6 +61,27 @@ class TestQuantityInterval:
         assert comparison.quantity_range._include_negatives is True
         assert comparison.interval.end == float(-100)
 
+    def test_comparison_interval_with_negatives(self):
+        comparison = Comparison.new(
+            content="the balance in the bank account was",
+            sign="<=",
+            expression=100,
+            include_negatives=True,
+        )
+        assert comparison.quantity_range.magnitude == Decimal(100)
+        assert comparison.quantity_range._include_negatives is True
+        assert comparison.interval.start == float("-inf")
+        assert comparison.interval.end == float(100)
+
+    def test_comparison_pint_quantity(self):
+        comparison = Comparison.new(
+            content="the distance between {place1} and {place2} was",
+            sign=">",
+            expression=Q_("20 miles"),
+        )
+        assert comparison.quantity_range.magnitude == Decimal(20)
+        assert comparison.quantity_range.quantity_units == "mile"
+
     def test_comparison_interval(self):
         comparison = Comparison.new(
             content="the distance between {place1} and {place2} was",
@@ -79,6 +100,12 @@ class TestQuantityInterval:
 
     def test_negated_method_same_meaning(self, make_comparison):
         assert make_comparison["less"].negated().means(make_comparison["more"])
+
+    def test_no_string_as_quantity(self):
+        with pytest.raises(TypeError):
+            Comparison(
+                "twenty miles",
+            )
 
     def test_convert_false_statement_about_quantity_to_obverse(self):
         distance = Comparison.new(

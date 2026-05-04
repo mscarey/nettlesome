@@ -19,7 +19,7 @@ from nettlesome.units import gram, hour, kilograms, miles
 
 
 class TestStatements:
-    def test_Statement(self):
+    def test_statement(self):
         """
         Check that terms is created as a TermSequence.
         """

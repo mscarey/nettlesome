@@ -443,7 +443,6 @@ class Comparison(BaseModel, PhraseABC):
         cls,
         content: str,
         expression: str | int | float | date | Decimal | SympyQuantity | PlainQuantity,
-        # date | float | int | SympyQuantity | PlainQuantity | str
         sign: str = "==",
         include_negatives: bool | None = None,
         truth: bool | None = True,
@@ -503,10 +502,6 @@ class Comparison(BaseModel, PhraseABC):
     @model_validator(mode="before")
     def set_quantity_range(cls, values):
         """Reverse the sign of a Comparison if necessary."""
-        if isinstance(values, str):
-            raise TypeError(
-                f"Comparison objects should be initialized with keyword arguments, not a single string '{values}'."
-            )
         if values.get("truth") is False:
             values["truth"] = True
             values["quantity_range"].reverse_meaning()

@@ -15,7 +15,7 @@ class TestQuantities:
         left = UnitRange(quantity_magnitude=20, quantity_units="meter", sign=">")
         right = make_comparison["meters"].quantity_range
         assert left.implies(right)
-        assert left.q == Quantity(Decimal("20"), "meter")
+        assert left.quantity == Quantity(Decimal("20"), "meter")
 
     def test_quantity_from_string(self):
         left = UnitRange(quantity_magnitude=2000, quantity_units="day", sign="<")
