@@ -29,6 +29,15 @@ class TestStatements:
         )
         assert isinstance(shooting.terms, TermSequence)
 
+    def test_statement_no_terms(self):
+        """
+        Check that terms is created as an empty TermSequence if not provided.
+        """
+        predicate = Predicate(content="it rained yesterday")
+        statement = Statement(predicate=predicate, terms=None)
+        assert isinstance(statement.terms, TermSequence)
+        assert len(statement.terms.items) == 0
+
     def test_terms_cannot_be_string_in_list(self):
         city = Predicate(content="{place} was a city")
         with pytest.raises(ValidationError):
