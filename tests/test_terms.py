@@ -53,13 +53,13 @@ class TestMakeEntities:
 
     def test_term_sequence_from_one_term(self):
         entity = Entity(name="Austin")
-        sequence = TermSequence(items=(entity,))
-        assert sequence.items[0].name == entity.name
+        sequence = TermSequence(root=(entity,))
+        assert sequence[0].name == entity.name
 
     def test_cannot_put_string_in_term_sequence(self):
         entity = Entity(name="Austin")
         with pytest.raises(ValidationError):
-            TermSequence(items=(entity, "Dallas as a string"))
+            TermSequence(root=(entity, "Dallas as a string"))
 
 
 class TestSameMeaning:

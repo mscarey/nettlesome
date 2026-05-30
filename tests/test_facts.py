@@ -19,7 +19,7 @@ class TestFacts:
             predicate=make_predicate["shooting"],
             terms=[Entity(name="Al"), Entity(name="Ed")],
         )
-        assert f1.terms.items[0].short_string == Entity(name="Al").short_string
+        assert f1.terms[0].short_string == Entity(name="Al").short_string
 
     def test_brackets_around_generic_terms(self, make_predicate):
         statement = Statement(
@@ -117,7 +117,7 @@ class TestFacts:
         relevant = make_predicate["relevant"]
 
         fact = Statement(predicate=relevant, terms=(shooting, murder))
-        assert fact.terms.items[0].name == ""
+        assert fact.terms[0].name == ""
 
     def test_get_factor_from_recursive_search(self, make_complex_fact):
         complex = make_complex_fact["relevant_murder"]

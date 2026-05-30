@@ -11,7 +11,7 @@ from typing import Any, Callable, ClassVar, Dict, Iterator
 from typing import List, NamedTuple, Optional, Sequence, Tuple, Union
 from typing import KeysView, ValuesView, ItemsView
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import RootModel, ConfigDict, field_validator
 
 
 logger = logging.getLogger(__name__)
@@ -183,7 +183,7 @@ class Comparable(ABC):
         """
         answers: Dict[str, Term] = {}
 
-        for context in self.term_sequence.items:
+        for context in self.term_sequence:
             if context is not None:
                 answers.update(context.recursive_terms)
         return answers
@@ -202,7 +202,7 @@ class Comparable(ABC):
         for factor_name in self.context_factor_names:
             next_factor: Optional[Term] = self.__dict__.get(factor_name)
             context.append(next_factor)
-        return TermSequence(items=tuple(context))
+        return TermSequence(root=tuple(context))
 
     def __ge__(self, other: Optional[Comparable]) -> bool:
         """
@@ -302,11 +302,9 @@ class Comparable(ABC):
         For instance, "<Ann> and <Bob> both were members of the same family" has a
         second ordering "<Bob> and <Ann> both were members of the same family".
         """
-        for i, self_factor in enumerate(ordering.items):
-            if not (self_factor is other.term_sequence.items[i] is None):
-                if not (
-                    self_factor and relation(self_factor, other.term_sequence.items[i])
-                ):
+        for i, self_factor in enumerate(ordering):
+            if not (self_factor is other.term_sequence[i] is None):
+                if not (self_factor and relation(self_factor, other.term_sequence[i])):
                     return False
         return True
 
@@ -652,7 +650,7 @@ class Comparable(ABC):
             themselves as values.
         """
         generics: Dict[str, Term] = {}
-        for factor in self.term_sequence.items:
+        for factor in self.term_sequence:
             if factor is not None:
                 for generic in factor.generic_terms():
                     generics[generic.short_string] = generic
@@ -1601,14 +1599,23 @@ class DuplicateTermError(Exception):
     pass
 
 
-class TermSequence(BaseModel):
+class TermSequence(RootModel):
     """A sequence of Terms that can be compared in order."""
 
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
-    items: Tuple[Optional[Union["Entity", "Factor"]], ...] = ()
+    root: Tuple[Optional[Union["Entity", "Factor"]], ...] = ()
 
-    @field_validator("items")
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+    def __len__(self):
+        return len(self.root)
+
+    @field_validator("root")
     @classmethod
     def validate_terms(
         cls, value: Sequence[Optional[Term]]
@@ -1655,7 +1662,7 @@ class TermSequence(BaseModel):
         """
         context = context or ContextRegister()
         ordered_pairs: List[Tuple[Optional[Term], Optional[Term]]] = list(
-            zip_longest(self.items, other.items)
+            zip_longest(self, other)
         )
 
         # frontier holds the distinct ContextRegisters consistent with all pairs so far

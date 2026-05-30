@@ -36,7 +36,7 @@ class TestStatements:
         predicate = Predicate(content="it rained yesterday")
         statement = Statement(predicate=predicate, terms=None)
         assert isinstance(statement.terms, TermSequence)
-        assert len(statement.terms.items) == 0
+        assert len(statement.terms) == 0
 
     def test_terms_cannot_be_string_in_list(self):
         city = Predicate(content="{place} was a city")
@@ -66,7 +66,7 @@ class TestStatements:
         assert "name='New York'" in repr(statement)
 
     def test_get_terms(self, make_statement):
-        terms = make_statement["friends"].terms.items
+        terms = make_statement["friends"].terms
         assert len(terms) == 2
         assert terms[0].name == "Alice"
 
@@ -335,7 +335,7 @@ class TestStatements:
             "the statement it was false that the precise formulation "
             "of <lotus 1-2-3>'s code was necessary for <lotus 1-2-3> to work"
         )
-        assert len(fact.terms.items) == 1
+        assert len(fact.terms) == 1
 
     def test_indented_string(self):
         sued = Statement.new(
@@ -1544,5 +1544,5 @@ class TestAddition:
             ],
         )
         new = left + right
-        assert new.terms.items[0].name == "the State of Texas"
-        assert new.terms.items[1].name == "a box of pencils"
+        assert new.terms[0].name == "the State of Texas"
+        assert new.terms[1].name == "a box of pencils"

@@ -179,7 +179,7 @@ class StatementTemplate:
         """Get an ordered list of terms from a mapping of placeholder names to terms."""
         placeholders = self.placeholders
         result = [term_mapping[placeholder] for placeholder in placeholders]
-        return TermSequence(items=tuple(result))
+        return TermSequence(root=tuple(result))
 
     def _check_number_of_terms(
         self, placeholders: List[str], context: Sequence[Term]
