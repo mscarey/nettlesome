@@ -3,7 +3,9 @@
 from typing import ClassVar, Iterator, Tuple
 
 from pydantic import BaseModel
-from nettlesome.terms import Comparable, Explanation, Term
+
+from nettlesome.entities import Entity
+from nettlesome.terms import Comparable, Explanation, Term, TermSequence
 
 
 class Factor(Term, BaseModel):
@@ -68,3 +70,6 @@ class AbsenceOf(Comparable, BaseModel):
                     yield new_explanation.with_context(
                         new_explanation.context.reversed()
                     )
+
+
+TermSequence.model_rebuild()

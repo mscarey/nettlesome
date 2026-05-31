@@ -1,14 +1,13 @@
 """Descriptions of quantities."""
 
-from __future__ import annotations
-
-from abc import abstractproperty
+from abc import abstractmethod
 from datetime import date
 from decimal import Decimal
-from typing import Any, ClassVar, Dict, Optional, Union
+from typing import Any, ClassVar, Dict, Optional, Self, Union
 
 from pint import UnitRegistry, Quantity
-from pydantic import BaseModel, field_validator, model_validator
+from pint.facets.plain import PlainQuantity
+from pydantic import BaseModel, field_validator, model_validator, ValidationError
 import sympy
 from sympy import Eq, Interval, Mul, oo, S
 from sympy.sets import EmptySet, FiniteSet
@@ -49,7 +48,7 @@ def scale_union_of_intervals(
     return sympy.Union(*scaled_intervals)
 
 
-def scale_finiteset(elements: FiniteSet, scalar: Union[int, float]) -> FiniteSet:
+def scale_finiteset(elements: FiniteSet[int | float], scalar: int | float) -> FiniteSet:
     """
     Scale up set of finite numbers by multiplying by a scalar.
 
@@ -60,7 +59,7 @@ def scale_finiteset(elements: FiniteSet, scalar: Union[int, float]) -> FiniteSet
 
 
 def scale_ranges(
-    ranges: Union[Interval, sympy.Union], scalar: Union[int, float]
+    ranges: Union[Interval, FiniteSet, sympy.Union], scalar: Union[int, float]
 ) -> Union[Interval, FiniteSet, sympy.Union]:
     """
     Scale up set of interval ranges by multiplying by a scalar.
@@ -157,12 +156,13 @@ class QuantityRange(BaseModel):
         """Get lower bound of the range that the Comparison may refer to."""
         return -oo if self._include_negatives else 0
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def magnitude(self) -> Union[Decimal, int, float]:
         """Get amount of max or minimum of the quantity range, without a unit."""
         pass
 
-    def consistent_dimensionality(self, other: QuantityRange) -> bool:
+    def consistent_dimensionality(self, other: Self) -> bool:
         """Test if ``other`` has a quantity parameter consistent with ``self``."""
         return isinstance(other, self.__class__)
 
@@ -197,7 +197,7 @@ class QuantityRange(BaseModel):
         """Compare for same meaning."""
         if not isinstance(other, self.__class__):
             return False
-        return Eq(self.interval, other.interval)
+        return bool(Eq(self.interval, other.interval))
 
     def reverse_meaning(self) -> None:
         """
@@ -221,17 +221,17 @@ class QuantityRange(BaseModel):
 class UnitRange(QuantityRange, BaseModel):
     """A range defined relative to a pint Quantity."""
 
-    quantity_magnitude: Decimal
+    quantity_magnitude: Decimal | int
     quantity_units: str
     sign: str = "=="
     include_negatives: Optional[bool] = None
 
     @property
-    def q(self) -> Quantity:
+    def q(self) -> PlainQuantity[Decimal | int]:
         return Quantity(self.quantity_magnitude, self.quantity_units)
 
     @property
-    def quantity(self) -> Quantity:
+    def quantity(self) -> PlainQuantity[Decimal | int]:
         return self.q
 
     @property
@@ -240,7 +240,7 @@ class UnitRange(QuantityRange, BaseModel):
         return S.Reals
 
     @property
-    def magnitude(self) -> Union[int, float]:
+    def magnitude(self) -> Decimal | int:
         """Get magnitude of pint Quantity."""
         super().magnitude  # for the coverage
         return self.q.magnitude
@@ -287,7 +287,7 @@ class UnitRange(QuantityRange, BaseModel):
         return self._implies_quantity_interval(other_interval)
 
     def get_unit_converted_interval(
-        self, other: UnitRange
+        self, other: Self
     ) -> Union[Interval, FiniteSet, sympy.Union]:
         """Get ``other``'s interval if it was denominated in ``self``'s units."""
         if not isinstance(other, UnitRange):
@@ -344,6 +344,17 @@ class DecimalRange(QuantityRange, BaseModel):
     sign: str = "=="
     include_negatives: Optional[bool] = None
 
+    @field_validator("quantity", mode="before")
+    def convert_to_decimal(cls, value: Union[int, float, Decimal]) -> Decimal:
+        """Convert int or float to Decimal."""
+        if isinstance(value, Decimal):
+            return value
+        if isinstance(value, (int, float)):
+            return Decimal(value)
+        raise TypeError(
+            f"DecimalRange quantity must be an int, float, or Decimal, not {type(value)}."
+        )
+
     @property
     def domain(self) -> sympy.Set:
         """Set domain as natural numbers."""
@@ -385,13 +396,13 @@ class Comparison(BaseModel, PhraseABC):
     true that the weight was no more than 10 grams.
 
         >>> # example comparing a pint Quantity
-        >>> drug_comparison_with_upper_bound = Comparison(
-        ...     content="the weight of marijuana that $defendant possessed was",
+        >>> drug_comparison_with_upper_bound = Comparison.new(
+        ...     content="the weight of marijuana that {defendant} possessed was",
         ...     sign=">",
         ...     expression="10 grams",
         ...     truth=False)
         >>> str(drug_comparison_with_upper_bound)
-        'that the weight of marijuana that $defendant possessed was no more than 10 gram'
+        'that the weight of marijuana that {defendant} possessed was no more than 10 gram'
 
     When the number needed for a Comparison isn’t a physical quantity that can be described
     with the units in the pint library library, you should phrase the text in the template
@@ -401,11 +412,11 @@ class Comparison(BaseModel, PhraseABC):
 
         >>> # example comparing an integer
         >>> three_children = Comparison(
-        ...     content="the number of children in ${taxpayer}'s household was",
+        ...     content="the number of children in {taxpayer}'s household was",
         ...     sign="=",
         ...     expression=3)
         >>> str(three_children)
-        "that the number of children in ${taxpayer}'s household was exactly equal to 3"
+        "that the number of children in {taxpayer}'s household was exactly equal to 3"
 
     :param sign:
         A string representing an equality or inequality sign like ``==``,
@@ -431,11 +442,11 @@ class Comparison(BaseModel, PhraseABC):
     def new(
         cls,
         content: str,
-        expression: str | int | float | date,
+        expression: str | int | float | date | Decimal | SympyQuantity | PlainQuantity,
         sign: str = "==",
         include_negatives: bool | None = None,
-        truth: bool = True,
-    ) -> Comparison:
+        truth: bool | None = True,
+    ) -> Self:
         """
         Create a Comparison object.
 
@@ -491,40 +502,10 @@ class Comparison(BaseModel, PhraseABC):
     @model_validator(mode="before")
     def set_quantity_range(cls, values):
         """Reverse the sign of a Comparison if necessary."""
-        if not values.get("quantity_range"):
-            try:
-                quantity = cls.expression_to_quantity(values.pop("expression", None))
-            except AttributeError:
-                raise ValueError(
-                    "A Comparison must have a quantity_range, "
-                    "a quantity, or an expression."
-                )
-            sign = values.pop("sign", "==")
-            include_negatives = values.pop("include_negatives", None)
-            if isinstance(quantity, date):
-                values["quantity_range"] = DateRange(
-                    sign=sign,
-                    quantity=quantity,
-                    include_negatives=include_negatives,
-                )
-            elif isinstance(quantity, (str, Quantity)):
-                if isinstance(quantity, str):
-                    quantity = Q_(quantity)
-                values["quantity_range"] = UnitRange(
-                    sign=sign,
-                    quantity_magnitude=Decimal(quantity.magnitude),
-                    quantity_units=str(quantity.units),
-                    include_negatives=include_negatives,
-                )
-            else:
-                values["quantity_range"] = DecimalRange(
-                    sign=sign,
-                    quantity=quantity,
-                    include_negatives=include_negatives,
-                )
         if values.get("truth") is False:
             values["truth"] = True
-            values["quantity_range"].reverse_meaning()
+            if values.get("quantity_range") is not None:
+                values["quantity_range"].reverse_meaning()
         return values
 
     @field_validator("content")
@@ -542,8 +523,8 @@ class Comparison(BaseModel, PhraseABC):
 
     @classmethod
     def expression_to_quantity(
-        cls, value: Union[date, float, int, SympyQuantity]
-    ) -> Union[date, Decimal, str]:
+        cls, value: str | int | float | date | Decimal | SympyQuantity | PlainQuantity
+    ) -> date | Decimal | str:
         r"""
         Create numeric expression from text for Comparison class.
 
@@ -566,6 +547,8 @@ class Comparison(BaseModel, PhraseABC):
             return value
         if isinstance(value, (int, Decimal, float)):
             return Decimal(value)
+        if isinstance(value, PlainQuantity):
+            return str(Q_(str(value)))
         quantity = value.strip()
 
         try:
@@ -587,8 +570,8 @@ class Comparison(BaseModel, PhraseABC):
         """
         Get the range of numbers covered by the UnitInterval.
 
-        >>> weight=Comparison(
-        ...     content="the amount of gold $person possessed was",
+        >>> weight=Comparison.new(
+        ...     content="the amount of gold {person} possessed was",
         ...     sign=">=",
         ...     expression="10 grams")
         >>> weight.interval
@@ -598,7 +581,7 @@ class Comparison(BaseModel, PhraseABC):
         return self.quantity_range.interval
 
     @property
-    def quantity(self) -> Union[int, float, date, Quantity]:
+    def quantity(self) -> Union[Decimal, date, PlainQuantity[Decimal | int]]:
         """
         Get the maximum or minimum of the range.
 
@@ -606,8 +589,8 @@ class Comparison(BaseModel, PhraseABC):
             the number, pint Quantity, or date at the beginning or end of
             the range
 
-            >>> weight=Comparison(
-            ...     content="the amount of gold $person possessed was",
+            >>> weight=Comparison.new(
+            ...     content="the amount of gold {person} possessed was",
             ...     sign=">=",
             ...     expression="10 grams")
             >>> weight.quantity
@@ -620,8 +603,8 @@ class Comparison(BaseModel, PhraseABC):
         """
         Get operator describing the relationship between the quantity and the range.
 
-            >>> weight=Comparison(
-            ...     content="the amount of gold $person possessed was",
+            >>> weight=Comparison.new(
+            ...     content="the amount of gold {person} possessed was",
             ...     sign=">=",
             ...     expression="10 grams")
             >>> str(weight.quantity_range)
@@ -642,18 +625,18 @@ class Comparison(BaseModel, PhraseABC):
 
         May be based on template text, truth values, and :class:`.QuantityRange`\s.
 
-        >>> small_weight=Comparison(
-        ...     content="the amount of gold $person possessed was",
+        >>> small_weight=Comparison.new(
+        ...     content="the amount of gold {person} possessed was",
         ...     sign=">=",
         ...     expression=Q_("1 gram"))
-        >>> large_weight=Comparison(
-        ...     content="the amount of gold $person possessed was",
+        >>> large_weight=Comparison.new(
+        ...     content="the amount of gold {person} possessed was",
         ...     sign=">=",
         ...     expression=Q_("100 kilograms"))
         >>> str(large_weight)
-        'that the amount of gold $person possessed was at least 100 kilogram'
+        'that the amount of gold {person} possessed was at least 100 kilogram'
         >>> str(small_weight)
-        'that the amount of gold $person possessed was at least 1 gram'
+        'that the amount of gold {person} possessed was at least 1 gram'
         >>> large_weight.implies(small_weight)
         True
         """
@@ -670,10 +653,10 @@ class Comparison(BaseModel, PhraseABC):
         This method can convert different units to determine whether self and other
         refer to the same :class:`~.quantities.QuantityRange`\.
 
-        >>> volume_in_liters = Comparison(
+        >>> volume_in_liters = Comparison.new(
         ...     content="the volume of fuel in the tank was",
         ...     sign="=", expression="10 liters")
-        >>> volume_in_milliliters = Comparison(
+        >>> volume_in_milliliters = Comparison.new(
         ...     content="the volume of fuel in the tank was",
         ...     sign="=", expression="10000 milliliters")
         >>> volume_in_liters.means(volume_in_milliliters)
@@ -692,16 +675,16 @@ class Comparison(BaseModel, PhraseABC):
         this method looks for a contradiction based on the dimensionality or
         numeric range of the :class:`~.QuantityRange`\s for ``self`` and ``other``.
 
-            >>> earlier = Comparison(
-            ...     content="the date $dentist became a licensed dentist was",
+            >>> earlier = Comparison.new(
+            ...     content="the date {dentist} became a licensed dentist was",
             ...     sign="<", expression=date(1990, 1, 1))
-            >>> later = Comparison(
-            ...     content="the date $dentist became a licensed dentist was",
+            >>> later = Comparison.new(
+            ...     content="the date {dentist} became a licensed dentist was",
             ...     sign=">", expression=date(2010, 1, 1))
             >>> str(earlier)
-            'that the date $dentist became a licensed dentist was less than 1990-01-01'
+            'that the date {dentist} became a licensed dentist was less than 1990-01-01'
             >>> str(later)
-            'that the date $dentist became a licensed dentist was greater than 2010-01-01'
+            'that the date {dentist} became a licensed dentist was greater than 2010-01-01'
             >>> earlier.contradicts(later)
             True
             >>> later.contradicts(earlier)
@@ -716,13 +699,12 @@ class Comparison(BaseModel, PhraseABC):
 
         return self.quantity_range.contradicts(other.quantity_range)
 
-    def negated(self) -> Comparison:
+    def negated(self) -> Self:
         """Copy ``self``, with the opposite truth value."""
-        return Comparison(
+        return self.__class__(
             content=self.content,
             truth=not self.truth,
-            sign=self.quantity_range.sign,
-            expression=self.quantity_range.quantity,
+            quantity_range=self.quantity_range,
         )
 
     def __str__(self):

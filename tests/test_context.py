@@ -10,19 +10,19 @@ from nettlesome.statements import Statement
 
 
 class TestContextRegisters:
-    bird = Predicate(content="$bird was a bird")
-    paid = Predicate(content="$employer paid $employee")
+    bird = Predicate(content="{bird} was a bird")
+    paid = Predicate(content="{employer} paid {employee}")
 
     def test_possible_context_without_empty_spaces(self):
-        left = Statement(predicate=self.bird, terms=Entity(name="Owl"))
-        right = Statement(predicate=self.bird, terms=Entity(name="Owl"))
+        left = Statement(predicate=self.bird, terms=[Entity(name="Owl")])
+        right = Statement(predicate=self.bird, terms=[Entity(name="Owl")])
         contexts = list(left.possible_contexts(right))
         assert len(contexts) == 1
         assert contexts[0].check_match(Entity(name="Owl"), Entity(name="Owl"))
 
     def test_possible_context_different_terms(self):
-        left = Statement(predicate=self.bird, terms=Entity(name="Foghorn"))
-        right = Statement(predicate=self.bird, terms=Entity(name="Woody"))
+        left = Statement(predicate=self.bird, terms=[Entity(name="Foghorn")])
+        right = Statement(predicate=self.bird, terms=[Entity(name="Woody")])
         contexts = list(left.possible_contexts(right))
         assert len(contexts) == 1
         assert contexts[0].check_match(Entity(name="Foghorn"), Entity(name="Woody"))
@@ -46,12 +46,12 @@ class TestContextRegisters:
         assert changes != [[Entity(name="Alice")], [Entity(name="Dan")]]
 
     def test_cannot_update_context_register_from_lists(self):
-        left = Statement(
-            predicate="$shooter shot $victim",
+        left = Statement.new(
+            predicate="{shooter} shot {victim}",
             terms=[Entity(name="Alice"), Entity(name="Bob")],
         )
-        right = Statement(
-            predicate="$shooter shot $victim",
+        right = Statement.new(
+            predicate="{shooter} shot {victim}",
             terms=[Entity(name="Craig"), Entity(name="Dan")],
         )
         update = left.update_context_register(
@@ -79,8 +79,8 @@ class TestContextRegisters:
         Yields no context_register because the Term in f1 doesn't imply
         the Fact in f_relevant_murder.
         """
-        statement = Statement(
-            predicate="$person was a defendant", terms=Entity(name="Alice")
+        statement = Statement.new(
+            predicate="{person} was a defendant", terms=[Entity(name="Alice")]
         )
         complex_statement = make_complex_fact["relevant_murder"]
         gen = statement._context_registers(complex_statement, operator.ge)
@@ -91,7 +91,10 @@ class TestContextRegisters:
         context = ContextRegister()
         with pytest.raises(TypeError):
             context.insert_pair(
-                Entity(name="Bob"), Predicate(content="events transpired")
+                Entity(name="Bob"),
+                Predicate(
+                    content="events transpired"
+                ),  # ty: ignore[invalid-argument-type]
             )
 
     def test_failed_match(self):
@@ -117,7 +120,8 @@ class TestContextRegisters:
         )
         right = ContextRegister()
         right.insert_pair(Entity(name="Bob"), Entity(name="Alice"))
-        assert len(left.merged_with(right)) == 3
+        merged = left.merged_with(right)
+        assert merged and len(merged) == 3
 
     def test_import_to_mapping_no_change(self):
         old_mapping = ContextRegister.from_lists(
@@ -159,8 +163,8 @@ class TestContextRegisters:
         Test that _registers_for_interchangeable_context swaps the first two
         items in the ContextRegister
         """
-        factor = Statement(
-            predicate="$person1 and $person2 met with each other",
+        factor = Statement.new(
+            predicate="{person1} and {person2} met with each other",
             terms=[Entity(name="Al"), Entity(name="Ed")],
         )
         first_pattern, second_pattern = list(factor.term_permutations())
@@ -181,13 +185,13 @@ class TestContextRegisters:
             ContextRegister.create([Entity(name="Alice"), Entity(name="Bob")])
 
     def test_no_duplicate_context_interchangeable_terms(self):
-        left = Statement(
-            predicate=Predicate(content="$country1 signed a treaty with $country2"),
+        left = Statement.new(
+            predicate=Predicate(content="{country1} signed a treaty with {country2}"),
             terms=(Entity(name="Mexico"), Entity(name="USA")),
         )
 
-        right = Statement(
-            predicate=Predicate(content="$country3 signed a treaty with $country1"),
+        right = Statement.new(
+            predicate=Predicate(content="{country3} signed a treaty with {country1}"),
             terms=(Entity(name="Germany"), Entity(name="UK")),
         )
 
@@ -220,36 +224,46 @@ class TestLikelyContext:
         assert context.check_match(Entity(name="Alice"), Entity(name="Alice"))
 
     def test_likely_context_two_factors(self, make_statement):
-        left = FactorGroup([make_statement["murder"], make_statement["large_weight"]])
+        left = FactorGroup(
+            sequence=[make_statement["murder"], make_statement["large_weight"]]
+        )
         right = make_statement["small_weight_bob"]
         context = next(left.likely_contexts(right))
         assert context.check_match(Entity(name="Alice"), Entity(name="Bob"))
 
     def test_likely_context_two_by_two(self, make_statement):
-        left = FactorGroup([make_statement["murder"], make_statement["large_weight"]])
+        left = FactorGroup(
+            sequence=[make_statement["murder"], make_statement["large_weight"]]
+        )
         right = FactorGroup(
-            (make_statement["murder_entity_order"], make_statement["small_weight_bob"])
+            sequence=(
+                make_statement["murder_entity_order"],
+                make_statement["small_weight_bob"],
+            )
         )
         context = next(left.likely_contexts(right))
         assert context.check_match(Entity(name="Alice"), Entity(name="Bob"))
 
     def test_likely_context_different_terms(self):
-        copyright_registered = Statement(
-            predicate="$entity registered a copyright covering $work",
+        copyright_registered = Statement.new(
+            predicate="{entity} registered a copyright covering {work}",
             terms=[
                 Entity(name="Lotus Development Corporation"),
                 Entity(name="the Lotus menu command hierarchy"),
             ],
         )
-        copyrightable = Statement(
-            predicate="$work was copyrightable",
-            terms=Entity(name="the Lotus menu command hierarchy"),
+        copyrightable = Statement.new(
+            predicate="{work} was copyrightable",
+            terms=[Entity(name="the Lotus menu command hierarchy")],
         )
-        left = FactorGroup([copyrightable, copyright_registered])
+        left = FactorGroup(sequence=[copyrightable, copyright_registered])
         right = FactorGroup(
-            Statement(
-                predicate="$work was copyrightable", terms=Entity(name="the Java API")
-            )
+            sequence=[
+                Statement.new(
+                    predicate="{work} was copyrightable",
+                    terms=[Entity(name="the Java API")],
+                )
+            ]
         )
         context = next(left.likely_contexts(right))
         assert (
@@ -260,12 +274,12 @@ class TestLikelyContext:
         )
 
     def test_likely_context_from_factor_meaning(self):
-        left = Statement(
-            predicate="$part provided the means by which users controlled and operated $whole",
+        left = Statement.new(
+            predicate="{part} provided the means by which users controlled and operated {whole}",
             terms=[Entity(name="the Java API"), Entity(name="the Java language")],
         )
-        right = Statement(
-            predicate="$part provided the means by which users controlled and operated $whole",
+        right = Statement.new(
+            predicate="{part} provided the means by which users controlled and operated {whole}",
             terms=[
                 Entity(name="the Lotus menu command hierarchy"),
                 Entity(name="Lotus 1-2-3"),
@@ -289,29 +303,29 @@ class TestLikelyContext:
 
         Tests that Factors from "left" should be keys and Factors from "right" values.
         """
-        language_program = Statement(
-            predicate="$program was a computer program",
-            terms=Entity(name="the Java language"),
+        language_program = Statement.new(
+            predicate="{program} was a computer program",
+            terms=[Entity(name="the Java language")],
         )
-        lotus_program = Statement(
-            predicate="$program was a computer program",
-            terms=Entity(name="Lotus 1-2-3"),
+        lotus_program = Statement.new(
+            predicate="{program} was a computer program",
+            terms=[Entity(name="Lotus 1-2-3")],
         )
 
-        controlled = Statement(
-            predicate="$part provided the means by which users controlled and operated $whole",
+        controlled = Statement.new(
+            predicate="{part} provided the means by which users controlled and operated {whole}",
             terms=[
                 Entity(name="the Lotus menu command hierarchy"),
                 Entity(name="Lotus 1-2-3"),
             ],
         )
-        part = Statement(
-            predicate="$part was a literal element of $whole",
+        part = Statement.new(
+            predicate="{part} was a literal element of {whole}",
             terms=[Entity(name="the Java API"), Entity(name="the Java language")],
         )
 
-        left = FactorGroup([lotus_program, controlled])
-        right = FactorGroup([language_program, part])
+        left = FactorGroup(sequence=[lotus_program, controlled])
+        right = FactorGroup(sequence=[language_program, part])
 
         new = left | right
         text = (
@@ -363,8 +377,8 @@ class TestChangeRegisters:
         assert next(gen)[0].name == "apple"
 
     def test_no_iterables_in_register(self):
-        left = FactorGroup()
-        right = FactorGroup()
+        left = FactorGroup(sequence=[])
+        right = FactorGroup(sequence=[])
         context = ContextRegister()
         with pytest.raises(TypeError):
             context.insert_pair(left, right)

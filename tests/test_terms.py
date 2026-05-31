@@ -1,12 +1,12 @@
-from nettlesome.terms import ContextRegister, TermSequence
 import operator
 
 import pytest
+from pydantic import ValidationError
 
-from nettlesome.predicates import Predicate
 from nettlesome.entities import Entity
+from nettlesome.predicates import Predicate
 from nettlesome.statements import Statement
-from nettlesome.terms import means
+from nettlesome.terms import ContextRegister, TermSequence, means
 
 
 class TestMakeEntities:
@@ -34,7 +34,6 @@ class TestMakeEntities:
         assert any(register == expected for register in update)
 
     def test_new_context(self):
-
         changes = ContextRegister.from_lists(
             [Entity(name="Death Star 3"), Entity(name="Kylo Ren")],
             [Entity(name="Death Star 1"), Entity(name="Darth Vader")],
@@ -53,16 +52,14 @@ class TestMakeEntities:
         assert register.get("<Alice>") == craig
 
     def test_term_sequence_from_one_term(self):
-
         entity = Entity(name="Austin")
-        sequence = TermSequence(entity)
+        sequence = TermSequence(root=(entity,))
         assert sequence[0].name == entity.name
 
     def test_cannot_put_string_in_term_sequence(self):
-
         entity = Entity(name="Austin")
-        with pytest.raises(TypeError):
-            TermSequence([entity, "Dallas as a string"])
+        with pytest.raises(ValidationError):
+            TermSequence(root=(entity, "Dallas as a string"))
 
 
 class TestSameMeaning:
@@ -74,7 +71,7 @@ class TestSameMeaning:
 
     def test_entity_does_not_mean_statement(self):
         entity = Entity(name="Bob")
-        statement = Statement(predicate="$person loves ice cream", terms=entity)
+        statement = Statement.new(predicate="{person} loves ice cream", terms=[entity])
         assert not entity.means(statement)
         assert not statement.means(entity)
 
@@ -108,7 +105,7 @@ class TestImplication:
 
     def test_entity_does_not_imply_statement(self):
         entity = Entity(name="Bob")
-        statement = Statement(predicate="$person loves ice cream", terms=entity)
+        statement = Statement.new(predicate="{person} loves ice cream", terms=[entity])
         assert not entity.implies(statement)
         assert not statement.implies(entity)
         assert not entity >= statement
@@ -124,7 +121,7 @@ class TestContradiction:
 
     def test_no_contradiction_of_other_entity(self):
         assert not Entity(name="Al").contradicts(Entity(name="Ed"))
-        assert not Entity(name="Al").contradicts(Statement(predicate="any text"))
+        assert not Entity(name="Al").contradicts(Statement.new(predicate="any text"))
 
 
 class TestAdd:

@@ -13,135 +13,135 @@ from nettlesome.entities import Entity
 @pytest.fixture(scope="class")
 def make_predicate() -> Dict[str, Predicate]:
     return {
-        "make_predicate": Predicate(content="$person committed a crime"),
-        "murder": Predicate(content="$shooter murdered $victim"),
-        "murder_whether": Predicate(content="$shooter murdered $victim", truth=None),
-        "murder_false": Predicate(content="$shooter murdered $victim", truth=False),
+        "make_predicate": Predicate(content="{person} committed a crime"),
+        "murder": Predicate(content="{shooter} murdered {victim}"),
+        "murder_whether": Predicate(content="{shooter} murdered {victim}", truth=None),
+        "murder_false": Predicate(content="{shooter} murdered {victim}", truth=False),
         "irrelevant": Predicate(
-            content="$evidence is relevant to show $fact", truth=False
+            content="{evidence} is relevant to show {fact}", truth=False
         ),
-        "relevant": Predicate(content="$evidence is relevant to show $fact"),
+        "relevant": Predicate(content="{evidence} is relevant to show {fact}"),
         "relevant_whether": Predicate(
-            content="$evidence is relevant to show $fact", truth=None
+            content="{evidence} is relevant to show {fact}", truth=None
         ),
-        "shooting": Predicate(content="$shooter shot $victim"),
-        "shooting_self": Predicate(content="$shooter shot $shooter"),
-        "no_shooting": Predicate(content="$shooter shot $victim", truth=False),
-        "shooting_whether": Predicate(content="$shooter shot $victim", truth=None),
-        "plotted": Predicate(content="$plotter1 plotted with $plotter2"),
-        "crime": Predicate(content="$person1 committed a crime"),
-        "no_crime": Predicate(content="$person1 committed a crime", truth=False),
+        "shooting": Predicate(content="{shooter} shot {victim}"),
+        "shooting_self": Predicate(content="{shooter} shot {shooter}"),
+        "no_shooting": Predicate(content="{shooter} shot {victim}", truth=False),
+        "shooting_whether": Predicate(content="{shooter} shot {victim}", truth=None),
+        "plotted": Predicate(content="{plotter1} plotted with {plotter2}"),
+        "crime": Predicate(content="{person1} committed a crime"),
+        "no_crime": Predicate(content="{person1} committed a crime", truth=False),
         "three_entities": Predicate(
-            content="$planner told $intermediary to hire $shooter"
+            content="{planner} told {intermediary} to hire {shooter}"
         ),
-        "friends": Predicate(content="$person1 and $person2 were friends"),
-        "reliable": Predicate(content="$evidence was reliable"),
+        "friends": Predicate(content="{person1} and {person2} were friends"),
+        "reliable": Predicate(content="{evidence} was reliable"),
         "no_context": Predicate(content="context was included", truth=False),
         # Use the irrelevant predicates/factors to make sure they don't affect an outcome.
-        "irrelevant_0": Predicate(content="$person was a clown"),
-        "irrelevant_1": Predicate(content="$person was a bear"),
-        "irrelevant_2": Predicate(content="$place was a circus"),
-        "irrelevant_3": Predicate(content="$person performed at $place"),
+        "irrelevant_0": Predicate(content="{person} was a clown"),
+        "irrelevant_1": Predicate(content="{person} was a bear"),
+        "irrelevant_2": Predicate(content="{place} was a circus"),
+        "irrelevant_3": Predicate(content="{person} performed at {place}"),
     }
 
 
 @pytest.fixture(scope="class")
-def make_comparison() -> Dict[str, Predicate]:
+def make_comparison() -> Dict[str, Predicate | Comparison]:
     return {
-        "small_weight": Comparison(
-            content="the amount of gold $person possessed was",
+        "small_weight": Comparison.new(
+            content="the amount of gold {person} possessed was",
             sign=">=",
             expression=Q_("1 gram"),
         ),
-        "large_weight": Comparison(
-            content="the amount of gold $person possessed was",
+        "large_weight": Comparison.new(
+            content="the amount of gold {person} possessed was",
             sign=">=",
             expression=Q_("100 kilograms"),
         ),
-        "quantity=3": Comparison(
+        "quantity=3": Comparison.new(
             content="The number of mice was", sign="==", expression=3
         ),
-        "quantity>=4": Comparison(
+        "quantity>=4": Comparison.new(
             content="The number of mice was", sign=">=", expression=4
         ),
-        "quantity>5": Comparison(
+        "quantity>5": Comparison.new(
             content="The number of mice was", sign=">", expression=5
         ),
-        "acres": Comparison(
-            content="the distance between $place1 and $place2 was",
+        "acres": Comparison.new(
+            content="the distance between {place1} and {place2} was",
             sign=">=",
             expression=Q_("10 acres"),
         ),
-        "exact": Comparison(
-            content="the distance between $place1 and $place2 was",
+        "exact": Comparison.new(
+            content="the distance between {place1} and {place2} was",
             sign="==",
             expression=Q_("25 feet"),
         ),
-        "float_distance": Comparison(
-            content="the distance between $place1 and $place2 was",
+        "float_distance": Comparison.new(
+            content="the distance between {place1} and {place2} was",
             truth=True,
             sign="<",
             expression=20.0,
         ),
-        "higher_int": Comparison(
-            content="the distance between $place1 and $place2 was",
+        "higher_int": Comparison.new(
+            content="the distance between {place1} and {place2} was",
             sign="<=",
             expression=30,
         ),
-        "int_distance": Comparison(
-            content="the distance between $place1 and $place2 was",
+        "int_distance": Comparison.new(
+            content="the distance between {place1} and {place2} was",
             truth=True,
             sign="<",
             expression=20,
         ),
-        "int_higher": Comparison(
-            content="the distance between $place1 and $place2 was",
+        "int_higher": Comparison.new(
+            content="the distance between {place1} and {place2} was",
             sign="<=",
             expression=30,
         ),
-        "less": Comparison(
-            content="the distance between $place1 and $place2 was",
+        "less": Comparison.new(
+            content="the distance between {place1} and {place2} was",
             truth=True,
             sign="<",
             expression=Q_("35 feet"),
         ),
-        "less_whether": Comparison(
-            content="the distance between $place1 and $place2 was",
+        "less_whether": Comparison.new(
+            content="the distance between {place1} and {place2} was",
             truth=None,
             sign="<",
             expression=Q_("35 feet"),
         ),
-        "less_than_20": Comparison(
-            content="the distance between $place1 and $place2 was",
+        "less_than_20": Comparison.new(
+            content="the distance between {place1} and {place2} was",
             truth=True,
             sign="<",
             expression=Q_("20 feet"),
         ),
-        "meters": Comparison(
-            content="the distance between $place1 and $place2 was",
+        "meters": Comparison.new(
+            content="the distance between {place1} and {place2} was",
             sign=">=",
             expression=Q_("10 meters"),
         ),
-        "not_equal": Comparison(
-            content="the distance between $place1 and $place2 was",
+        "not_equal": Comparison.new(
+            content="the distance between {place1} and {place2} was",
             truth=True,
             sign="!=",
             expression=Q_("35 feet"),
         ),
-        "more": Comparison(
-            content="the distance between $place1 and $place2 was",
+        "more": Comparison.new(
+            content="the distance between {place1} and {place2} was",
             truth=True,
             sign=">=",
             expression=Q_("35 feet"),
         ),
-        "not_more": Comparison(
-            content="the distance between $place1 and $place2 was",
+        "not_more": Comparison.new(
+            content="the distance between {place1} and {place2} was",
             truth=False,
             sign=">",
             expression=Q_("35 feet"),
         ),
-        "way_more": Comparison(
-            content="the distance between $place1 and $place2 was",
+        "way_more": Comparison.new(
+            content="the distance between {place1} and {place2} was",
             truth=True,
             sign=">=",
             expression=Q_("30 miles"),
@@ -150,7 +150,7 @@ def make_comparison() -> Dict[str, Predicate]:
 
 
 @pytest.fixture(scope="class")
-def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
+def make_statement(make_predicate, make_comparison) -> Dict[str, Statement | AbsenceOf]:
     p = make_predicate
     c = make_comparison
     return {
@@ -161,7 +161,7 @@ def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
             predicate=p["irrelevant_1"], terms=[Entity(name="Dan")]
         ),
         "irrelevant_2": Statement(
-            predicate=p["irrelevant_2"], terms=Entity(name="Dan")
+            predicate=p["irrelevant_2"], terms=[Entity(name="Dan")]
         ),
         "irrelevant_3": Statement(
             predicate=p["irrelevant_3"],
@@ -175,19 +175,19 @@ def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
             predicate=p["irrelevant_3"],
             terms=[Entity(name="Craig"), Entity(name="Alice")],
         ),
-        "crime": Statement(predicate=p["crime"], terms=Entity(name="Alice")),
-        "crime_bob": Statement(predicate=p["crime"], terms=Entity(name="Bob")),
-        "crime_craig": Statement(predicate=p["crime"], terms=Entity(name="Craig")),
+        "crime": Statement(predicate=p["crime"], terms=[Entity(name="Alice")]),
+        "crime_bob": Statement(predicate=p["crime"], terms=[Entity(name="Bob")]),
+        "crime_craig": Statement(predicate=p["crime"], terms=[Entity(name="Craig")]),
         "crime_generic": Statement(
-            predicate=p["crime"], terms=Entity(name="Alice"), generic=True
+            predicate=p["crime"], terms=[Entity(name="Alice")], generic=True
         ),
         "crime_specific_person": Statement(
-            predicate=p["crime"], terms=Entity(name="Alice", generic=False)
+            predicate=p["crime"], terms=[Entity(name="Alice", generic=False)]
         ),
         "absent_no_crime": AbsenceOf(
-            absent=Statement(predicate=p["no_crime"], terms=Entity(name="Alice"))
+            absent=Statement(predicate=p["no_crime"], terms=[Entity(name="Alice")])
         ),
-        "no_crime": Statement(predicate=p["no_crime"], terms=Entity(name="Alice")),
+        "no_crime": Statement(predicate=p["no_crime"], terms=[Entity(name="Alice")]),
         "no_crime_entity_order": Statement(
             predicate=p["no_crime"], terms=[Entity(name="Bob")]
         ),
@@ -242,24 +242,24 @@ def make_statement(make_predicate, make_comparison) -> Dict[str, Statement]:
         ),
         "large_weight": Statement(
             predicate=c["large_weight"],
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         ),
         "large_weight_craig": Statement(
             predicate=c["large_weight"],
-            terms=Entity(name="Craig"),
+            terms=[Entity(name="Craig")],
         ),
         "small_weight": Statement(
             predicate=c["small_weight"],
-            terms=Entity(name="Alice"),
+            terms=[Entity(name="Alice")],
         ),
         "small_weight_bob": Statement(
             predicate=c["small_weight"],
-            terms=Entity(name="Bob"),
+            terms=[Entity(name="Bob")],
         ),
         "friends": Statement(
             predicate=p["friends"], terms=[Entity(name="Alice"), Entity(name="Bob")]
         ),
-        "no_context": Statement(predicate=p["no_context"]),
+        "no_context": Statement(predicate=p["no_context"], terms=[]),
         "exact": Statement(
             predicate=c["exact"],
             terms=[Entity(name="San Francisco"), Entity(name="Oakland")],

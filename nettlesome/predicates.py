@@ -8,10 +8,10 @@ the `pint <https://pint.readthedocs.io/en/>`_ library).
 
 from __future__ import annotations
 from abc import ABCMeta
+import re
 
 from itertools import product
-
-from string import Template
+from string import templatelib
 from typing import Any, Dict, Mapping
 from typing import List, Optional, Sequence, Set, Tuple
 
@@ -21,7 +21,11 @@ from nettlesome.terms import Comparable, TermSequence
 from nettlesome.terms import Term
 
 
-class StatementTemplate(Template):
+Interpolation = templatelib.Interpolation
+TStringTemplate = templatelib.Template
+
+
+class StatementTemplate:
     r"""
     A text template for a Predicate.
 
@@ -29,36 +33,37 @@ class StatementTemplate(Template):
     that can be substituted into the :class:`~nettlesome.predicates.Predicate`\.
     """
 
+    _PLACEHOLDER_PATTERN = re.compile(
+        r"(?<!\{)\{(?P<named>[_a-zA-Z][_a-zA-Z0-9]*)\}(?!\})"
+    )
+
     def __init__(self, template: str, make_singular: bool = True) -> None:
         r"""
         Identify placeholders in template text, and make verbs singular if needed.
 
             >>> school_template = StatementTemplate(
-            ... "$group were at school", make_singular=True)
+            ... "{group} were at school", make_singular=True)
             >>> str(school_template)
-            'StatementTemplate("$group was at school")'
+            'StatementTemplate("{group} was at school")'
 
         The make_singular flag only affects verbs immediately after :class:`~nettlesome.terms.Term`\s.
 
-            >>> text = "$group thought the exams were difficult"
+            >>> text = "{group} thought the exams were difficult"
             >>> exams_template = StatementTemplate(text, make_singular=True)
             >>> str(exams_template)
-            'StatementTemplate("$group thought the exams were difficult")'
+            'StatementTemplate("{group} thought the exams were difficult")'
 
         :param template:
-            text for creating a :py:class:`string.Template`
+            text containing `{placeholder}` markers for term substitution
 
         :param make_singular:
             whether "were" after a placeholder should be converted to
             singular "was"
         """
-        super().__init__(template)
-        placeholders = [
-            m.group("named") or m.group("braced")
-            for m in self.pattern.finditer(self.template)
-            if m.group("named") or m.group("braced")
-        ]
-        self._placeholders = list(dict.fromkeys(placeholders))
+        self._placeholders: List[str] = []
+        self._placeholder_tokens: List[str] = []
+        self._t_template = TStringTemplate(template)
+        self._refresh_parsed_template(template)
 
         if make_singular:
             self.make_content_singular()
@@ -68,16 +73,74 @@ class StatementTemplate(Template):
 
     def make_content_singular(self) -> None:
         """Convert template text for self.context to singular "was"."""
-        for placeholder in self.placeholders:
-            named_pattern = "$" + placeholder + " were"
-            braced_pattern = "${" + placeholder + "} were"
-            self.template = self.template.replace(
-                named_pattern, "$" + placeholder + " was"
+        strings = list(self._t_template.strings)
+        for idx in range(1, len(strings)):
+            if strings[idx].startswith(" were"):
+                strings[idx] = " was" + strings[idx][5:]
+
+        fragments: List[str | Interpolation] = [strings[0]]
+        for idx, token in enumerate(self._placeholder_tokens):
+            placeholder_name = token[1:-1]
+            fragments.append(
+                Interpolation(placeholder_name, placeholder_name, None, "")
             )
-            self.template = self.template.replace(
-                braced_pattern, "$" + placeholder + " was"
-            )
+            fragments.append(strings[idx + 1])
+        self._t_template = TStringTemplate(*fragments)
         return None
+
+    def _refresh_parsed_template(self, template_text: str) -> None:
+        """Parse {placeholders} into a templatelib.Template-backed representation."""
+        fragments: List[str | Interpolation] = []
+        placeholders_in_order: List[str] = []
+        placeholder_tokens: List[str] = []
+        start = 0
+
+        for match in self._PLACEHOLDER_PATTERN.finditer(template_text):
+            fragments.append(template_text[start : match.start()])
+            named = match.group("named")
+            if named is not None:
+                placeholders_in_order.append(named)
+                placeholder_tokens.append(f"{{{named}}}")
+                fragments.append(Interpolation(named, named, None, ""))
+
+            start = match.end()
+
+        fragments.append(template_text[start:])
+        self._placeholders = list(dict.fromkeys(placeholders_in_order))
+        self._placeholder_tokens = placeholder_tokens
+        self._t_template = TStringTemplate(*fragments)
+
+    @property
+    def template(self) -> str:
+        """Text representation reconstructed from the stored t-template."""
+        strings = self._t_template.strings
+        rebuilt_template: List[str] = [strings[0]]
+        for idx, token in enumerate(self._placeholder_tokens):
+            rebuilt_template.append(token)
+            rebuilt_template.append(strings[idx + 1])
+        return "".join(rebuilt_template)
+
+    def substitute(
+        self, mapping: Optional[Mapping[str, Any]] = None, /, **kwargs: Any
+    ) -> str:
+        """Substitute placeholders in template text with values from mapping and kwargs."""
+        substitutions: Dict[str, Any] = {}
+        if mapping is not None:
+            substitutions.update(mapping)
+        substitutions.update(kwargs)
+
+        chunks: List[str] = []
+        for chunk in self._t_template:
+            if isinstance(chunk, str):
+                chunks.append(chunk)
+                continue
+
+            key = chunk.expression
+            if key not in substitutions:
+                raise KeyError(key)
+            chunks.append(str(substitutions[key]))
+
+        return "".join(chunks)
 
     def get_template_with_plurals(self, context: Sequence[Term]) -> str:
         """
@@ -85,25 +148,30 @@ class StatementTemplate(Template):
 
         Does not modify this object's template attribute.
         """
-        result = self.template[:]
+        strings = list(self._t_template.strings)
         placeholders = self.placeholders
         self._check_number_of_terms(placeholders, context)
         for idx, factor in enumerate(context):
-            if factor.__dict__.get("plural") is True:
-                named_pattern = "$" + placeholders[idx] + " was"
-                braced_pattern = "${" + placeholders[idx] + "} was"
-                result = result.replace(
-                    named_pattern, "$" + placeholders[idx] + " were"
-                )
-                result = result.replace(
-                    braced_pattern, "$" + placeholders[idx] + " were"
-                )
-        return result
+            if factor.__dict__.get("plural") is True and strings[idx + 1].startswith(
+                " was"
+            ):
+                strings[idx + 1] = " were" + strings[idx + 1][4:]
+
+        rebuilt_template: List[str] = [strings[0]]
+        for idx, token in enumerate(self._placeholder_tokens):
+            rebuilt_template.append(token)
+            rebuilt_template.append(strings[idx + 1])
+        return "".join(rebuilt_template)
 
     @property
     def placeholders(self) -> List[str]:
         """List substrings of template text marked as placeholders."""
         return self._placeholders
+
+    @property
+    def text_fragments(self) -> Tuple[str, ...]:
+        """Literal text segments between placeholders in the parsed template."""
+        return self._t_template.strings
 
     def get_term_sequence_from_mapping(
         self, term_mapping: Mapping[str, Term]
@@ -111,7 +179,7 @@ class StatementTemplate(Template):
         """Get an ordered list of terms from a mapping of placeholder names to terms."""
         placeholders = self.placeholders
         result = [term_mapping[placeholder] for placeholder in placeholders]
-        return TermSequence(result)
+        return TermSequence(root=tuple(result))
 
     def _check_number_of_terms(
         self, placeholders: List[str], context: Sequence[Term]
@@ -196,8 +264,8 @@ class PhraseABC(metaclass=ABCMeta):
         The means method will return False based on any difference in
         the Predicate's template text, other than the placeholder names.
 
-        >>> talked = Predicate(content="$speaker talked to $listener")
-        >>> spoke = Predicate(content="$speaker spoke to $listener")
+        >>> talked = Predicate(content="{speaker} talked to {listener}")
+        >>> spoke = Predicate(content="{speaker} spoke to {listener}")
         >>> talked.means(spoke)
         False
 
@@ -205,9 +273,9 @@ class PhraseABC(metaclass=ABCMeta):
         which placeholders are marked as interchangeable.
 
         >>> game_between_others = Predicate(
-        ...     content="$organizer1 and $organizer2 planned for $player1 to play $game against $player2.")
+        ...     content="{organizer1} and {organizer2} planned for {player1} to play {game} against {player2}.")
         >>> game_between_each_other = Predicate(
-        ...     content="$organizer1 and $organizer2 planned for $organizer1 to play $game against $organizer2.")
+        ...     content="{organizer1} and {organizer2} planned for {organizer1} to play {game} against {organizer2}.")
         >>> game_between_others.means(game_between_each_other)
         False
 
@@ -233,13 +301,13 @@ class PhraseABC(metaclass=ABCMeta):
         text but a truth value of None.
 
             >>> lived_at = Predicate(
-            ...     content="$person lived at $place",
+            ...     content="{person} lived at {place}",
             ...     truth=True)
             >>> whether_lived_at = Predicate(
-            ...     content="$person lived at $place",
+            ...     content="{person} lived at {place}",
             ...     truth=None)
             >>> str(whether_lived_at)
-            'whether $person lived at $place'
+            'whether {person} lived at {place}'
             >>> lived_at.implies(whether_lived_at)
             True
             >>> whether_lived_at.implies(lived_at)
@@ -307,16 +375,6 @@ class PhraseABC(metaclass=ABCMeta):
         """
         return StatementTemplate(self.content, make_singular=True)
 
-    def content_without_placeholders(self) -> str:
-        """
-        Get template text with placeholders replaced by identical bracket pairs.
-
-        Produces a string that will evaluate equal for two templates with
-        identical non-placedholder text.
-        """
-        changes = {p: "{}" for p in self.template.placeholders}
-        return self.template.substitute(**changes)
-
     def _content_with_terms(self, terms: Sequence[Term]) -> str:
         r"""
         Make a sentence by filling in placeholders with names of Factors.
@@ -342,10 +400,13 @@ class PhraseABC(metaclass=ABCMeta):
             whether ``self`` and ``other`` have :attr:`~Predicate.content` strings
             similar enough to be considered to have the same meaning.
         """
-        return (
-            self.content_without_placeholders().lower()
-            == other.content_without_placeholders().lower()
+        left_fragments = tuple(
+            fragment.lower() for fragment in self.template.text_fragments
         )
+        right_fragments = tuple(
+            fragment.lower() for fragment in other.template.text_fragments
+        )
+        return left_fragments == right_fragments
 
     def same_term_positions(self, other: PhraseABC) -> bool:
         """Test if self and other have same positions for interchangeable Terms."""
@@ -422,7 +483,7 @@ class Predicate(PhraseABC, BaseModel, extra="forbid"):
     term once.
 
         >>> # the template has two placeholders referring to the identical term
-        >>> opened = Predicate(content="$applicant opened a bank account for $applicant and $cosigner")
+        >>> opened = Predicate(content="{applicant} opened a bank account for {applicant} and {cosigner}")
 
     Sometimes, a Predicate or Comparison needs to mention two terms that are
     different from each other, but that have interchangeable positions in that
@@ -431,7 +492,7 @@ class Predicate(PhraseABC, BaseModel, extra="forbid"):
     except that the different placeholders should each end with a different digit.
 
         >>> # the template has two placeholders referring to different but interchangeable terms
-        >>> members = Predicate(content="$relative1 and $relative2 both were members of the same family")
+        >>> members = Predicate(content="{relative1} and {relative2} both were members of the same family")
 
     :param template:
         a clause containing an assertion in English in the past tense, with

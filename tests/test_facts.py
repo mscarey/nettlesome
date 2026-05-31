@@ -41,13 +41,15 @@ class TestFacts:
 
     def test_repeating_entity_string(self):
         three_entities = Predicate(
-            content="$planner told $intermediary to hire $shooter"
+            content="{planner} told {intermediary} to hire {shooter}"
         )
         statement_3 = Statement(
             predicate=three_entities,
             terms=[Entity(name="Al"), Entity(name="Bob"), Entity(name="Cid")],
         )
-        two_entities = Predicate(content="$shooter told $intermediary to hire $shooter")
+        two_entities = Predicate(
+            content="{shooter} told {intermediary} to hire {shooter}"
+        )
         statement_2 = Statement(
             predicate=two_entities, terms=[Entity(name="Al"), Entity(name="Bob")]
         )
@@ -68,7 +70,7 @@ class TestFacts:
         of the Statement.
         """
         three_entities = Predicate(
-            content="$planner told $intermediary to hire $shooter"
+            content="{planner} told {intermediary} to hire {shooter}"
         )
         statement_3 = Statement(
             predicate=three_entities,
@@ -88,7 +90,7 @@ class TestFacts:
         elaine = Entity(name="Elaine", generic=True)
         opened_account = Statement(
             predicate=Predicate(
-                content="$applicant opened a bank account for $applicant and $cosigner"
+                content="{applicant} opened a bank account for {applicant} and {cosigner}"
             ),
             terms=(devon, elaine),
         )
@@ -101,8 +103,8 @@ class TestFacts:
             [Entity(name="Death Star 3"), Entity(name="Kylo Ren")],
             [Entity(name="Death Star 1"), Entity(name="Darth Vader")],
         )
-        statement = Statement(
-            predicate="$person blew up a planet with $weapon",
+        statement = Statement.new(
+            predicate="{person} blew up a planet with {weapon}",
             terms=[Entity(name="Kylo Ren"), Entity(name="Death Star 3")],
         )
         new = statement.new_context(changes)
@@ -129,8 +131,8 @@ class TestFacts:
         assert "Greg committed a crime" in str(different)
 
     def test_type_of_terms(self, make_statement):
-        assert isinstance(make_statement["crime"].terms, list)
-        assert isinstance(make_statement["crime"].term_sequence, TermSequence)
+        assert isinstance(make_statement["crime"].terms, TermSequence)
+        assert make_statement["crime"].term_sequence is make_statement["crime"].terms
 
     def test_concrete_to_abstract(self, make_statement):
         assert (
@@ -167,8 +169,8 @@ class TestFacts:
         )
 
     def test_length_with_specific_term(self):
-        statement = Statement(
-            predicate="$person paid tax to $state",
+        statement = Statement.new(
+            predicate="{person} paid tax to {state}",
             terms=[
                 Entity(name="Alice"),
                 Entity(name="the State of Texas", generic=False),
@@ -177,10 +179,10 @@ class TestFacts:
         assert len(statement) == 1
 
     def test_truth_param(self):
-        no_license = Statement(
-            predicate="$business was licensed as a money transmitting business",
+        no_license = Statement.new(
+            predicate="{business} was licensed as a money transmitting business",
             truth=False,
-            terms=Entity(name="Helix"),
+            terms=[Entity(name="Helix")],
         )
         assert no_license.predicate.truth is False
 
@@ -198,22 +200,22 @@ class TestSameMeaning:
         )
 
     def test_generic_terms_equal(self):
-        generic = Statement(predicate="something happened", generic=True)
-        generic_false = Statement(
+        generic = Statement.new(predicate="something happened", generic=True)
+        generic_false = Statement.new(
             predicate=Predicate(content="something happened", truth=False), generic=True
         )
         assert generic.means(generic_false)
         assert generic_false.means(generic)
 
     def test_generic_and_specific_factors_unequal(self):
-        generic = Statement(predicate="something happened", generic=True)
-        specific = Statement(predicate="something happened", generic=False)
+        generic = Statement.new(predicate="something happened", generic=True)
+        specific = Statement.new(predicate="something happened", generic=False)
         assert not generic.means(specific)
 
     def test_cannot_repeat_term_in_termsequence(self, make_predicate):
         with pytest.raises(DuplicateTermError):
-            Statement(
-                predicate="$person1 shot $person2",
+            Statement.new(
+                predicate="{person1} shot {person2}",
                 terms=[Entity(name="Al"), Entity(name="Al")],
             )
 
@@ -221,12 +223,12 @@ class TestSameMeaning:
         assert not make_statement["shooting"].means(make_statement["murder"])
 
     def test_unequal_because_one_factor_is_absent(self, make_predicate):
-        left = Statement(
+        left = Statement.new(
             predicate=make_predicate["shooting"],
             terms=[Entity(name="Al"), Entity(name="Bo")],
         )
         right = AbsenceOf(
-            absent=Statement(
+            absent=Statement.new(
                 predicate=make_predicate["shooting"],
                 terms=[Entity(name="Al"), Entity(name="Bob")],
             )
@@ -253,15 +255,15 @@ class TestSameMeaning:
         ann = Entity(name="Ann", generic=False)
         bob = Entity(name="Bob", generic=False)
 
-        ann_and_bob_were_family = Statement(
+        ann_and_bob_were_family = Statement.new(
             predicate=Predicate(
-                content="$relative1 and $relative2 both were members of the same family"
+                content="{relative1} and {relative2} both were members of the same family"
             ),
             terms=(ann, bob),
         )
         bob_and_ann_were_family = Statement(
             predicate=Predicate(
-                content="$relative1 and $relative2 both were members of the same family"
+                content="{relative1} and {relative2} both were members of the same family"
             ),
             terms=(bob, ann),
         )
@@ -272,10 +274,10 @@ class TestSameMeaning:
         directory = Entity(name="Rural's telephone directory", plural=False)
         listings = Entity(name="Rural's telephone listings", plural=True)
         directory_original = Statement(
-            predicate=Predicate(content="$thing was original"), terms=directory
+            predicate=Predicate(content="{thing} was original"), terms=[directory]
         )
         listings_original = Statement(
-            predicate=Predicate(content="$thing were original"), terms=listings
+            predicate=Predicate(content="{thing} were original"), terms=[listings]
         )
         assert directory_original.means(listings_original)
 
@@ -311,16 +313,16 @@ class TestImplication:
             assert not make_statement["crime"] > make_predicate["crime"]
 
     def test_factor_implies_because_of_quantity(self, make_statement):
-        meters = Comparison(
-            content="the distance between $place1 and $place2 was",
+        meters = Comparison.new(
+            content="the distance between {place1} and {place2} was",
             sign=">=",
             expression=Q_("10 meters"),
         )
         left = Statement(
             predicate=meters, terms=[Entity(name="Al"), Entity(name="Bob")]
         )
-        more = Comparison(
-            content="the distance between $place1 and $place2 was",
+        more = Comparison.new(
+            content="the distance between {place1} and {place2} was",
             truth=True,
             sign=">",
             expression=Q_("30 feet"),
@@ -495,7 +497,7 @@ class TestContradiction:
         absent_fact = AbsenceOf(
             absent=Statement(
                 predicate=Predicate(
-                    content="${rural_s_telephone_directory} was copyrightable",
+                    content="{rural_s_telephone_directory} was copyrightable",
                     truth=True,
                 ),
                 terms=[Entity(name="Rural's telephone directory")],
@@ -503,7 +505,7 @@ class TestContradiction:
         )
         false_fact = Statement(
             predicate=Predicate(
-                content="${the_java_api} was copyrightable", truth=False
+                content="{the_java_api} was copyrightable", truth=False
             ),
             terms=[Entity(name="the Java API", generic=True, plural=False)],
         )
@@ -515,20 +517,20 @@ class TestContradiction:
         Alice and Bob are both generics. So it's possible to reach a
         contradiction if you assume they correspond to one another.
         """
-        p_small_weight = Comparison(
-            content="the amount of gold $person possessed was",
+        p_small_weight = Comparison.new(
+            content="the amount of gold {person} possessed was",
             sign="<",
             expression=Q_("1 gram"),
         )
-        p_large_weight = Comparison(
-            content="the amount of gold $person possessed was",
+        p_large_weight = Comparison.new(
+            content="the amount of gold {person} possessed was",
             sign=">=",
             expression=Q_("100 kilograms"),
         )
         alice = Entity(name="Alice")
         bob = Entity(name="Bob")
-        alice_rich = Statement(predicate=p_large_weight, terms=alice)
-        bob_poor = Statement(predicate=p_small_weight, terms=bob)
+        alice_rich = Statement(predicate=p_large_weight, terms=[alice])
+        bob_poor = Statement(predicate=p_small_weight, terms=[bob])
         assert alice_rich.contradicts(bob_poor)
 
     def test_inconsistent_statements_about_corresponding_entities(self):
@@ -537,20 +539,20 @@ class TestContradiction:
         Alice in the first context corresponds with Alice in the second.
         So there's no contradiction.
         """
-        p_small_weight = Comparison(
-            content="the amount of gold $person possessed was",
+        p_small_weight = Comparison.new(
+            content="the amount of gold {person} possessed was",
             sign="<",
             expression=Q_("1 gram"),
         )
-        p_large_weight = Comparison(
-            content="the amount of gold $person possessed was",
+        p_large_weight = Comparison.new(
+            content="the amount of gold {person} possessed was",
             sign=">=",
             expression=Q_("100 kilograms"),
         )
         alice = Entity(name="Alice")
         bob = Entity(name="Bob")
-        alice_rich = Statement(predicate=p_large_weight, terms=alice)
-        bob_poor = Statement(predicate=p_small_weight, terms=bob)
+        alice_rich = Statement(predicate=p_large_weight, terms=[alice])
+        bob_poor = Statement(predicate=p_small_weight, terms=[bob])
         register = ContextRegister()
         register.insert_pair(alice, alice)
         assert not alice_rich.contradicts(bob_poor, context=register)
@@ -673,20 +675,20 @@ class TestAddition:
 
     def test_same_meaning_after_adding_implied(self):
         dave = Entity(name="Dave")
-        speed_template = "${driver}'s driving speed was"
+        speed_template = "{driver}'s driving speed was"
         fast_fact = Statement(
-            predicate=Comparison(
+            predicate=Comparison.new(
                 content=speed_template, sign=">=", expression="100 miles per hour"
             ),
-            terms=dave,
+            terms=[dave],
         )
         slow_fact = Statement(
-            predicate=Comparison(
+            predicate=Comparison.new(
                 content=speed_template,
                 sign=">=",
                 expression="20 miles per hour",
             ),
-            terms=dave,
+            terms=[dave],
         )
         new = fast_fact + slow_fact
         assert new.means(fast_fact)

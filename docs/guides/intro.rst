@@ -54,7 +54,7 @@ Predicates also have a ``truth`` attribute that can be used to establish
 that one Predicate ``contradicts`` another.
 
     >>> no_account_for_company = Predicate(
-    >>>     "$applicant opened a bank account for $company",
+    >>>     content="$applicant opened a bank account for $company",
     >>>     truth=False)
     >>> str(no_account_for_company)
     'it was false that $applicant opened a bank account for $company'
@@ -175,7 +175,7 @@ to other, generic Entities. In that case, you can set the Entity’s
 ``generic`` attribute to False and it’ll no longer be found to have the
 same meaning as generic Entities.
 
-    >>> harry_statement = Statement(not_at_school, terms=Entity(name="Harry Potter", generic=False))
+    >>> harry_statement = Statement(not_at_school, terms=[Entity(name="Harry Potter", generic=False)])
     >>> harry_statement.means(singular_statement)
     False
 
@@ -196,11 +196,11 @@ number, or a physical :class:`~pint.Quantity` expressed in units that can be par
 using the `pint <https://pint.readthedocs.io/>`_ library.
 
     >>> from nettlesome import Comparison
-    >>> weight_in_pounds = Comparison(
+    >>> weight_in_pounds = Comparison.new(
     >>>     "the weight of ${driver}'s vehicle was",
     >>>     sign=">",
     >>>     expression="26000 pounds")
-    >>> pounds_statement = Statement(weight_in_pounds, terms=Entity(name="Alice"))
+    >>> pounds_statement = Statement(weight_in_pounds, terms=[Entity(name="Alice")])
     >>> str(pounds_statement)
     "the statement that the weight of <Alice>'s vehicle was greater than 26000 pound"
 
@@ -209,12 +209,12 @@ will handle unit conversions when
 applying operations like :meth:`~nettlesome.quantities.Comparison.implies`
 or :meth:`~nettlesome.quantities.Comparison.contradicts`\.
 
-    >>> weight_in_kilos = Comparison(
+    >>> weight_in_kilos = Comparison.new(
     >>>     "the weight of ${driver}'s vehicle was",
     >>>     sign="<=",
     >>>     expression="3000 kilograms")
-    >>> kilos_statement = Statement(weight_in_kilos, terms=Entity(name="Alice"))
-    >>>> str(kilos_statement)
+    >>> kilos_statement = Statement(weight_in_kilos, terms=[Entity(name="Alice")])
+    >>> str(kilos_statement)
     "the statement that the weight of <Alice>'s vehicle was no more than 3000 kilogram"
     >>> pounds_statement.contradicts(kilos_statement)
     True
@@ -233,7 +233,7 @@ user’s input indicates that it’s false that the weight of marijuana
 possessed by a defendant was an ounce or more. Nettlesome interprets
 this to mean it’s true that the weight was less than one ounce.
 
-    >>> drug_comparison_with_upper_bound = Comparison(
+    >>> drug_comparison_with_upper_bound = Comparison.new(
     >>>    "the weight of marijuana that $defendant possessed was",
     >>>     sign=">=",
     >>>     expression="1 ounce",
@@ -243,7 +243,7 @@ this to mean it’s true that the weight was less than one ounce.
 
 An expression can also be a Python :py:class:`datetime.date`\.
 
-    >>> license_date = Comparison(
+    >>> license_date = Comparison.new(
     >>>     "the date $dentist became a licensed dentist was",
     >>>     sign="<",
     >>>     expression=date(1990, 1, 1))
@@ -258,7 +258,7 @@ describes. The template string will still need to end with the word
 “was”. The value of the ``expression`` parameter should be an integer or a
 floating point number, not a string to be parsed.
 
-    >>> three_children = Comparison(
+    >>> three_children = Comparison.new(
     >>>     "the number of children in ${taxpayer}'s household was",
     >>>     sign="=",
     >>>     expression=3)
@@ -279,23 +279,23 @@ certain distance away from ``site2``, then ``site2`` must also be the
 same distance away from ``site1``.)
 
     >>> from nettlesome import FactorGroup
-    >>> more_than_100_yards = Comparison(
+    >>> more_than_100_yards = Comparison.new(
     >>>     "the distance between $site1 and $site2 was",
     >>>     sign=">",
     >>>     expression="100 yards")
-    >>> less_than_1_mile = Comparison(
+    >>> less_than_1_mile = Comparison.new(
     >>>     "the distance between $site1 and $site2 was",
     >>>     sign="<",
     >>>     expression="1 mile")
     >>> protest_facts = FactorGroup(
     >>>     [Statement(
-    >>>         more_than_100_yards,
+    >>>         predicate=more_than_100_yards,
     >>>         terms=[Entity(name="the political convention"), Entity(name="the police cordon")]),
     >>>      Statement(
     >>>         less_than_1_mile,
     >>>         terms=[Entity(name="the police cordon"), Entity(name="the political convention")])])
     >>> str(protest_facts)
-    "FactorGroup(['the statement that the distance between <the political convention> and <the police cordon> was greater than 100 yard', 'the statement that the distance between <the police cordon> and <the political convention> was less than 1 mile'])"
+    "FactorGroup(sequence=['the statement that the distance between <the political convention> and <the police cordon> was greater than 100 yard', 'the statement that the distance between <the police cordon> and <the political convention> was less than 1 mile'])"
 
     >>> more_than_50_meters = Comparison(
     >>>     "the distance between $site1 and $site2 was",

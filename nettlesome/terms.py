@@ -1,7 +1,5 @@
 """Base classes for Terms and Factors that can be compared."""
 
-from __future__ import annotations
-
 from abc import ABC
 from copy import deepcopy
 import functools
@@ -12,6 +10,8 @@ import textwrap
 from typing import Any, Callable, ClassVar, Dict, Iterator
 from typing import List, NamedTuple, Optional, Sequence, Tuple, Union
 from typing import KeysView, ValuesView, ItemsView
+
+from pydantic import RootModel, ConfigDict, field_validator
 
 
 logger = logging.getLogger(__name__)
@@ -114,10 +114,15 @@ def new_context_helper(func: Callable):
     return wrapper
 
 
-def expand_string_from_source(term: Union[str, Term], source: Comparable) -> Term:
+def expand_string_from_source(
+    term: Union[str, Term], source: Comparable | None
+) -> Term:
     """Replace ``term`` with the real term it references, if ``term`` is a string reference."""
     if isinstance(term, str):
-        result: Optional[Term] = source.get_factor(term)
+        if source is not None:
+            result: Optional[Term] = source.get_factor(term)
+        else:
+            result = None
     else:
         return term
     if result is None:
@@ -197,7 +202,7 @@ class Comparable(ABC):
         for factor_name in self.context_factor_names:
             next_factor: Optional[Term] = self.__dict__.get(factor_name)
             context.append(next_factor)
-        return TermSequence(context)
+        return TermSequence(root=tuple(context))
 
     def __ge__(self, other: Optional[Comparable]) -> bool:
         """
@@ -348,7 +353,7 @@ class Comparable(ABC):
         )
 
     def _contradicts_if_present(
-        self, other: Comparable, context: Explanation
+        self, other: Comparable, explanation: Explanation
     ) -> Iterator[Explanation]:
         """
         Test if ``self`` would contradict ``other`` if neither was ``absent``.
@@ -365,10 +370,10 @@ class Comparable(ABC):
 
             >>> from nettlesome import Statement, Entity
             >>> hades_curse = Statement(
-            ...    predicate="$deity cursed $target",
+            ...    predicate="{deity} cursed {target}",
             ...    terms=[Entity(name="Hades"), Entity(name="Persephone")])
             >>> aphrodite_curse = Statement(
-            ...    predicate="$deity cursed $target",
+            ...    predicate="{deity} cursed {target}",
             ...    terms=[Entity(name="Aphrodite"), Entity(name="Narcissus")])
             >>> print(hades_curse.explain_same_meaning(aphrodite_curse))
             Because <Hades> is like <Aphrodite>, and <Persephone> is like <Narcissus>,
@@ -412,19 +417,19 @@ class Comparable(ABC):
         signed a treaty with each other.
 
         >>> from nettlesome import Statement, Entity, FactorGroup
-        >>> nafta = FactorGroup([
-        ...     Statement(predicate="$country1 signed a treaty with $country2",
+        >>> nafta = FactorGroup(sequence=[
+        ...     Statement.new(predicate="{country1} signed a treaty with {country2}",
         ...               terms=[Entity(name="Mexico"), Entity(name="USA")]),
-        ...     Statement(predicate="$country2 signed a treaty with $country3",
+        ...     Statement.new(predicate="{country2} signed a treaty with {country3}",
         ...               terms=[Entity(name="USA"), Entity(name="Canada")]),
-        ...     Statement(predicate="$country3 signed a treaty with $country1",
+        ...     Statement.new(predicate="{country3} signed a treaty with {country1}",
         ...           terms=[Entity(name="USA"), Entity(name="Canada")])])
-        >>> brexit = FactorGroup([
-        ...     Statement(predicate="$country1 signed a treaty with $country2",
+        >>> brexit = FactorGroup(sequence=[
+        ...     Statement.new(predicate="{country1} signed a treaty with {country2}",
         ...               terms=[Entity(name="UK"), Entity(name="European Union")]),
-        ...     Statement(predicate="$country2 signed a treaty with $country3",
+        ...     Statement.new(predicate="{country2} signed a treaty with {country3}",
         ...               terms=[Entity(name="European Union"), Entity(name="Germany")]),
-        ...     Statement(predicate="$country3 signed a treaty with $country1",
+        ...     Statement.new(predicate="{country3} signed a treaty with {country1}",
         ...          terms=[Entity(name="Germany"), Entity(name="UK")], truth=False)])
         >>> print(nafta.explain_contradiction(brexit))
         Because <Mexico> is like <Germany>, and <USA> is like <UK>,
@@ -721,13 +726,13 @@ class Comparable(ABC):
         is implied by some Statement in ``self``.
 
             >>> from nettlesome import Entity, Comparison, Statement, FactorGroup
-            >>> over_100y = Comparison(content="the distance between $site1 and $site2 was", sign=">", expression="100 yards")
-            >>> under_1mi = Comparison(content="the distance between $site1 and $site2 was", sign="<", expression="1 mile")
+            >>> over_100y = Comparison.new(content="the distance between {site1} and {site2} was", sign=">", expression="100 yards")
+            >>> under_1mi = Comparison.new(content="the distance between {site1} and {site2} was", sign="<", expression="1 mile")
             >>> protest_facts = FactorGroup(
             ...     [Statement(predicate=over_100y, terms=[Entity(name="the political convention"), Entity(name="the police cordon")]),
             ...      Statement(predicate=under_1mi, terms=[Entity(name="the police cordon"), Entity(name="the political convention")])])
-            >>> over_50m = Comparison(content="the distance between $site1 and $site2 was", sign=">", expression="50 meters")
-            >>> under_2km = Comparison(content="the distance between $site1 and $site2 was", sign="<=", expression="2 km")
+            >>> over_50m = Comparison.new(content="the distance between {site1} and {site2} was", sign=">", expression="50 meters")
+            >>> under_2km = Comparison.new(content="the distance between {site1} and {site2} was", sign="<=", expression="2 km")
             >>> speech_zone_facts = FactorGroup(
             ...     [Statement(predicate=over_50m, terms=[Entity(name="the free speech zone"), Entity(name="the courthouse")]),
             ...      Statement(predicate=under_2km, terms=[Entity(name="the free speech zone"), Entity(name="the courthouse")])])
@@ -869,10 +874,10 @@ class Comparable(ABC):
         converts ``self``\'s and ``other``\'s fields to tuples
         and compares them.
 
-        >>> from nettlesome import Statement, Entity
-        >>> hades_curse = Statement(predicate="$deity cursed $target",
+        >>> from nettlesome import Statement, Entity, Predicate
+        >>> hades_curse = Statement(predicate=Predicate("{deity} cursed {target}"),
         ...    terms=[Entity(name="Hades"), Entity(name="Persephone")])
-        >>> aphrodite_curse = Statement(predicate="$deity cursed $target",
+        >>> aphrodite_curse = Statement(predicate=Predicate("{deity} cursed {target}"),
         ...    terms=[Entity(name="Aphrodite"), Entity(name="Narcissus")])
         >>> hades_curse.means(aphrodite_curse)
         True
@@ -1280,10 +1285,11 @@ class ContextRegister:
 
         return result
 
-    def reversed(self):
+    def reversed(self) -> ContextRegister:
         """Swap keys for values and vice versa."""
         return ContextRegister.from_lists(
-            to_replace=self.values(), replacements=self.reverse_matches.values()
+            to_replace=list(self.values()),
+            replacements=list(self.reverse_matches.values()),
         )
 
     def merged_with(
@@ -1311,6 +1317,14 @@ class ContextRegister:
         return self_mapping
 
 
+OPERATION_NAMES: Dict[Callable, str] = {
+    operator.ge: "IMPLIES",
+    means: "MEANS",
+    contradicts: "CONTRADICTS",
+    consistent_with: "IS CONSISTENT WITH",
+}
+
+
 class FactorMatch(NamedTuple):
     """A pair of corresponding Factors, with the operation that they can satisfy."""
 
@@ -1318,17 +1332,10 @@ class FactorMatch(NamedTuple):
     operation: Callable
     right: Comparable
 
-    operation_names: ClassVar[Dict[Callable, str]] = {
-        operator.ge: "IMPLIES",
-        means: "MEANS",
-        contradicts: "CONTRADICTS",
-        consistent_with: "IS CONSISTENT WITH",
-    }
-
     @property
     def short_string(self) -> str:
         """Summarize self without line breaks."""
-        relation = self.operation_names[self.operation]
+        relation = OPERATION_NAMES[self.operation]
         return f"{self.left.short_string} {relation} {self.right.short_string}"
 
     @property
@@ -1337,7 +1344,7 @@ class FactorMatch(NamedTuple):
         return self.short_string
 
     def __str__(self):
-        relation = self.operation_names[self.operation]
+        relation = OPERATION_NAMES[self.operation]
         indent = "  "
         left = textwrap.indent(str(self.left), prefix=indent)
         right = textwrap.indent(str(self.right), prefix=indent)
@@ -1592,25 +1599,30 @@ class DuplicateTermError(Exception):
     pass
 
 
-class TermSequence(Tuple[Optional[Term], ...]):
+class TermSequence(RootModel):
     """A sequence of Terms that can be compared in order."""
 
-    def __new__(cls, value: Union[Term, Sequence[Optional[Term]]] = ()):
-        """Convert Sequence of Terms to a subclass of Tuple."""
-        if isinstance(value, Term):
-            value = (value,)
-        cls.validate_terms(value)
-        return tuple.__new__(TermSequence, value)
+    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
+    root: Tuple[Optional[Union["Entity", "Factor"]], ...] = ()
+
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+    def __len__(self):
+        return len(self.root)
+
+    @field_validator("root")
     @classmethod
-    def validate_terms(cls, terms: Sequence[Optional[Term]]) -> None:
+    def validate_terms(
+        cls, value: Sequence[Optional[Term]]
+    ) -> tuple[Optional[Term], ...]:
         seen: List[str] = []
-        for term in terms:
+        for term in value:
             if term is not None:
-                if not isinstance(term, Term):
-                    raise TypeError(
-                        f"'{term}' cannot be included in TermSequence because it is not type Term."
-                    )
                 if term.key in seen:
                     raise DuplicateTermError(
                         f"Term '{term}' may not appear more than once in TermSequence. "
@@ -1620,7 +1632,7 @@ class TermSequence(Tuple[Optional[Term], ...]):
                         "Term shares the same key text, please change one of them."
                     )
                 seen.append(term.key)
-        return None
+        return tuple(value)
 
     def ordered_comparison(
         self,
@@ -1631,6 +1643,11 @@ class TermSequence(Tuple[Optional[Term], ...]):
         r"""
         Find ways for a series of pairs of :class:`.Terms` terms to satisfy a comparison.
 
+        Iteratively propagates a frontier of possible :class:`ContextRegister`\s
+        through each pair of :class:`Term`\s in order. For each pair, every
+        candidate register from the previous step is extended with the new
+        pair's valid assignments, yielding only globally consistent registers.
+
         :param context:
             keys representing terms in ``self`` and
             values representing terms in ``other``. The
@@ -1638,49 +1655,40 @@ class TermSequence(Tuple[Optional[Term], ...]):
             in ``self`` and ``other``.
 
         :yields:
-            every way that ``matches`` can be updated to be consistent
-            with each element of ``self.need_matches`` having the relationship
-            ``self.comparison`` with the item at the corresponding index of
-            ``self.available``.
+            every way that ``context`` can be updated to be consistent
+            with each element of ``self`` having the relationship
+            ``operation`` with the item at the corresponding index of
+            ``other``.
         """
-
-        def update_register(
-            register: ContextRegister,
-            factor_pairs: List[Tuple[Optional[Term], Optional[Term]]],
-            i: int = 0,
-        ):
-            """
-            Recursively search through Factor pairs trying out context assignments.
-
-            This has the potential to take a long time to fail if the problem is
-            unsatisfiable. It will reduce risk to check that every :class:`Factor` pair
-            is satisfiable before checking that they're all satisfiable together.
-            """
-            if i == len(factor_pairs):
-                yield register
-            else:
-                left, right = factor_pairs[i]
-                if left is not None or right is None:
-                    if left is None:
-                        yield from update_register(
-                            register, factor_pairs=factor_pairs, i=i + 1
-                        )
-                    else:
-                        new_mapping_choices: List[ContextRegister] = []
-                        for incoming_register in left.update_context_register(
-                            right, register, operation
-                        ):
-                            if incoming_register not in new_mapping_choices:
-                                new_mapping_choices.append(incoming_register)
-                                yield from update_register(
-                                    incoming_register,
-                                    factor_pairs=factor_pairs,
-                                    i=i + 1,
-                                )
-
         context = context or ContextRegister()
-        ordered_pairs = list(zip_longest(self, other))
-        yield from update_register(register=context, factor_pairs=ordered_pairs)
+        ordered_pairs: List[Tuple[Optional[Term], Optional[Term]]] = list(
+            zip_longest(self, other)
+        )
+
+        # frontier holds the distinct ContextRegisters consistent with all pairs so far
+        frontier: List[ContextRegister] = [context]
+
+        for left, right in ordered_pairs:
+            next_frontier: List[ContextRegister] = []
+            if left is None and right is not None:
+                # left is None but right is not: no constraint can be satisfied
+                return
+            for register in frontier:
+                if left is None:
+                    # right is also None (zip_longest pads with None); no new constraint
+                    if register not in next_frontier:
+                        next_frontier.append(register)
+                else:
+                    for incoming_register in left.update_context_register(
+                        right, register, operation
+                    ):
+                        if incoming_register not in next_frontier:
+                            next_frontier.append(incoming_register)
+            frontier = next_frontier
+            if not frontier:
+                return
+
+        yield from frontier
 
 
 # Type annotation of formats for describing the context of a comparison

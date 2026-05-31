@@ -15,7 +15,7 @@ class TestQuantities:
         left = UnitRange(quantity_magnitude=20, quantity_units="meter", sign=">")
         right = make_comparison["meters"].quantity_range
         assert left.implies(right)
-        assert left.q == Quantity(Decimal("20"), "meter")
+        assert left.quantity == Quantity(Decimal("20"), "meter")
 
     def test_quantity_from_string(self):
         left = UnitRange(quantity_magnitude=2000, quantity_units="day", sign="<")
@@ -75,14 +75,14 @@ class TestCompareQuantities:
         assert len(make_comparison["meters"]) == 2
 
     def test_str_for_predicate_with_number_quantity(self, make_comparison):
-        assert "distance between $place1 and $place2 was less than 20" in str(
+        assert "distance between {place1} and {place2} was less than 20" in str(
             make_comparison["int_distance"]
         )
-        assert "distance between $place1 and $place2 was less than 20" in str(
+        assert "distance between {place1} and {place2} was less than 20" in str(
             make_comparison["float_distance"]
         )
         assert make_comparison["float_distance"].quantity_range.domain == S.Reals
-        assert "distance between $place1 and $place2 was less than 20 foot" in str(
+        assert "distance between {place1} and {place2} was less than 20 foot" in str(
             make_comparison["less_than_20"]
         )
 
@@ -90,14 +90,12 @@ class TestCompareQuantities:
         with pytest.raises(TypeError):
             make_comparison["exact"].contradicts(
                 Statement(
-                    make_comparison["exact"],
+                    predicate=make_comparison["exact"],
                     terms=[Entity(name="thing"), Entity(name="place")],
                 )
             )
 
     def test_comparison_from_expression_without_sign(self):
-        comparison = Comparison(
-            **{"content": "{}'s favorite number was", "expression": 42}
-        )
+        comparison = Comparison.new(content="{}'s favorite number was", expression=42)
         assert comparison.sign == "=="
         assert str(comparison) == "that {}'s favorite number was exactly equal to 42"
