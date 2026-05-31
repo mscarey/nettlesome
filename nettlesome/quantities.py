@@ -411,7 +411,7 @@ class Comparison(BaseModel, PhraseABC):
     or a floating point number, not a string to be parsed.
 
         >>> # example comparing an integer
-        >>> three_children = Comparison(
+        >>> three_children = Comparison.new(
         ...     content="the number of children in {taxpayer}'s household was",
         ...     sign="=",
         ...     expression=3)

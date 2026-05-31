@@ -39,9 +39,9 @@ for a data model about determining whether an individual is an owner or
 employee of a company:
 
     >>> from nettlesome import Predicate
-    >>> account_for_company = Predicate(content="$applicant opened a bank account for $company")
+    >>> account_for_company = Predicate(content="{applicant} opened a bank account for {company}")
 
-Because ``$applicant`` and ``$company`` are marked as placeholders for
+Because ``{applicant}`` and ``{company}`` are marked as placeholders for
 :class:`~nettlesome.terms.Term`\s, you’ll be able to add more data about
 those entities later. But
 notice that the words “bank account” haven't been replaced by a placeholder.
@@ -54,10 +54,10 @@ Predicates also have a ``truth`` attribute that can be used to establish
 that one Predicate ``contradicts`` another.
 
     >>> no_account_for_company = Predicate(
-    >>>     content="$applicant opened a bank account for $company",
-    >>>     truth=False)
+    ...     content="{applicant} opened a bank account for {company}",
+    ...     truth=False)
     >>> str(no_account_for_company)
-    'it was false that $applicant opened a bank account for $company'
+    'it was false that {applicant} opened a bank account for {company}'
 
 The ``truth`` attribute will become more significant as we build up to
 create more complex objects.
@@ -66,15 +66,13 @@ Formatting predicates
 ~~~~~~~~~~~~~~~~~~~~~
 
 Placeholders for terms in a :class:`~nettlesome.predicates.Predicate` should
-be marked up using
-the placeholder syntax for a :class:`string.Template`, which is a part of the
-Python standard library.
+be marked up with curly braces in the style of Python format strings,
+such as ``{person}`` and ``{company}``.
 
-The placeholders you choose always need to ``$start_with_a_dollar_sign``
-and they need to be valid Python identifiers, which means they can’t
-contain spaces. If a placeholder needs to be adjacent to a
-non-whitespace character, you also need to
-``${wrap_it_in_curly_braces}``.
+The placeholder names need to be valid Python identifiers, which means
+they can’t contain spaces. If a placeholder needs to be adjacent to a
+non-whitespace character, you can still wrap it in braces as usual,
+for example ``{driver}'s``.
 
 Don’t use capitalization or end punctuation to signal the beginning or
 end of the phrase in a :class:`~nettlesome.predicates.Predicate`\,
@@ -87,7 +85,7 @@ different meanings. The example below demonstrates this using
 the :meth:`~nettlesome.predicates.PhraseABC.means` method, which tests
 whether two Nettlesome objects have the same meaning.
 
-    >>> account_for_partnership = Predicate(content="$applicant opened a bank account for $partnership")
+    >>> account_for_partnership = Predicate(content="{applicant} opened a bank account for {partnership}")
     >>> account_for_company.means(account_for_partnership)
     True
 
@@ -104,7 +102,7 @@ Even though the rest  of the text is the same, the
 reuse of the same :class:`~nettlesome.terms.Term` means that
 the :class:`~nettlesome.predicates.Predicate` has a different meaning.
 
-    >>> account_for_self = Predicate(content="$applicant opened a bank account for $applicant")
+    >>> account_for_self = Predicate(content="{applicant} opened a bank account for {applicant}")
     >>> account_for_self.means(account_for_company)
     False
 
@@ -118,8 +116,8 @@ make the :class:`~nettlesome.statements.Statement` a complete phrase.
 
     >>> from nettlesome import Statement, Entity
     >>> statement = Statement(
-    >>>     predicate=account_for_company,
-    >>>     terms=[Entity(name="Sarah"), Entity(name="Acme Corporation")])
+    ...     predicate=account_for_company,
+    ...     terms=[Entity(name="Sarah"), Entity(name="Acme Corporation")])
     >>> str(statement)
     'the statement that <Sarah> opened a bank account for <Acme Corporation>'
 
@@ -136,11 +134,11 @@ the :class:`~nettlesome.entities.Entity` should be considered
 the word “was” after the :class:`~nettlesome.entities.Entity` should be
 replaced with “were”.
 
-    >>> not_at_school = Predicate(content="$group were at school", truth=False)
-    >>> plural_statement = Statement(not_at_school, terms=[Entity(name="the students", plural=True)])
+    >>> not_at_school = Predicate(content="{group} were at school", truth=False)
+    >>> plural_statement = Statement(predicate=not_at_school, terms=[Entity(name="the students", plural=True)])
     >>> str(plural_statement)
     'the statement it was false that <the students> were at school'
-    >>> singular_statement = Statement(not_at_school, terms=[Entity(name="Lee", plural=False)])
+    >>> singular_statement = Statement(predicate=not_at_school, terms=[Entity(name="Lee", plural=False)])
     >>> str(singular_statement)
     'the statement it was false that <Lee> was at school'
 
@@ -175,7 +173,7 @@ to other, generic Entities. In that case, you can set the Entity’s
 ``generic`` attribute to False and it’ll no longer be found to have the
 same meaning as generic Entities.
 
-    >>> harry_statement = Statement(not_at_school, terms=[Entity(name="Harry Potter", generic=False)])
+    >>> harry_statement = Statement(predicate=not_at_school, terms=[Entity(name="Harry Potter", generic=False)])
     >>> harry_statement.means(singular_statement)
     False
 
@@ -197,10 +195,10 @@ using the `pint <https://pint.readthedocs.io/>`_ library.
 
     >>> from nettlesome import Comparison
     >>> weight_in_pounds = Comparison.new(
-    >>>     "the weight of ${driver}'s vehicle was",
-    >>>     sign=">",
-    >>>     expression="26000 pounds")
-    >>> pounds_statement = Statement(weight_in_pounds, terms=[Entity(name="Alice")])
+    ...     "the weight of {driver}'s vehicle was",
+    ...     sign=">",
+    ...     expression="26000 pounds")
+    >>> pounds_statement = Statement(predicate=weight_in_pounds, terms=[Entity(name="Alice")])
     >>> str(pounds_statement)
     "the statement that the weight of <Alice>'s vehicle was greater than 26000 pound"
 
@@ -210,10 +208,10 @@ applying operations like :meth:`~nettlesome.quantities.Comparison.implies`
 or :meth:`~nettlesome.quantities.Comparison.contradicts`\.
 
     >>> weight_in_kilos = Comparison.new(
-    >>>     "the weight of ${driver}'s vehicle was",
-    >>>     sign="<=",
-    >>>     expression="3000 kilograms")
-    >>> kilos_statement = Statement(weight_in_kilos, terms=[Entity(name="Alice")])
+    ...     "the weight of {driver}'s vehicle was",
+    ...     sign="<=",
+    ...     expression="3000 kilograms")
+    >>> kilos_statement = Statement(predicate=weight_in_kilos, terms=[Entity(name="Alice")])
     >>> str(kilos_statement)
     "the statement that the weight of <Alice>'s vehicle was no more than 3000 kilogram"
     >>> pounds_statement.contradicts(kilos_statement)
@@ -234,21 +232,22 @@ possessed by a defendant was an ounce or more. Nettlesome interprets
 this to mean it’s true that the weight was less than one ounce.
 
     >>> drug_comparison_with_upper_bound = Comparison.new(
-    >>>    "the weight of marijuana that $defendant possessed was",
-    >>>     sign=">=",
-    >>>     expression="1 ounce",
-    >>>     truth=False)
+    ...    "the weight of marijuana that {defendant} possessed was",
+    ...     sign=">=",
+    ...     expression="1 ounce",
+    ...     truth=False)
     >>> str(drug_comparison_with_upper_bound)
-    'that the weight of marijuana that $defendant possessed was less than 1 ounce'
+    'that the weight of marijuana that {defendant} possessed was less than 1 ounce'
 
 An expression can also be a Python :py:class:`datetime.date`\.
 
+    >>> from datetime import date
     >>> license_date = Comparison.new(
-    >>>     "the date $dentist became a licensed dentist was",
-    >>>     sign="<",
-    >>>     expression=date(1990, 1, 1))
+    ...     "the date {dentist} became a licensed dentist was",
+    ...     sign="<",
+    ...     expression=date(1990, 1, 1))
     >>> str(license_date)
-    'that the date $dentist became a licensed dentist was less than 1990-01-01'
+    'that the date {dentist} became a licensed dentist was less than 1990-01-01'
 
 When the number needed for a :class:`~nettlesome.quantities.Comparison` is neither
 a :py:class:`~datetime.date` nor a physical quantity that
@@ -259,11 +258,11 @@ describes. The template string will still need to end with the word
 floating point number, not a string to be parsed.
 
     >>> three_children = Comparison.new(
-    >>>     "the number of children in ${taxpayer}'s household was",
-    >>>     sign="=",
-    >>>     expression=3)
+    ...     "the number of children in {taxpayer}'s household was",
+    ...     sign="=",
+    ...     expression=3)
     >>> str(three_children)
-    "that the number of children in ${taxpayer}'s household was exactly equal to 3"
+    "that the number of children in {taxpayer}'s household was exactly equal to 3"
 
 Comparing groups of statements
 ---------------------------------
@@ -280,37 +279,39 @@ same distance away from ``site1``.)
 
     >>> from nettlesome import FactorGroup
     >>> more_than_100_yards = Comparison.new(
-    >>>     "the distance between $site1 and $site2 was",
-    >>>     sign=">",
-    >>>     expression="100 yards")
+    ...     "the distance between {site1} and {site2} was",
+    ...     sign=">",
+    ...     expression="100 yards")
     >>> less_than_1_mile = Comparison.new(
-    >>>     "the distance between $site1 and $site2 was",
-    >>>     sign="<",
-    >>>     expression="1 mile")
+    ...     "the distance between {site1} and {site2} was",
+    ...     sign="<",
+    ...     expression="1 mile")
     >>> protest_facts = FactorGroup(
-    >>>     [Statement(
-    >>>         predicate=more_than_100_yards,
-    >>>         terms=[Entity(name="the political convention"), Entity(name="the police cordon")]),
-    >>>      Statement(
-    >>>         less_than_1_mile,
-    >>>         terms=[Entity(name="the police cordon"), Entity(name="the political convention")])])
-    >>> str(protest_facts)
-    "FactorGroup(sequence=['the statement that the distance between <the political convention> and <the police cordon> was greater than 100 yard', 'the statement that the distance between <the police cordon> and <the political convention> was less than 1 mile'])"
+    ...     sequence=[Statement(
+    ...         predicate=more_than_100_yards,
+    ...         terms=[Entity(name="the political convention"), Entity(name="the police cordon")]),
+    ...      Statement(
+    ...         predicate=less_than_1_mile,
+    ...         terms=[Entity(name="the police cordon"), Entity(name="the political convention")])])
+        >>> print(protest_facts)
+        the group of Factors:
+            the statement that the distance between <the political convention> and <the police cordon> was greater than 100 yard
+            the statement that the distance between <the police cordon> and <the political convention> was less than 1 mile
 
-    >>> more_than_50_meters = Comparison(
-    >>>     "the distance between $site1 and $site2 was",
-    >>>     sign=">",
-    >>>     expression="50 meters")
-    >>> less_than_2_km = Comparison(
-    >>>     "the distance between $site1 and $site2 was",
-    >>>     sign="<=",
-    >>>     expression="2 km")
+    >>> more_than_50_meters = Comparison.new(
+    ...     "the distance between {site1} and {site2} was",
+    ...     sign=">",
+    ...     expression="50 meters")
+    >>> less_than_2_km = Comparison.new(
+    ...     "the distance between {site1} and {site2} was",
+    ...     sign="<=",
+    ...     expression="2 km")
     >>> speech_zone_facts = FactorGroup(
-    >>>     [Statement(
-    >>>         more_than_50_meters,
-    >>>         terms=[Entity(name="the free speech zone"), Entity(name="the courthouse")]),
-    >>>      Statement(
-    >>>         less_than_2_km,
-    >>>         terms=[Entity(name="the free speech zone"), Entity(name="the courthouse")])])
+    ...     sequence=[Statement(
+    ...         predicate=more_than_50_meters,
+    ...         terms=[Entity(name="the free speech zone"), Entity(name="the courthouse")]),
+    ...      Statement(
+    ...         predicate=less_than_2_km,
+    ...         terms=[Entity(name="the free speech zone"), Entity(name="the courthouse")])])
     >>> protest_facts.implies(speech_zone_facts)
     True

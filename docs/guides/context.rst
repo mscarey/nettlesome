@@ -13,9 +13,9 @@ considered to have the same meaning because the Terms of each Statement
 can be “matched” to one another.
 
     >>> from nettlesome import Statement, Entity, Predicate
-    >>> hades_curse = Statement(predicate=Predicate("{deity} cursed {target}"),
+    >>> hades_curse = Statement(predicate=Predicate(content="{deity} cursed {target}"),
     ...     terms=[Entity(name="Hades"), Entity(name="Persephone")])
-    >>> aphrodite_curse = Statement(predicate=Predicate("{deity} cursed {target}"),
+    >>> aphrodite_curse = Statement(predicate=Predicate(content="{deity} cursed {target}"),
     ...     terms=[Entity(name="Aphrodite"), Entity(name="Narcissus")])
     >>> print(aphrodite_curse)
     the statement that <Aphrodite> cursed <Narcissus>
@@ -77,24 +77,12 @@ A :py:class:`dict` can be used for the ``context``
 parameter, but there’s a complication: a :class:`nettlesome.entities.Entity` is not a
 valid :py:class:`dict` key in Python. Here’s the error message you'll see
 if you try to use an :class:`~nettlesome.entities.Entity` directly
-as a :py:class:`dict` key,
-and then try to retrieve the value stored under that key.
+as a :py:class:`dict` key.
 
-    >>> myths = {Entity(name="Hades"): Entity(name="Narcissus")}
-    >>> myths[Entity(name="Hades")]
-
-::
-
-    ---------------------------------------------------------------------------
-
-    KeyError                                  Traceback (most recent call last)
-
-    <ipython-input-5-75ea1b988416> in <module>
-          1 myths = {Entity(name="Hades"): Entity(name="Narcissus")}
-    ----> 2 myths[Entity(name="Hades")]
-
-
-    KeyError: Entity(name="Hades", generic=True, plural=False)
+  >>> myths = {Entity(name="Hades"): Entity(name="Narcissus")}
+  Traceback (most recent call last):
+  ...
+  TypeError: cannot use 'nettlesome.entities.Entity' as a dict key (unhashable type: 'Entity')
 
 
 So instead of passing in the :class:`~nettlesome.entities.Entity` itself
@@ -122,8 +110,7 @@ example or stand-in for a broader category, so that a different generic
 Term can be substituted without changing the meaning of the Statement.
 
     >>> hades_curse.generic_terms()
-    [Entity(name="Hades", generic=True, plural=False),
-     Entity(name="Persephone", generic=True, plural=False)]
+    [Entity(generic=True, name='Hades', plural=False), Entity(generic=True, name='Persephone', plural=False)]
 
 This time, we’ll provide the correct Entities that match to the Entities
 of ``hades_curse``, so the :meth:`~nettlesome.terms.Comparable.means` method
@@ -153,18 +140,18 @@ about whether one pair of Entities signed a treaty with each other.
 
     >>> from nettlesome import FactorGroup
     >>> nafta = FactorGroup(sequence=[
-    ...     Statement.new(predicate="$country1 signed a treaty with $country2",
+    ...     Statement.new(predicate="{country1} signed a treaty with {country2}",
     ...               terms=[Entity(name="Mexico"), Entity(name="USA")]),
-    ...     Statement.new(predicate="$country2 signed a treaty with $country3",
+    ...     Statement.new(predicate="{country2} signed a treaty with {country3}",
     ...               terms=[Entity(name="USA"), Entity(name="Canada")]),
-    ...     Statement.new(predicate="$country3 signed a treaty with $country1",
+    ...     Statement.new(predicate="{country3} signed a treaty with {country1}",
     ...           terms=[Entity(name="USA"), Entity(name="Canada")])])
     >>> brexit = FactorGroup(sequence=[
-    ...     Statement.new(predicate="$country1 signed a treaty with $country2",
+    ...     Statement.new(predicate="{country1} signed a treaty with {country2}",
     ...               terms=[Entity(name="UK"), Entity(name="European Union")]),
-    ...     Statement.new(predicate="$country2 signed a treaty with $country3",
+    ...     Statement.new(predicate="{country2} signed a treaty with {country3}",
     ...               terms=[Entity(name="European Union"), Entity(name="Germany")]),
-    ...     Statement.new(predicate="$country3 signed a treaty with $country1",
+    ...     Statement.new(predicate="{country3} signed a treaty with {country1}",
     ...          terms=[Entity(name="Germany"), Entity(name="UK")], truth=False)])
     >>> nafta.contradicts(brexit)
     True
