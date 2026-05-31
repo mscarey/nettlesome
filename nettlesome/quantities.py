@@ -396,7 +396,7 @@ class Comparison(BaseModel, PhraseABC):
     true that the weight was no more than 10 grams.
 
         >>> # example comparing a pint Quantity
-        >>> drug_comparison_with_upper_bound = Comparison(
+        >>> drug_comparison_with_upper_bound = Comparison.new(
         ...     content="the weight of marijuana that {defendant} possessed was",
         ...     sign=">",
         ...     expression="10 grams",
@@ -570,7 +570,7 @@ class Comparison(BaseModel, PhraseABC):
         """
         Get the range of numbers covered by the UnitInterval.
 
-        >>> weight=Comparison(
+        >>> weight=Comparison.new(
         ...     content="the amount of gold {person} possessed was",
         ...     sign=">=",
         ...     expression="10 grams")
@@ -589,7 +589,7 @@ class Comparison(BaseModel, PhraseABC):
             the number, pint Quantity, or date at the beginning or end of
             the range
 
-            >>> weight=Comparison(
+            >>> weight=Comparison.new(
             ...     content="the amount of gold {person} possessed was",
             ...     sign=">=",
             ...     expression="10 grams")
@@ -603,7 +603,7 @@ class Comparison(BaseModel, PhraseABC):
         """
         Get operator describing the relationship between the quantity and the range.
 
-            >>> weight=Comparison(
+            >>> weight=Comparison.new(
             ...     content="the amount of gold {person} possessed was",
             ...     sign=">=",
             ...     expression="10 grams")
@@ -625,11 +625,11 @@ class Comparison(BaseModel, PhraseABC):
 
         May be based on template text, truth values, and :class:`.QuantityRange`\s.
 
-        >>> small_weight=Comparison(
+        >>> small_weight=Comparison.new(
         ...     content="the amount of gold {person} possessed was",
         ...     sign=">=",
         ...     expression=Q_("1 gram"))
-        >>> large_weight=Comparison(
+        >>> large_weight=Comparison.new(
         ...     content="the amount of gold {person} possessed was",
         ...     sign=">=",
         ...     expression=Q_("100 kilograms"))
@@ -653,10 +653,10 @@ class Comparison(BaseModel, PhraseABC):
         This method can convert different units to determine whether self and other
         refer to the same :class:`~.quantities.QuantityRange`\.
 
-        >>> volume_in_liters = Comparison(
+        >>> volume_in_liters = Comparison.new(
         ...     content="the volume of fuel in the tank was",
         ...     sign="=", expression="10 liters")
-        >>> volume_in_milliliters = Comparison(
+        >>> volume_in_milliliters = Comparison.new(
         ...     content="the volume of fuel in the tank was",
         ...     sign="=", expression="10000 milliliters")
         >>> volume_in_liters.means(volume_in_milliliters)
@@ -675,10 +675,10 @@ class Comparison(BaseModel, PhraseABC):
         this method looks for a contradiction based on the dimensionality or
         numeric range of the :class:`~.QuantityRange`\s for ``self`` and ``other``.
 
-            >>> earlier = Comparison(
+            >>> earlier = Comparison.new(
             ...     content="the date {dentist} became a licensed dentist was",
             ...     sign="<", expression=date(1990, 1, 1))
-            >>> later = Comparison(
+            >>> later = Comparison.new(
             ...     content="the date {dentist} became a licensed dentist was",
             ...     sign=">", expression=date(2010, 1, 1))
             >>> str(earlier)

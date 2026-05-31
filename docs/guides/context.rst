@@ -12,10 +12,10 @@ analagous to one another. In the example below, the two phrases can be
 considered to have the same meaning because the Terms of each Statement
 can be “matched” to one another.
 
-    >>> from nettlesome import Statement, Entity
-    >>> hades_curse = Statement(predicate="$deity cursed $target",
+    >>> from nettlesome import Statement, Entity, Predicate
+    >>> hades_curse = Statement(predicate=Predicate("{deity} cursed {target}"),
     ...     terms=[Entity(name="Hades"), Entity(name="Persephone")])
-    >>> aphrodite_curse = Statement(predicate="$deity cursed $target",
+    >>> aphrodite_curse = Statement(predicate=Predicate("{deity} cursed {target}"),
     ...     terms=[Entity(name="Aphrodite"), Entity(name="Narcissus")])
     >>> print(aphrodite_curse)
     the statement that <Aphrodite> cursed <Narcissus>
