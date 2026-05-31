@@ -349,15 +349,28 @@ class TestStatements:
         assert "\n" in text
         assert "the State of Texas" in text.split("SPECIFIC CONTEXT")[1]
 
+    def test_serialize_fact_term(self):
+        predicate = Predicate(content="{person} had a farm", truth=False)
+        statement = Statement(
+            predicate=predicate,
+            terms=TermSequence(root=(Entity(name="Old MacDonald"),)),
+        )
+        serialized = statement.model_dump()
+        new = Statement.model_validate(serialized)
+        assert new.terms == statement.terms
+        assert isinstance(new.predicate, Predicate)
+
 
 class TestSameMeaning:
     def test_equality_factor_from_same_predicate(self):
         predicate = Predicate(content="{speaker} greeted {listener}")
         fact = Statement(
-            predicate=predicate, terms=[Entity(name="Al"), Entity(name="Meg")]
+            predicate=predicate,
+            terms=TermSequence(root=(Entity(name="Al"), Entity(name="Meg"))),
         )
         fact_b = Statement(
-            predicate=predicate, terms=[Entity(name="Al"), Entity(name="Meg")]
+            predicate=predicate,
+            terms=TermSequence(root=(Entity(name="Al"), Entity(name="Meg"))),
         )
         assert fact.means(fact_b)
 

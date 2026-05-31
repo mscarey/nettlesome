@@ -7,7 +7,7 @@ from typing import Any, ClassVar, Dict, Optional, Self, Union
 
 from pint import UnitRegistry, Quantity
 from pint.facets.plain import PlainQuantity
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, field_validator, model_validator, ValidationError
 import sympy
 from sympy import Eq, Interval, Mul, oo, S
 from sympy.sets import EmptySet, FiniteSet
@@ -504,7 +504,8 @@ class Comparison(BaseModel, PhraseABC):
         """Reverse the sign of a Comparison if necessary."""
         if values.get("truth") is False:
             values["truth"] = True
-            values["quantity_range"].reverse_meaning()
+            if values.get("quantity_range") is not None:
+                values["quantity_range"].reverse_meaning()
         return values
 
     @field_validator("content")
