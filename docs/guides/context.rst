@@ -152,19 +152,19 @@ were asserted about the parties in ``nafta``, there would be a conflict
 about whether one pair of Entities signed a treaty with each other.
 
     >>> from nettlesome import FactorGroup
-    >>> nafta = FactorGroup(sequence=[
-    ...     Statement.new(predicate="$country1 signed a treaty with $country2",
+    >>> nafta = FactorGroup([
+    ...     Statement(predicate="{country1} signed a treaty with {country2}",
     ...               terms=[Entity(name="Mexico"), Entity(name="USA")]),
-    ...     Statement.new(predicate="$country2 signed a treaty with $country3",
+    ...     Statement(predicate="{country2} signed a treaty with {country3}",
     ...               terms=[Entity(name="USA"), Entity(name="Canada")]),
-    ...     Statement.new(predicate="$country3 signed a treaty with $country1",
+    ...     Statement(predicate="{country3} signed a treaty with {country1}",
     ...           terms=[Entity(name="USA"), Entity(name="Canada")])])
-    >>> brexit = FactorGroup(sequence=[
-    ...     Statement.new(predicate="$country1 signed a treaty with $country2",
+    >>> brexit = FactorGroup([
+    ...     Statement(predicate="{country1} signed a treaty with {country2}",
     ...               terms=[Entity(name="UK"), Entity(name="European Union")]),
-    ...     Statement.new(predicate="$country2 signed a treaty with $country3",
+    ...     Statement(predicate="{country2} signed a treaty with {country3}",
     ...               terms=[Entity(name="European Union"), Entity(name="Germany")]),
-    ...     Statement.new(predicate="$country3 signed a treaty with $country1",
+    ...     Statement(predicate="{country3} signed a treaty with {country1}",
     ...          terms=[Entity(name="Germany"), Entity(name="UK")], truth=False)])
     >>> nafta.contradicts(brexit)
     True

@@ -54,10 +54,10 @@ Predicates also have a ``truth`` attribute that can be used to establish
 that one Predicate ``contradicts`` another.
 
     >>> no_account_for_company = Predicate(
-    >>>     content="$applicant opened a bank account for $company",
+    >>>     content="{applicant} opened a bank account for {company}",
     >>>     truth=False)
     >>> str(no_account_for_company)
-    'it was false that $applicant opened a bank account for $company'
+    'it was false that {applicant} opened a bank account for {company}'
 
 The ``truth`` attribute will become more significant as we build up to
 create more complex objects.
