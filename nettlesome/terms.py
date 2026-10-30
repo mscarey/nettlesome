@@ -19,7 +19,6 @@ from typing import (
     Any,
     ClassVar,
     NamedTuple,
-    Union,
 )
 
 from pydantic import ConfigDict, RootModel, field_validator
@@ -124,9 +123,7 @@ def new_context_helper(func: Callable):
     return wrapper
 
 
-def expand_string_from_source(
-    term: str | Term, source: Comparable | None
-) -> Term:
+def expand_string_from_source(term: str | Term, source: Comparable | None) -> Term:
     """Replace ``term`` with the real term it references, if ``term`` is a string reference."""
     if isinstance(term, str):
         if source is not None:
@@ -509,7 +506,7 @@ class Comparable(ABC):
             ``True`` if self and other can't both be true at
             the same time. Otherwise returns ``False``.
         """
-        context = context = Explanation.from_context(
+        context = Explanation.from_context(
             context=context, current=self, incoming=other
         )
         for new in self._explanations_consistent_with(other, explanation=context):
@@ -607,7 +604,7 @@ class Comparable(ABC):
         context: ContextRegister | Explanation | None = None,
     ) -> Iterator[Explanation]:
         """Generate explanations for how other may imply self."""
-        context = context = Explanation.from_context(
+        context = Explanation.from_context(
             context=context, current=self, incoming=other
         )
         for new in self._explanations_implied_by(other=other, explanation=context):
@@ -625,7 +622,7 @@ class Comparable(ABC):
         context: Explanation | ContextRegister | None = None,
     ) -> Iterator[Explanation]:
         """Generate ways to match contexts of self and other so they mean the same."""
-        context = context = Explanation.from_context(
+        context = Explanation.from_context(
             context=context, current=self, incoming=other
         )
         for new in self._explanations_same_meaning(other=other, explanation=context):
@@ -1305,9 +1302,7 @@ class ContextRegister:
             replacements=list(self.reverse_matches.values()),
         )
 
-    def merged_with(
-        self, incoming_mapping: ContextRegister
-    ) -> ContextRegister | None:
+    def merged_with(self, incoming_mapping: ContextRegister) -> ContextRegister | None:
         r"""
         Create a new merged :class:`ContextRegister`\.
 
@@ -1492,9 +1487,7 @@ class Term(Comparable):
     def __bool__(self) -> bool:
         return True
 
-    def add(
-        self, other: Term, context: ContextRegister | None = None
-    ) -> Term | None:
+    def add(self, other: Term, context: ContextRegister | None = None) -> Term | None:
         """
         Get a term that combines the meaning of self and other, if possible.
 
@@ -1610,7 +1603,6 @@ class DuplicateTermError(Exception):
     """Error indicating a TermSequence contains the same Term more than once."""
 
 
-
 class TermSequence(RootModel):
     """A sequence of Terms that can be compared in order."""
 
@@ -1629,9 +1621,7 @@ class TermSequence(RootModel):
 
     @field_validator("root")
     @classmethod
-    def validate_terms(
-        cls, value: Sequence[Term | None]
-    ) -> tuple[Term | None, ...]:
+    def validate_terms(cls, value: Sequence[Term | None]) -> tuple[Term | None, ...]:
         seen: list[str] = []
         for term in value:
             if term is not None:
@@ -1706,9 +1696,9 @@ class TermSequence(RootModel):
 # Type annotation of formats for describing the context of a comparison
 # between two Factors. All of these can be converted to a ContextRegister
 # using information from the Factors being compared.
-ContextMemo = Union[
-    ContextRegister,
-    list[str | Term],
-    tuple[list[str | Term], list[str | Term]],
-    dict[str, str | Term],
-]
+ContextMemo = (
+    ContextRegister
+    | list[str | Term]
+    | tuple[list[str | Term], list[str | Term]]
+    | dict[str, str | Term]
+)
