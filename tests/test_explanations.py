@@ -2,6 +2,11 @@ import operator
 
 import pytest
 
+from nettlesome.entities import Entity
+from nettlesome.groups import FactorGroup
+from nettlesome.predicates import Predicate
+from nettlesome.quantities import Comparison
+from nettlesome.statements import Statement
 from nettlesome.terms import (
     ContextRegister,
     Explanation,
@@ -9,11 +14,6 @@ from nettlesome.terms import (
     contradicts,
     means,
 )
-from nettlesome.predicates import Predicate
-from nettlesome.quantities import Comparison
-from nettlesome.statements import Statement
-from nettlesome.entities import Entity
-from nettlesome.groups import FactorGroup
 
 
 class TestContext:

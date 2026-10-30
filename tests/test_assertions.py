@@ -1,9 +1,9 @@
 import pytest
 
-from nettlesome.terms import ContextRegister
 from nettlesome.entities import Entity
 from nettlesome.factors import AbsenceOf
-from nettlesome.statements import Statement, Assertion
+from nettlesome.statements import Assertion, Statement
+from nettlesome.terms import ContextRegister
 
 
 class TestAssertion:

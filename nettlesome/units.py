@@ -1,4 +1,5 @@
 from sympy.physics.units import (
+    Quantity,
     gram,
     grams,
     hectare,
@@ -6,22 +7,24 @@ from sympy.physics.units import (
     hours,
     kilogram,
     kilograms,
-    mile,
-    miles,
     meter,
     meters,
+    mile,
+    miles,
     second,
     seconds,
     yard,
     yards,
 )
 from sympy.physics.units import convert_to as sympy_convert_to
-from sympy.physics.units import Quantity
 
 acre = acres = Quantity("acre")
 acre.set_global_relative_scale_factor(0.4047, hectare)
 
 __all__ = [
+    "Quantity",
+    "acre",
+    "acres",
     "gram",
     "grams",
     "hectare",
@@ -29,16 +32,13 @@ __all__ = [
     "hours",
     "kilogram",
     "kilograms",
-    "mile",
-    "miles",
     "meter",
     "meters",
+    "mile",
+    "miles",
     "second",
     "seconds",
+    "sympy_convert_to",
     "yard",
     "yards",
-    "acre",
-    "acres",
-    "sympy_convert_to",
-    "Quantity",
 ]
