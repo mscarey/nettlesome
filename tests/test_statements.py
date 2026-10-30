@@ -633,7 +633,7 @@ class TestImplication:
         )
 
         with pytest.raises(TypeError):
-            statement > phrase
+            assert statement > phrase  # ty: ignore[unsupported-operator]
 
     def test_new_comparison_false(self):
         phrase = Comparison.new(
