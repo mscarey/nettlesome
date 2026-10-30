@@ -235,19 +235,7 @@ class Comparable(ABC):
     def _all_generic_terms_match(
         self, other: Comparable, context: ContextRegister
     ) -> bool:
-        if all(
-            all(
-                context.assigns_same_value_to_key_factor(
-                    other=other_register, key_factor=generic
-                )
-                for generic in self.generic_terms()
-            )
-            for other_register in self._context_registers(
-                other=other, comparison=means, context=context
-            )
-        ):
-            return True
-        return False
+        return bool(all(all(context.assigns_same_value_to_key_factor(other=other_register, key_factor=generic) for generic in self.generic_terms()) for other_register in self._context_registers(other=other, comparison=means, context=context)))
 
     def consistent_with(
         self, other: Comparable | None, context: ContextRegister | None = None
@@ -639,9 +627,8 @@ class Comparable(ABC):
             under the assumption that neither self nor other has
             the attribute ``absent == True``.
         """
-        if isinstance(other, self.__class__):
-            if not self.generic:
-                yield from self._implies_if_concrete(other, explanation)
+        if isinstance(other, self.__class__) and not self.generic:
+            yield from self._implies_if_concrete(other, explanation)
 
     def generic_terms(self) -> list[Term]:
         """Get Terms that can be replaced without changing ``self``'s meaning."""
@@ -958,12 +945,12 @@ class Comparable(ABC):
         unused_self = [
             factor
             for factor in self.generic_terms()
-            if factor.short_string not in context.matches.keys()
+            if factor.short_string not in context.matches
         ]
         unused_other = [
             factor
             for factor in other.generic_terms()
-            if factor.short_string not in context.reverse_matches.keys()
+            if factor.short_string not in context.reverse_matches
         ]
         if not (unused_self and unused_other):
             yield context
