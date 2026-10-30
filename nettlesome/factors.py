@@ -4,7 +4,7 @@ from typing import ClassVar, Iterator, Tuple
 
 from pydantic import BaseModel
 
-from nettlesome.entities import Entity
+from nettlesome.entities import Entity  # noqa: F401
 from nettlesome.terms import Comparable, Explanation, Term, TermSequence
 
 
