@@ -1071,6 +1071,9 @@ class ContextRegister:
     def __len__(self):
         return len(self.matches)
 
+    def __contains__(self, item: str) -> bool:
+        return item in self.matches
+
     def __repr__(self) -> str:
         return f"ContextRegister({self._matches.__repr__()})"
 

@@ -396,7 +396,7 @@ class TestImplication:
         new = complex_whether.new_context(make_context_register)
         explanations = list(complex_true.explanations_implication(new))
         explanation = explanations.pop()
-        assert "<Craig>" not in explanation.context.keys()
+        assert "<Craig>" not in explanation.context
         assert explanation.context["<Alice>"].name == "Craig"
 
     def test_context_registers_for_complex_comparison(self, make_complex_fact):
