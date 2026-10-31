@@ -67,7 +67,10 @@ class Statement(Factor, BaseModel):
     def new(
         cls,
         predicate: Predicate | Comparison | str,
-        terms: TermSequence | Mapping[str, Entity | Statement | Assertion] | Sequence[Entity | Statement | Assertion] | None = None,
+        terms: TermSequence
+        | Mapping[str, Entity | Statement | Assertion]
+        | Sequence[Entity | Statement | Assertion]
+        | None = None,
         truth: bool | None = True,
         generic: bool = False,
     ) -> Statement:
@@ -142,7 +145,7 @@ class Statement(Factor, BaseModel):
     @property
     def term_sequence(self) -> TermSequence:
         """Return a TermSequence of the terms in this Statement."""
-        return cast(TermSequence, self.terms)
+        return self.terms
 
     @property
     def short_string(self) -> str:
