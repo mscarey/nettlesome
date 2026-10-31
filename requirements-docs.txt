@@ -1,7 +1,0 @@
-pint>=0.22
-python-slugify
-pydantic==2.11.5
-sympy~=1.14
-sphinx>=2.1.2
-sphinx-autodoc-typehints
-sphinx-rtd-theme
