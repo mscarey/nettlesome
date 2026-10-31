@@ -52,8 +52,12 @@ class TestPredicateDump:
             expression=Q_("35 feet"),
         )
         dumped = predicate.model_dump()
-        assert dumped["quantity_range"]["quantity_magnitude"] == Decimal(35)
-        assert dumped["quantity_range"]["quantity_units"] == "foot"
+        assert dumped["quantity_range"]["quantity"] == Q_(Decimal(35), "foot")
+        json_dumped = predicate.model_dump(mode="json")
+        assert json_dumped["quantity_range"]["quantity"] == "35 foot"
+        assert Comparison.model_validate_json(predicate.model_dump_json()).means(
+            predicate
+        )
 
     def test_round_trip(self):
         predicate = Comparison.new(
@@ -62,6 +66,20 @@ class TestPredicateDump:
         dumped = predicate.model_dump()
         new_statement = Comparison(**dumped)
         assert "{}'s favorite number was exactly equal to 42" in str(new_statement)
+
+    def test_round_trip_json_numeric_quantity(self):
+        comparison = Comparison.new(content="{}'s favorite number was", expression=42)
+        assert Comparison.model_validate_json(comparison.model_dump_json()).means(
+            comparison
+        )
+
+    def test_round_trip_json_date_quantity(self):
+        comparison = Comparison.new(
+            content="the date {} was", expression=date(1978, 1, 1)
+        )
+        assert Comparison.model_validate_json(comparison.model_dump_json()).means(
+            comparison
+        )
 
     def test_dump_comparison_with_date_expression(self):
         copyright_date_range = Comparison.new(

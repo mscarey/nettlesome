@@ -2,13 +2,14 @@
 
 from abc import abstractmethod
 from datetime import date
-from decimal import Decimal
-from typing import Any, ClassVar, Self
+from decimal import Decimal, InvalidOperation
+from typing import Annotated, Any, ClassVar, Self, cast
 
 import sympy
 from pint import Quantity, UnitRegistry
 from pint.facets.plain import PlainQuantity
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic_pint import PydanticPintQuantity
 from sympy import Eq, Interval, Mul, S, oo
 from sympy.physics.units import Quantity as SympyQuantity
 from sympy.sets import EmptySet, FiniteSet
@@ -68,6 +69,17 @@ def scale_ranges(
     if isinstance(ranges, FiniteSet):
         return scale_finiteset(elements=ranges, scalar=scalar)
     return scale_union_of_intervals(ranges=ranges, scalar=scalar)
+
+
+def decimal_quantity(quantity: PlainQuantity) -> PlainQuantity[Decimal]:
+    """Rebuild a quantity with a Decimal magnitude in Nettlesome's registry."""
+    magnitude = Decimal(str(quantity.magnitude))
+    if magnitude == magnitude.to_integral_value():
+        magnitude = magnitude.quantize(Decimal(1))
+    return cast(
+        PlainQuantity[Decimal],
+        Q_(magnitude, str(quantity.units)),
+    )
 
 
 class QuantityRange(BaseModel):
@@ -199,7 +211,7 @@ class QuantityRange(BaseModel):
         """
         Change self.sign in place to reverse the range of numbers covered.
 
-            >>> quantity_range = UnitRange(quantity_magnitude="100", quantity_units="meters", sign=">")
+            >>> quantity_range = UnitRange(quantity="100 meters", sign=">")
             >>> str(quantity_range)
             'greater than 100 meter'
             >>> quantity_range.reverse_meaning()
@@ -215,20 +227,24 @@ class QuantityRange(BaseModel):
 
 
 class UnitRange(QuantityRange, BaseModel):
-    """A range defined relative to a pint Quantity."""
+    """A range defined relative to a Pydantic-validated Pint quantity."""
 
-    quantity_magnitude: Decimal | int
-    quantity_units: str
+    quantity: Annotated[
+        PlainQuantity[Decimal], PydanticPintQuantity(ureg=ureg)
+    ]
     sign: str = "=="
     include_negatives: bool | None = None
 
-    @property
-    def q(self) -> PlainQuantity[Decimal | int]:
-        return Quantity(self.quantity_magnitude, self.quantity_units)
+    @field_validator("quantity")
+    @classmethod
+    def normalize_quantity(
+        cls, quantity: PlainQuantity[Decimal]
+    ) -> PlainQuantity[Decimal]:
+        return decimal_quantity(quantity)
 
     @property
-    def quantity(self) -> PlainQuantity[Decimal | int]:
-        return self.q
+    def q(self) -> PlainQuantity[Decimal]:
+        return self.quantity
 
     @property
     def domain(self) -> sympy.Set:
@@ -291,8 +307,8 @@ class UnitRange(QuantityRange, BaseModel):
             )
         if other.q.units == self.q.units:
             return other.interval
-        ratio_of_units = other.q.units / self.q.units
-        return scale_ranges(other.interval, ratio_of_units)
+        conversion_factor = (1 * other.q.units).to(self.q.units).magnitude
+        return scale_ranges(other.interval, conversion_factor)
 
     def means(self, other: Any) -> bool:
         """Whether ``self`` and ``other`` represent the same quantity range."""
@@ -340,15 +356,20 @@ class DecimalRange(QuantityRange, BaseModel):
     include_negatives: bool | None = None
 
     @field_validator("quantity", mode="before")
-    def convert_to_decimal(cls, value: float | Decimal) -> Decimal:
-        """Convert int or float to Decimal."""
+    def convert_to_decimal(cls, value: str | float | Decimal) -> Decimal:
+        """Convert numbers and their JSON string representation to Decimal."""
         if isinstance(value, Decimal):
             return value
         if isinstance(value, (int, float)):
             return Decimal(value)
-        raise TypeError(
-            f"DecimalRange quantity must be an int, float, or Decimal, not {type(value)}."
-        )
+        if isinstance(value, str):
+            try:
+                return Decimal(value)
+            except InvalidOperation as exc:
+                raise ValueError(
+                    f"DecimalRange quantity must be numeric, not {value!r}."
+                ) from exc
+        raise ValueError(f"DecimalRange quantity must be numeric, not {type(value)}.")
 
     @property
     def domain(self) -> sympy.Set:
@@ -430,7 +451,9 @@ class Comparison(BaseModel, PhraseABC):
     """
 
     content: str
-    quantity_range: DecimalRange | UnitRange | DateRange
+    quantity_range: UnitRange | DecimalRange | DateRange = Field(
+        union_mode="left_to_right"
+    )
     truth: bool | None = True
 
     @classmethod
@@ -473,13 +496,10 @@ class Comparison(BaseModel, PhraseABC):
                 quantity=quantity,
                 include_negatives=include_negatives,
             )
-        elif isinstance(quantity, (str, SympyQuantity)):
-            if isinstance(quantity, str):
-                quantity = Q_(quantity)
+        elif isinstance(quantity, PlainQuantity):
             quantity_range = UnitRange(
                 sign=sign,
-                quantity_magnitude=Decimal(quantity.magnitude),
-                quantity_units=str(quantity.units),
+                quantity=quantity,
                 include_negatives=include_negatives,
             )
         else:
@@ -519,7 +539,7 @@ class Comparison(BaseModel, PhraseABC):
     @classmethod
     def expression_to_quantity(
         cls, value: str | float | date | Decimal | SympyQuantity | PlainQuantity
-    ) -> date | Decimal | str:
+    ) -> date | Decimal | PlainQuantity[Decimal | int]:
         r"""
         Create numeric expression from text for Comparison class.
 
@@ -531,19 +551,19 @@ class Comparison(BaseModel, PhraseABC):
             an object to be interpreted as the ``expression`` field
             of a :class:`~authorityspoke.predicate.Comparison`
         :returns:
-            a Python number object or a :class:`pint.Quantity`
-            object created with :class:`pint.UnitRegistry`.
+            a Python number object or a :class:`pint.Quantity` created
+            with :class:`pint.UnitRegistry`.
         """
         if isinstance(value, Quantity):
-            return str(value)
+            return decimal_quantity(value)
         if isinstance(value, (SympyQuantity, Mul)):
-            return str(Q_(str(value)))
+            return decimal_quantity(Q_(str(value)))
         if isinstance(value, date):
             return value
         if isinstance(value, (int, Decimal, float)):
             return Decimal(value)
         if isinstance(value, PlainQuantity):
-            return str(Q_(str(value)))
+            return decimal_quantity(value)
         quantity = value.strip()
 
         try:
@@ -558,7 +578,7 @@ class Comparison(BaseModel, PhraseABC):
             substring.isnumeric() for substring in float_parts
         ):
             return Decimal(quantity)
-        return str(Q_(quantity))
+        return decimal_quantity(Q_(quantity))
 
     @property
     def interval(self) -> FiniteSet | Interval | sympy.Union:
@@ -589,7 +609,7 @@ class Comparison(BaseModel, PhraseABC):
             ...     sign=">=",
             ...     expression="10 grams")
             >>> weight.quantity
-            <Quantity(10, 'gram')>
+            Quantity(Decimal('10'), "gram")
         """
         return self.quantity_range.q
 

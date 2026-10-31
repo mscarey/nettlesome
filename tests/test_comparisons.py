@@ -4,6 +4,7 @@ from decimal import Decimal
 import pytest
 import sympy
 from pint import Quantity
+from pydantic import ValidationError
 from sympy import Interval, oo
 
 from nettlesome.predicates import Predicate
@@ -81,7 +82,7 @@ class TestQuantityInterval:
             expression=Q_("20 miles"),
         )
         assert comparison.quantity_range.magnitude == Decimal(20)
-        assert comparison.quantity_range.quantity_units == "mile"
+        assert comparison.quantity_range.quantity.units == Q_("1 mile").units
 
     def test_comparison_interval(self):
         comparison = Comparison.new(
@@ -90,7 +91,7 @@ class TestQuantityInterval:
             expression=Q_("20 miles"),
         )
         assert comparison.interval == Interval(Decimal(20), oo, left_open=True)
-        assert "quantity_magnitude=Decimal('20')" in repr(comparison)
+        assert "quantity=Quantity(Decimal('20'), \"mile\")" in repr(comparison)
 
     def test_negated_method(self, make_comparison):
         as_false = make_comparison["exact"].negated()
@@ -157,7 +158,7 @@ class TestQuantityInterval:
         dogs = Comparison.new(
             content="the number of dogs was", sign=">", expression="3 gallons"
         )
-        with pytest.raises(TypeError):
+        with pytest.raises(ValidationError):
             DecimalRange(quantity=dogs.quantity)
 
     def test_plural_in_Comparison(self):
