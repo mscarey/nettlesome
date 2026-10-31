@@ -1175,14 +1175,19 @@ class ContextRegister:
                 current=current,
                 incoming=incoming,
             )
+        if len(changes) == 2:
+            to_replace, replacements = changes
+        else:
+            to_replace = replacements = None
         if (
-            len(changes) == 2
-            and all(not isinstance(change, str) for change in changes)
-            and all(isinstance(change, Sequence) for change in changes)
+            isinstance(to_replace, Sequence)
+            and not isinstance(to_replace, str)
+            and isinstance(replacements, Sequence)
+            and not isinstance(replacements, str)
         ):
             return cls.from_lists(
-                to_replace=changes[0],
-                replacements=changes[1],
+                to_replace=to_replace,
+                replacements=replacements,
                 current=current,
                 incoming=incoming,
             )
