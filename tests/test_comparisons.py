@@ -4,6 +4,7 @@ from decimal import Decimal
 import pytest
 import sympy
 from pint import Quantity
+from pint.errors import UndefinedUnitError
 from pydantic import ValidationError
 from sympy import Interval, oo
 
@@ -104,9 +105,12 @@ class TestQuantityInterval:
         assert make_comparison["less"].negated().means(make_comparison["more"])
 
     def test_no_string_as_quantity(self):
-        with pytest.raises(TypeError):
-            Comparison(
-                "twenty miles",
+        with pytest.raises(UndefinedUnitError):
+            Comparison.new(
+                content="the distance between {place1} and {place2} was",
+                truth=False,
+                sign=">",
+                expression="twenty miles",
             )
 
     def test_convert_false_statement_about_quantity_to_obverse(self):

@@ -418,7 +418,7 @@ class Comparison(BaseModel, PhraseABC):
         >>> str(drug_comparison_with_upper_bound)
         'that the weight of marijuana that {defendant} possessed was no more than 10 gram'
 
-    When the number needed for a Comparison isn’t a physical quantity that can be described
+    When the number needed for a Comparison isn't a physical quantity that can be described
     with the units in the pint library library, you should phrase the text in the template
     string to explain what the number describes. The template string will still need to
     end with the word “was”. The value of the expression parameter should be an integer
