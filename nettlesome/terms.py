@@ -568,11 +568,11 @@ class Comparable(ABC):
                 + "implication with other Comparable objects or None."
             )
 
-        if other.__dict__.get("absent"):
-            if isinstance(other.absent, self.__class__):
-                yield from self._contradicts_if_present(other.absent, explanation)
-        else:
+        absent = getattr(other, "absent", None)
+        if absent is None:
             yield from self._implies_if_present(other, explanation)
+        elif isinstance(absent, self.__class__):
+            yield from self._contradicts_if_present(absent, explanation)
 
     def explanations_implication(
         self,
@@ -1622,7 +1622,7 @@ class TermSequence(RootModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
-    root: tuple[Entity | Factor | None, ...] = ()
+    root: tuple[Entity | Factor | None, ...] = ()  # ty: ignore[invalid-mutable-override]
 
     def __iter__(self):
         return iter(self.root)
