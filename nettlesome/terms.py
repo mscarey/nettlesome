@@ -210,9 +210,9 @@ class Comparable(ABC):
             for whichever subclass of :class:`Factor` calls this method. These
             can be used for comparing objects using :meth:`consistent_with`
         """
-        context: list[Term | None] = []
+        context: list[Entity | Factor | None] = []
         for factor_name in self.context_factor_names:
-            next_factor: Term | None = self.__dict__.get(factor_name)
+            next_factor: Entity | Factor | None = self.__dict__.get(factor_name)
             context.append(next_factor)
         return TermSequence(root=tuple(context))
 
