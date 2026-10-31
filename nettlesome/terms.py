@@ -1192,6 +1192,8 @@ class ContextRegister:
                 incoming=incoming,
             )
         if terms_to_replace:
+            if not isinstance(changes, list):
+                raise ValueError("Changes must be a sequence of replacements.")
             return cls.from_lists(
                 to_replace=terms_to_replace,
                 replacements=changes,
@@ -1204,6 +1206,8 @@ class ContextRegister:
                 "or the 'terms_to_replace' attribue, "
                 "then a 'current' object must be provided."
             )
+        if not isinstance(changes, list):
+            raise TypeError("Changes must be a sequence of replacements.")
         return cls.from_changes_and_current(
             current=current, changes=changes, incoming=incoming
         )
