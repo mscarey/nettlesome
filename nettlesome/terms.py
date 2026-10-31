@@ -315,9 +315,10 @@ class Comparable(ABC):
         second ordering "<Bob> and <Ann> both were members of the same family".
         """
         for i, self_factor in enumerate(ordering):
-            if not (self_factor is other.term_sequence[i] is None):
-                if not (self_factor and relation(self_factor, other.term_sequence[i])):
-                    return False
+            if not (self_factor is other.term_sequence[i] is None) and not (
+                self_factor and relation(self_factor, other.term_sequence[i])
+            ):
+                return False
         return True
 
     def _context_registers(
