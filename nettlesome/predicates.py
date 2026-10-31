@@ -439,7 +439,7 @@ class PhraseABC(metaclass=ABCMeta):
         result: dict[str, set[int]] = {p: {i} for i, p in enumerate(without_duplicates)}
 
         for index, placeholder in enumerate(without_duplicates):
-            if placeholder[-1].isdigit:
+            if placeholder[-1].isdigit():
                 for k, v in result.items():
                     if k[-1].isdigit() and k[:-1] == placeholder[:-1]:
                         v.add(index)
