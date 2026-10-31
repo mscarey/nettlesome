@@ -45,7 +45,7 @@ def scale_union_of_intervals(ranges: sympy.Union, scalar: float) -> sympy.Union:
     return sympy.Union(*scaled_intervals)
 
 
-def scale_finiteset(elements: FiniteSet[int | float], scalar: float) -> FiniteSet:
+def scale_finiteset(elements: FiniteSet[int | float], scalar: float) -> FiniteSet:  # ty: ignore[invalid-type-form]
     """
     Scale up set of finite numbers by multiplying by a scalar.
 
