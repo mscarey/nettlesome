@@ -229,9 +229,7 @@ class QuantityRange(BaseModel):
 class UnitRange(QuantityRange, BaseModel):
     """A range defined relative to a Pydantic-validated Pint quantity."""
 
-    quantity: Annotated[
-        PlainQuantity[Decimal], PydanticPintQuantity(ureg=ureg)
-    ]
+    quantity: Annotated[PlainQuantity[Decimal], PydanticPintQuantity(ureg=ureg)]
     sign: str = "=="
     include_negatives: bool | None = None
 
