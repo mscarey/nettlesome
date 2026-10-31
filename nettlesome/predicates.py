@@ -17,6 +17,8 @@ from typing import Any
 
 from pydantic import BaseModel
 
+from nettlesome.entities import Entity
+from nettlesome.factors import Factor
 from nettlesome.terms import Comparable, Term, TermSequence
 
 Interpolation = templatelib.Interpolation
@@ -171,7 +173,7 @@ class StatementTemplate:
         return self._t_template.strings
 
     def get_term_sequence_from_mapping(
-        self, term_mapping: Mapping[str, Term]
+        self, term_mapping: Mapping[str, Entity | Factor]
     ) -> TermSequence:
         """Get an ordered list of terms from a mapping of placeholder names to terms."""
         placeholders = self.placeholders

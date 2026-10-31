@@ -93,7 +93,7 @@ class Statement(Factor, BaseModel):
             predicate = Predicate(content=predicate, truth=truth)
         if isinstance(terms, Mapping):
             terms = predicate.template.get_term_sequence_from_mapping(
-                cast(Mapping[str, Term], terms)
+                cast(Mapping[str, Entity | Factor], terms)
             )
         return cls(predicate=predicate, terms=terms or TermSequence(), generic=generic)
 
