@@ -16,12 +16,17 @@ from collections.abc import (
 from copy import deepcopy
 from itertools import permutations, zip_longest
 from typing import (
+    TYPE_CHECKING,
     Any,
     ClassVar,
     NamedTuple,
 )
 
 from pydantic import ConfigDict, RootModel, field_validator
+
+if TYPE_CHECKING:
+    from nettlesome.entities import Entity
+    from nettlesome.factors import Factor
 
 logger = logging.getLogger(__name__)
 
@@ -235,7 +240,19 @@ class Comparable(ABC):
     def _all_generic_terms_match(
         self, other: Comparable, context: ContextRegister
     ) -> bool:
-        return bool(all(all(context.assigns_same_value_to_key_factor(other=other_register, key_factor=generic) for generic in self.generic_terms()) for other_register in self._context_registers(other=other, comparison=means, context=context)))
+        return bool(
+            all(
+                all(
+                    context.assigns_same_value_to_key_factor(
+                        other=other_register, key_factor=generic
+                    )
+                    for generic in self.generic_terms()
+                )
+                for other_register in self._context_registers(
+                    other=other, comparison=means, context=context
+                )
+            )
+        )
 
     def consistent_with(
         self, other: Comparable | None, context: ContextRegister | None = None
