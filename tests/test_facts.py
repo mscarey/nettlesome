@@ -4,13 +4,18 @@ import operator
 
 import pytest
 
-from nettlesome.terms import ContextRegister, DuplicateTermError
-from nettlesome.terms import Explanation, TermSequence, means
 from nettlesome.entities import Entity
 from nettlesome.factors import AbsenceOf
 from nettlesome.predicates import Predicate
-from nettlesome.quantities import Comparison, Q_
+from nettlesome.quantities import Q_, Comparison
 from nettlesome.statements import Statement
+from nettlesome.terms import (
+    ContextRegister,
+    DuplicateTermError,
+    Explanation,
+    TermSequence,
+    means,
+)
 
 
 class TestFacts:
@@ -391,7 +396,7 @@ class TestImplication:
         new = complex_whether.new_context(make_context_register)
         explanations = list(complex_true.explanations_implication(new))
         explanation = explanations.pop()
-        assert "<Craig>" not in explanation.context.keys()
+        assert "<Craig>" not in explanation.context
         assert explanation.context["<Alice>"].name == "Craig"
 
     def test_context_registers_for_complex_comparison(self, make_complex_fact):

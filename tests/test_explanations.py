@@ -2,6 +2,11 @@ import operator
 
 import pytest
 
+from nettlesome.entities import Entity
+from nettlesome.groups import FactorGroup
+from nettlesome.predicates import Predicate
+from nettlesome.quantities import Comparison
+from nettlesome.statements import Statement
 from nettlesome.terms import (
     ContextRegister,
     Explanation,
@@ -9,11 +14,6 @@ from nettlesome.terms import (
     contradicts,
     means,
 )
-from nettlesome.predicates import Predicate
-from nettlesome.quantities import Comparison
-from nettlesome.statements import Statement
-from nettlesome.entities import Entity
-from nettlesome.groups import FactorGroup
 
 
 class TestContext:
@@ -37,7 +37,7 @@ class TestContext:
         register = ContextRegister()
         register.insert_pair(Entity(name="Al"), Entity(name="Alice"))
         answers = self.fact_al.update_context_register(self.fact_alice, register, means)
-        assert Entity(name="the bull").short_string in next(answers).keys()
+        assert Entity(name="the bull").short_string in next(answers)
 
     def test_explain_consistency(self):
         register = ContextRegister()

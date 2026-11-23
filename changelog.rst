@@ -1,5 +1,16 @@
 Changelog
 =========
+0.8.0 (development)
+-------------------
+- add an ``AbsenceOf`` class for representing absent Factors, including in FactorGroups
+- add ``Comparison.new`` and support Decimal and SymPy quantity expressions
+- support ``None`` as a Comparison truth value
+- parse placeholders with Python 3.14 t-strings; only ``{name}`` syntax is supported
+- make TermSequence a Pydantic model and accept it directly as Statement terms
+- use pydantic-pint to validate and serialize Pint quantities in UnitRange
+- fix loading serialized Predicates with ``truth=False``
+- require Python 3.14 or newer
+
 0.7.1 (2025-01-25)
 ------------------
 - don't restate "abstract" field in subclasses

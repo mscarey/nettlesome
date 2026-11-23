@@ -72,7 +72,7 @@ class TestCompare:
 
     def test_predicate_has_no_expression_comparison(self):
         with pytest.raises(AttributeError):
-            self.same.expression_comparison() == ""
+            assert self.same.expression_comparison() == ""  # ty: ignore[unresolved-attribute]
 
     def test_template_singular_by_default(self):
         predicate = Predicate(content="{people} were in {city}")

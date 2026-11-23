@@ -59,7 +59,7 @@ class TestMakeEntities:
     def test_cannot_put_string_in_term_sequence(self):
         entity = Entity(name="Austin")
         with pytest.raises(ValidationError):
-            TermSequence(root=(entity, "Dallas as a string"))
+            assert TermSequence(root=(entity, "Dallas as a string"))  # ty: ignore[invalid-argument-type]
 
 
 class TestSameMeaning:
@@ -127,7 +127,7 @@ class TestContradiction:
 class TestAdd:
     def test_union_not_valid_alias(self):
         with pytest.raises(TypeError):
-            Entity(name="Al") | Entity(name="Ed")
+            Entity(name="Al") | Entity(name="Ed")  # ty: ignore[unsupported-operator]
 
     def test_add_generic(self):
         new = Entity(name="Al") + Entity(name="Ed")
@@ -135,7 +135,7 @@ class TestAdd:
 
     def test_no_adding_string(self):
         with pytest.raises(TypeError):
-            Entity(name="Al") + "Ed"
+            Entity(name="Al") + "Ed"  # ty: ignore[unsupported-operator]
 
     def test_add_generic_and_specific(self):
         new = Entity(name="Al") + Entity(name="Mister Ed", generic=False)

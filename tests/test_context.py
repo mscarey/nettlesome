@@ -2,11 +2,11 @@ import operator
 
 import pytest
 
-from nettlesome.terms import ContextRegister, Explanation, means
 from nettlesome.entities import Entity
 from nettlesome.groups import FactorGroup
 from nettlesome.predicates import Predicate
 from nettlesome.statements import Statement
+from nettlesome.terms import ContextRegister, Explanation, means
 
 
 class TestContextRegisters:
